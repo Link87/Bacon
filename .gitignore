@@ -1,4 +1,8 @@
 
+#general
+bin/
+
 #InteliJ specific
 .idea/
 out/
+group6.iml
