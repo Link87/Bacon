@@ -1,0 +1,34 @@
+<project default="clean-build">
+
+    <property name ="build.dir" value="bin"/>
+    <property name ="classes.dir" value="${build.dir}/classes"/>
+    <property name ="jar.dir" value="${build.dir}/jar"/>
+
+    <property name ="mainClass.name" value="Main"/>
+    <property name ="outputJar.name" value="Group6AI.jar"/>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="src" destdir="${classes.dir}"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.dir}/${outputJar.name}" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${mainClass.name}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="clean-build" depends="clean,jar"/>
+
+    <target name="run">
+        <java jar="${jar.dir}/${outputJar.name}" fork="true"/>
+    </target>
+
+</project>
