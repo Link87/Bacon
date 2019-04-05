@@ -4,18 +4,27 @@ public class Tile {
     Tile neighbours[];
     //0 empty Tile, 1-8 player Stones, 10 expension Stone
     byte stoneColour;
-    TileProp tileProp;
+    char tileProp;
 
     final int x;
     final int y;
 
-    public Tile(byte sC, TileProp tP, int xPos, int yPos){
+    public Tile(byte sC, char tP, int xPos, int yPos){
         stoneColour = sC;
         tileProp = tP;
 
         x = xPos;
         y = yPos;
     }
+
+    public void setStone(byte stoneColour) {
+        this.stoneColour = stoneColour;
+    }
+
+    public void setTileProp(char tP) {
+        this.tileProp = tP;
+    }
+
 
     public void setNeighbours(Tile[] neighbours) {
         this.neighbours = neighbours;
@@ -28,12 +37,13 @@ public class Tile {
     public int getY() {
         return y;
     }
+
+    public Tile getNeighbour(int direction) { return neighbours[direction]; }
+
+    public byte getStoneColour() { return stoneColour; }
+
+    public char getTileProp() { return tileProp; }
+
 }
 
-enum TileProp{
-    CHOICE,
-    NONE,
-    INVERSION,
-    BONUS
-}
 
