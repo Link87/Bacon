@@ -43,10 +43,10 @@ public class Map {
 
     /**
      * Deserialize a map object from the given String.
-     * The string must start with <code>height</code> lines with <code>width</code> characters each
-     * that represent the map tiles according to the specification. The map definition can be followed with a
-     * listing of transitions that also have to follow the specification. Transitions have to be separated
-     * by line breaks.
+     * The string is expected to already be ASCI and must start with <code>height</code> lines with <code>width</code>
+     * characters each that represent the map tiles according to the specification.
+     * The map definition can be followed with a listing of transitions that also have to follow the specification.
+     * Transitions have to be separated by line breaks.
      *
      * @param width width of the map
      * @param height height of the map
@@ -54,7 +54,26 @@ public class Map {
      * @return {@link #Map(Tile[][])} with tiles
      */
     public static Map readFromString(int width, int height, String data) {
-        //TODO: placing Tiles inside the Field / creating Objekts
+        //data ist first broken into lines, each line is than broken into caracters
+        Tile[][] tempTiles = new Tile[width][height];
+        String[] lines = data.split("\n");
+
+        int h;
+        for (h=0;h<height;h++){
+
+            String[] tile = lines[h].split(" ");
+            for (int w=0;w<width;w++){
+                char symbol = tile[w].charAt(0);
+
+                if (symbol <=10 && symbol >=0){
+                    tempTiles[w][h] = new Tile((byte)symbol,'n',w,h);
+                }else if(symbol != '-'){
+                    tempTiles[w][h] = new Tile((byte)0,symbol,w,h);
+                }else{
+                    tempTiles[w][h]= new Tile((byte)0,'-',w,h);
+                }
+            }
+        }
 
         //setting neighbours for every Tile in map
         /*for( Tile[] rowOrCollum : tiles){
@@ -63,7 +82,25 @@ public class Map {
             }
         }*/
 
-        return null;
+        return new Map(tempTiles);
+    }
+
+    public String toString(){
+        String helper ="";
+        for(int y= 0;y<height;y++){
+            for (int x=0;x<width;x++){
+                if(tiles[x][y].getTileProp()=='-') {
+                    helper = helper.concat("-");
+                }else if (tiles[x][y].getTileProp() == 'n'){
+                    helper = helper.concat(tiles[x][y].getStoneColour()+"");
+                }else {
+                    helper = helper.concat(tiles[x][y].getTileProp()+"");
+                }
+            }
+            helper = helper.concat("\n");
+        }
+        return helper;
     }
 
 }
+
