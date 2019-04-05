@@ -46,7 +46,7 @@ public class Map {
      * The string is expected to already be ASCI and must start with <code>height</code> lines with <code>width</code>
      * characters each that represent the map tiles according to the specification.
      * The map definition can be followed with a listing of transitions that also have to follow the specification.
-     * Transitions have to be separated by line breaks.
+     * Transitions have to be separated by line breaks. "\n" is the only excepted line breake.
      *
      * @param width width of the map
      * @param height height of the map
@@ -66,12 +66,16 @@ public class Map {
                 char symbol = tile[w].charAt(0);
 
                 if (symbol <=10 && symbol >=0){
+                    //Tile has a Stone
                     tempTiles[w][h] = new Tile((byte)symbol,'n',w,h);
                 }else if(symbol != '-'){
+                    //Tile is not a hole --> Tile has Property
                     tempTiles[w][h] = new Tile((byte)0,symbol,w,h);
                 }else{
+                    //Tile is a hole
                     tempTiles[w][h]= new Tile((byte)0,'-',w,h);
                 }
+
             }
         }
 
@@ -85,15 +89,22 @@ public class Map {
         return new Map(tempTiles);
     }
 
+    /**
+     * toString method (mainly for testing)
+     * @return a String representation of the map
+     */
     public String toString(){
         String helper ="";
         for(int y= 0;y<height;y++){
             for (int x=0;x<width;x++){
                 if(tiles[x][y].getTileProp()=='-') {
+                    //Tile is a hole
                     helper = helper.concat("-");
                 }else if (tiles[x][y].getTileProp() == 'n'){
+                    //Tile has no property (and is not a Hole) might be a Stone on it
                     helper = helper.concat(tiles[x][y].getStoneColour()+"");
                 }else {
+                    //Tile has a property
                     helper = helper.concat(tiles[x][y].getTileProp()+"");
                 }
             }
