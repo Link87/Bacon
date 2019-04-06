@@ -30,9 +30,9 @@ public class Tile {
     public Tile(Player owner, Property property, int x, int y){
         this.owner = owner;
 
-        if (this.owner == null && property != Property.DEFAULT)
-            this.property = property;
-        else throw new IllegalArgumentException("Only default state can define initial owner");
+        if (this.owner != null && property != Property.DEFAULT)
+            throw new IllegalArgumentException("Only default state can define initial owner");
+        else this.property = property;
 
         this.x = x;
         this.y = y;
@@ -125,5 +125,3 @@ public class Tile {
     }
 
 }
-
-

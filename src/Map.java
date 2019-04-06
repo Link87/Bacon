@@ -3,11 +3,8 @@
  */
 public class Map {
 
-    private final int MAX_WIDTH = 50;
-    private final int MAX_HEIGHT = 50;
-
-    private int width;
-    private int height;
+     private int width;
+     private int height;
 
     /**
      * The tiles this map consists of. This is guaranteed to be non-empty.
@@ -70,25 +67,105 @@ public class Map {
      * @param tile2         Second Tile of the transition
      * @param direction2    Direction in which the transition applies on the second tile (clockwise, 0 is at the top)
      */
-    private void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
-        // TODO
+    private static void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
+        tile1.setTransition(tile2,Direction.values()[direction1]);
+        tile2.setTransition(tile1,Direction.values()[direction2]);
     }
 
     /**
-     * Deserialize a map object from the given String.
-     * The string must start with <code>height</code> lines with <code>width</code> characters each
-     * that represent the map tiles according to the specification. The map definition can be followed with a
-     * listing of transitions that also have to follow the specification. Transitions have to be separated
-     * by line breaks.
+     * Deserialize a map object from the given String lines.
+     * The lines is expected to already be ASCII and must start with <code>height</code> lines with <code>width</code>
+     * characters each that represent the map tiles according to the specification.
+     * The map definition can be followed with a listing of transitions that also have to follow the specification.
+     * Transitions have to be separated by line breaks. "\n" is the only excepted line brake.
      *
      * @param width width of the map
      * @param height height of the map
-     * @param data String that contains map and transition data
+     * @param lines String Array that contains map and transition data split into lines
      * @return {@link #Map(Tile[][])} with tiles
      */
-    public static Map readFromString(int width, int height, String data) {
+    public static Map readFromString(int width, int height, String[] lines) {
+        Tile[][] tempTiles = new Tile[width][height];
+        int h;
 
-        return null;
+        //putting tile information into the array
+        for (h=0;h<height;h++){
+            String[] tile = lines[h].split(" ");
+            for (int w=0;w<width;w++){
+                char symbol = tile[w].charAt(0);
+
+                if(symbol == '0'){
+                    //Tile is empty
+                    tempTiles[w][h] = new Tile(null,Tile.Property.fromChar('n'),w,h);
+                }else if (symbol <=8 && symbol >0){
+                    //Tile has a Stone (an owner)
+                    //TODO: adjust the method of deriving Player from his Playernumber
+                    tempTiles[w][h] = new Tile(Main.playerFromNumber(symbol),Tile.Property.fromChar('n'),w,h);
+                }else if(symbol != 8722){
+                    //8722=='-' but Java behaved unexpected with (symbol != '-')
+                    //Tile is not a hole --> Tile has Property
+                    tempTiles[w][h] = new Tile(null,Tile.Property.fromChar(symbol),w,h);
+                }else{
+                    //Tile is a hole
+                    tempTiles[w][h]= new Tile(null,Tile.Property.fromChar('-'),w,h);
+                }
+
+            }
+        }
+
+        //setting ordinary transitions (neighbours) while avoiding ArrayIndexOutOfBounds
+        for(int x=0;x<width;x++){
+            for (int y=0;y<height;y++){
+                if(tempTiles[x][y].getProperty()== Tile.Property.HOLE){
+                    continue;
+                }
+                if (y != 0){
+                    if (tempTiles[x][y - 1].getProperty() != Tile.Property.HOLE) {
+                        tempTiles[x][y].setTransition(tempTiles[x][y - 1], Direction.UP);
+                    }
+                    if (x != 0 && tempTiles[x - 1][y - 1].getProperty() != Tile.Property.HOLE) {
+                        tempTiles[x][y].setTransition(tempTiles[x - 1][y - 1], Direction.UP_LEFT);
+                    }
+                    if (x != width - 1 && tempTiles[x + 1][y - 1].getProperty() != Tile.Property.HOLE) {
+                        tempTiles[x][y].setTransition(tempTiles[x + 1][y - 1], Direction.UP_RIGHT);
+                    }
+                }
+                if (y != height-1){
+                    if(tempTiles[x][y+1].getProperty()!= Tile.Property.HOLE){
+                        tempTiles[x][y].setTransition(tempTiles[x][y+1],Direction.DOWN);
+                    }
+                    if (x != 0 && tempTiles[x - 1][y + 1].getProperty() != Tile.Property.HOLE) {
+                        tempTiles[x][y].setTransition(tempTiles[x - 1][y + 1], Direction.DOWN_LEFT);
+                    }
+                    if (x != width - 1 && tempTiles[x + 1][y + 1].getProperty() != Tile.Property.HOLE) {
+                        tempTiles[x][y].setTransition(tempTiles[x + 1][y + 1], Direction.DOWN_RIGHT);
+                    }
+                }
+                if(x != width - 1 && tempTiles[x+1][y].getProperty()!= Tile.Property.HOLE){
+                    tempTiles[x][y].setTransition(tempTiles[x+1][y],Direction.RIGHT);
+                }
+                if(x != 0 && tempTiles[x-1][y].getProperty()!= Tile.Property.HOLE){
+                    tempTiles[x][y].setTransition(tempTiles[x-1][y],Direction.LEFT);
+                }
+
+            }
+        }
+
+        //adding additional transitions from map specification
+        for(int l=h;l<lines.length;l++){
+            String[] elements = lines[l].split(" ");
+            addTransition(tempTiles[Integer.parseInt(elements[0])][Integer.parseInt(elements[1])],
+                    Integer.parseInt(elements[2]),
+                    tempTiles[Integer.parseInt(elements[4])][Integer.parseInt(elements[5])],
+                    Integer.parseInt(elements[6])
+            );
+        }
+
+        return new Map(tempTiles);
     }
 
+    public Tile getTile(int x, int y){
+        return tiles[x][y];
+    }
 }
+
