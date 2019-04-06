@@ -1,12 +1,12 @@
 public enum Direction {
     UP(0),
-    UP_LEFT(1),
-    LEFT(2),
-    DOWN_LEFT(3),
+    UP_RIGHT(1),
+    RIGHT(2),
+    DOWN_RIGHT(3),
     DOWN(4),
-    DOWN_RIGHT(5),
-    RIGHT(6),
-    UP_RIGHT(7);
+    DOWN_LEFT(5),
+    LEFT(6),
+    UP_LEFT(7);
 
     public final int index;
 
