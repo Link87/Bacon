@@ -6,7 +6,7 @@ public class Main {
     private static Map myMap;
 
     static String asci =
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
+            "− − − − − 0 0 0 0 0 − − − − −\n" +
                     "− − − − − 0 0 0 0 0 − − − − −\n" +
                     "− − − − − 0 0 0 0 0 − − − − −\n" +
                     "− − − − − 0 0 0 i 0 − − − − −\n" +
@@ -21,7 +21,7 @@ public class Main {
                     "− − − − − 0 0 x c 0 − − − − −\n" +
                     "− − − − − 0 0 0 0 0 − − − − −\n" +
                     "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "6 0 0 <−> 9 1 1\n"+
+                    "6 0 0 <−> 9 1 1\n" +
                     "7 14 4 <−> 7 0 0\n";
 
     public static void main(String[] args) {
@@ -31,11 +31,12 @@ public class Main {
 
     /**
      * This is ExampleCode mend to show the processing/flow of data from the server
+     *
      * @param hexData is the Message Data part of the server message (without the Type and Length parts)
      */
-    public static void initGameExample(String hexData){
+    public static void initGameExample(String hexData) {
         //hex to ascii and replacing \r\n with \n
-        String asciData = hexToAscii(hexData).replaceAll("\r","");
+        String asciData = hexToAscii(hexData).replaceAll("\r", "");
         String[] lines = asciData.split("\n");
 
         //TODO Use Lines(indexes) 0-2 to init Players and give them bombs/override stones
@@ -44,16 +45,17 @@ public class Main {
         int mapHight = Integer.parseInt(bounds[0]);
         int mapWidth = Integer.parseInt(bounds[1]);
 
-        myMap = Map.readFromString(mapWidth,mapHight, Arrays.copyOfRange(lines,4,lines.length));
+        myMap = Map.readFromString(mapWidth, mapHight, Arrays.copyOfRange(lines, 4, lines.length));
     }
 
     /**
      * converts hex String to ASCII String
+     *
      * @param hexStr a not null hex String
      * @return corresponding ASCII String
      */
     private static String hexToAscii(String hexStr) {
-        StringBuilder output = new StringBuilder("");
+        StringBuilder output = new StringBuilder();
 
         for (int i = 0; i < hexStr.length(); i += 2) {
             String str = hexStr.substring(i, i + 2);
@@ -63,7 +65,7 @@ public class Main {
         return output.toString();
     }
 
-    public static Player playerFromNumber(int nr){
-        return players[nr-1];
+    public static Player playerFromNumber(int nr) {
+        return players[nr - 1];
     }
 }

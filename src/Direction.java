@@ -1,17 +1,17 @@
+/**
+ * This enum defines the directions that transitions can be assigned to.
+ * The corresponding integer value can be determined with <code>ordinal()</code>.
+ * Given a direction by its integer value, the enum variant can be obtained with
+ * <code>values()[value]</code>.
+ */
 public enum Direction {
-    UP(0),
-    UP_RIGHT(1),
-    RIGHT(2),
-    DOWN_RIGHT(3),
-    DOWN(4),
-    DOWN_LEFT(5),
-    LEFT(6),
-    UP_LEFT(7);
-
-    public final int index;
-
-    Direction(int index) {
-        this.index = index;
-    }
-
+    // DO NOT CHANGE ORDER OF VARIANTS, THIS WILL BREAK THINGS
+    UP,
+    UP_RIGHT,
+    RIGHT,
+    DOWN_RIGHT,
+    DOWN,
+    DOWN_LEFT,
+    LEFT,
+    UP_LEFT;
 }
