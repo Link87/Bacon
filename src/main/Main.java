@@ -5,25 +5,6 @@ public class Main {
     private static Player[] players;
     private static Map myMap;
 
-    static String asci =
-            "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "− − − − − 0 0 0 i 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "0 0 0 0 0 b 0 0 0 0 0 0 0 0 0\n" +
-                    "0 c 0 0 0 0 1 2 3 0 i 0 0 0 0\n" +
-                    "0 0 0 0 0 0 3 1 2 0 0 0 0 0 0\n" +
-                    "0 0 0 b 0 0 2 3 1 0 0 0 0 0 0\n" +
-                    "0 0 0 0 0 0 0 0 0 0 0 0 b 0 0\n" +
-                    "− − − − − 0 0 x 0 0 − − − − −\n" +
-                    "− − − − − 0 x x x 0 − − − − −\n" +
-                    "− − − − − 0 0 x c 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "6 0 0 <−> 9 1 1\n" +
-                    "7 14 4 <−> 7 0 0\n";
-
     public static void main(String[] args) {
         //this is the example from netwokSpecifications.pdf
         initGameExample("320a300a3120310a3220360a2d202d206220782032202d0a2d203020782031202d202d0a3120312035203c2d3e2034203020310a");
