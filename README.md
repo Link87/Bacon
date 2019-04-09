@@ -11,7 +11,7 @@ You will need [Java 11](https://jdk.java.net/11/) and [Ant](https://ant.apache.o
 To build the project, run
 
 ```bash
-ant clean-build
+ant build
 ```
 
 This creates a `.jar` file in `bin/jar`. Then run
@@ -21,3 +21,13 @@ ant run
 ```
 
 to run the project.
+
+## Tests
+
+Run
+
+```bash
+ant test
+```
+
+to run all unit tests.
