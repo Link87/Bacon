@@ -108,29 +108,29 @@ public class Tile {
         INVERSION,
         BONUS,
         EXPANSION;
+    }
 
-        /**
-         * Translates a single character into the Property that is associated with that.
-         * See the specification for details on this.
-         *
-         * @param c the character to translate
-         * @return the Property that is associated with the given character
-         */
-        public static Property fromChar(char c) {
-            switch (c) {
-                case '-':
-                    return HOLE;
-                case 'c':
-                    return CHOICE;
-                case 'i':
-                    return INVERSION;
-                case 'b':
-                    return BONUS;
-                case 'x':
-                    return EXPANSION;
-                default:
-                    return DEFAULT;
-            }
+    /**
+     * Translates a single character into the Property that is associated with that.
+     * See the specification for details on this.
+     *
+     * @param c the character to translate
+     * @return the Property that is associated with the given character
+     */
+    public static Property fromChar(char c) {
+        switch (c) {
+            case '-':
+                return HOLE;
+            case 'c':
+                return CHOICE;
+            case 'i':
+                return INVERSION;
+            case 'b':
+                return BONUS;
+            case 'x':
+                return EXPANSION;
+            default:
+                return DEFAULT;
         }
     }
 
