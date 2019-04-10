@@ -8,27 +8,6 @@ public class Main {
     private static int myPlayerNumber;
     private static GamePhase currentPhase;
 
-
-
-    static String ascii =
-            "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "− − − − − 0 0 0 i 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "0 0 0 0 0 b 0 0 0 0 0 0 0 0 0\n" +
-                    "0 c 0 0 0 0 1 2 3 0 i 0 0 0 0\n" +
-                    "0 0 0 0 0 0 3 1 2 0 0 0 0 0 0\n" +
-                    "0 0 0 b 0 0 2 3 1 0 0 0 0 0 0\n" +
-                    "0 0 0 0 0 0 0 0 0 0 0 0 b 0 0\n" +
-                    "− − − − − 0 0 x 0 0 − − − − −\n" +
-                    "− − − − − 0 x x x 0 − − − − −\n" +
-                    "− − − − − 0 0 x c 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "− − − − − 0 0 0 0 0 − − − − −\n" +
-                    "6 0 0 <−> 9 1 1\n" +
-                    "7 14 4 <−> 7 0 0\n";
-
     public static void main(String[] args) {
         //this is the example from netwokSpecifications.pdf
         initGameExample("0200000034320a300a3120310a3220360a2d202d206220782032202d0a2d203020782031202d202d0a3120312035203c2d3e2034203020310a");
@@ -95,7 +74,7 @@ public class Main {
                 int x = Integer.parseInt(xCoordinateHex,16);
                 int y = Integer.parseInt(yCoordinateHex,16);
                 int sF = Integer.parseInt(specialFieldHex,16);
-                int p = Integer.parseInt(playerNumber,16);
+                int p = Integer.parseInt(player,16);
 
                 player[p-1].placeStoneOnMap(myMap, x, y, sF);
                 //TODO A lot more to be completed: override stones, bombs, bonuses, player swaps etc.

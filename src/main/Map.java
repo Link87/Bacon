@@ -3,13 +3,13 @@
  */
 public class Map {
 
-    private int width;
-    private int height;
+    public final int width;
+    public final int height;
 
     /**
      * The tiles this map consists of. This is guaranteed to be non-empty.
      */
-    private Tile[][] tiles;
+    private final Tile[][] tiles;
 
     /**
      * Constructs a new Map from the given Tiles.
