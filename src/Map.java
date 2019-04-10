@@ -36,7 +36,7 @@ public class Map {
      * @param x      the x coordinate of the tile the stone is placed on
      * @param y      the y coordinate of the tile the stone is placed on
      */
-    public void placeStone(Player player, int x, int y) {
+    public void placeStone(Player player, int x, int y, int bonus) {
 
     }
 
@@ -48,7 +48,7 @@ public class Map {
      * @param x      the x coordinate of the tile the stone is placed on
      * @param y      the y coordinate of the tile the stone is placed on
      */
-    public void placeOverrideStone(Player player, int x, int y) {
+    public void placeOverrideStone(Player player, int x, int y, int bonus) {
 
     }
 

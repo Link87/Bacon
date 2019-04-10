@@ -2,10 +2,15 @@ import java.util.Arrays;
 
 public class Main {
 
-    private static Player[] players;
+    private static Player[] player;
     private static Map myMap;
+    private static int bombRadius;
+    private static int myPlayerNumber;
+    private static GamePhase currentPhase;
 
-    static String asci =
+
+
+    static String ascii =
             "− − − − − 0 0 0 0 0 − − − − −\n" +
                     "− − − − − 0 0 0 0 0 − − − − −\n" +
                     "− − − − − 0 0 0 0 0 − − − − −\n" +
@@ -26,7 +31,7 @@ public class Main {
 
     public static void main(String[] args) {
         //this is the example from netwokSpecifications.pdf
-        initGameExample("320a300a3120310a3220360a2d202d206220782032202d0a2d203020782031202d202d0a3120312035203c2d3e2034203020310a");
+        initGameExample("0200000034320a300a3120310a3220360a2d202d206220782032202d0a2d203020782031202d202d0a3120312035203c2d3e2034203020310a");
     }
 
     /**
@@ -35,17 +40,86 @@ public class Main {
      * @param hexData is the Message Data part of the server message (without the Type and Length parts)
      */
     public static void initGameExample(String hexData) {
-        //hex to ascii and replacing \r\n with \n
-        String asciData = hexToAscii(hexData).replaceAll("\r", "");
-        String[] lines = asciData.split("\n");
+        currentPhase = GamePhase.PHASEONE;
 
-        //TODO Use Lines(indexes) 0-2 to init Players and give them bombs/override stones
+        //Split message into components according to format
+        String messageType = hexData.substring(0, 2);
+        String messageLength = hexData.substring(2, 10);
+        String message = hexData.substring(10);
 
-        String[] bounds = lines[3].split(" ");
-        int mapHight = Integer.parseInt(bounds[0]);
-        int mapWidth = Integer.parseInt(bounds[1]);
+        switch (messageType) {
+            case "01":
+                //Send group number to server (INCOMPLETE)
 
-        myMap = Map.readFromString(mapWidth, mapHight, Arrays.copyOfRange(lines, 4, lines.length));
+            case "02":
+                //Receive map from server
+
+                //hex to ascii and replacing \r\n with \n
+                String asciiData = hexToAscii(message).replaceAll("\r", "");
+
+                String[] lines = asciiData.split("\n");
+
+                int playerCount = Integer.parseInt(lines[0]);
+                int initOverrideStoneCount = Integer.parseInt(lines[1]);
+
+                String[] bomb = lines[2].split(" ");
+                int initBombCount = Integer.parseInt(bomb[0]);
+                bombRadius = Integer.parseInt(bomb[0]);
+
+                for (int i = 0; i < playerCount; i++) {
+                    player[i-1] = Player.readFromString(i, initOverrideStoneCount, initBombCount);
+                }
+
+                String[] bounds = lines[3].split(" ");
+                int mapHeight = Integer.parseInt(bounds[0]);
+                int mapWidth = Integer.parseInt(bounds[1]);
+
+                myMap = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
+
+            case "03":
+                myPlayerNumber = Integer.parseInt(message);
+
+            case "04":
+                //Received move request from server (INCOMPLETE)
+
+            case "05":
+                //Send move response to server (INCOMPLETE)
+
+            case "06":
+                //Server announces move by a player
+                String xCoordinateHex = message.substring(0,4);
+                String yCoordinateHex = message.substring(4,8);
+                String specialFieldHex = message.substring(8,10);
+                String player = message.substring(10,12);
+
+                int x = Integer.parseInt(xCoordinateHex,16);
+                int y = Integer.parseInt(yCoordinateHex,16);
+                int sF = Integer.parseInt(specialFieldHex,16);
+                int p = Integer.parseInt(playerNumber,16);
+
+                player[p-1].placeStoneOnMap(myMap, x, y, sF);
+                //TODO A lot more to be completed: override stones, bombs, bonuses, player swaps etc.
+
+            case "07":
+                //Disqualify player
+                player[Integer.parseInt(message) - 1].disqualify();
+
+            case "08":
+                //Phase one of the game ends
+                currentPhase = GamePhase.PHASETWO;
+
+            case "09":
+                //Phase two of the game ends
+                currentPhase = GamePhase.ENDED;
+
+            default:
+                throw new IllegalArgumentException("Invalid Message Type: " + messageType);
+        }
+
+
+
+        //TODO Use Lines(indexes) 0-2 to init Player and give them bombs/override stones
+
     }
 
     /**
@@ -66,6 +140,12 @@ public class Main {
     }
 
     public static Player playerFromNumber(int nr) {
-        return players[nr - 1];
+        return player[nr - 1];
+    }
+
+    public enum GamePhase {
+        PHASEONE,
+        PHASETWO,
+        ENDED;
     }
 }

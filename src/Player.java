@@ -9,6 +9,7 @@ public class Player {
     public final int number;
     private int overrideStoneCount;
     private int bombCount;
+    private boolean disqualified;
 
     /**
      * Creates a new Player instance.
@@ -21,6 +22,11 @@ public class Player {
         this.number = number;
         this.overrideStoneCount = overrideStoneCount;
         this.bombCount = bombCount;
+        this.disqualified = false;
+    }
+
+    public static Player readFromString(int number, int initOverrideStoneCount, int initBombCount){
+        Player player = new Player(number, initOverrideStoneCount, initBombCount);
     }
 
     /**
@@ -30,8 +36,8 @@ public class Player {
      * @param x   x coordinate of the Tile the stone is placed on
      * @param y   y coordinate of the Tile the stone is placed on
      */
-    public void placeStoneOnMap(Map map, int x, int y) {
-        map.placeStone(this, x, y);
+    public void placeStoneOnMap(Map map, int x, int y, int bonus) {
+        map.placeStone(this, x, y, bonus);
     }
 
     /**
@@ -42,9 +48,9 @@ public class Player {
      * @param x   x coordinate of the Tile the override stone is placed on
      * @param y   y coordinate of the Tile the override stone is placed on
      */
-    public void useOverrideStone(Map map, int x, int y) {
+    public void useOverrideStone(Map map, int x, int y, int bonus) {
         this.overrideStoneCount--;
-        map.placeOverrideStone(this, x, y);
+        map.placeOverrideStone(this, x, y, bonus);
     }
 
     /**
@@ -58,6 +64,10 @@ public class Player {
     public void useBomb(Map map, int x, int y) {
         this.bombCount--;
         map.throwBomb(this, x, y);
+    }
+
+    public void disqualify() {
+        this.disqualified = true;
     }
 
 }
