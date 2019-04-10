@@ -101,18 +101,18 @@ public class Map {
 
                 if (symbol == '0') {
                     //Tile is empty
-                    tiles[w][h] = new Tile(null, Tile.Property.fromChar('n'), w, h);
+                    tiles[w][h] = new Tile(null, Tile.Property.DEFAULT, w, h);
                 } else if (symbol <= 8 && symbol > 0) {
                     //Tile has a Stone (an owner)
                     //TODO: adjust the method of deriving Player from his Playernumber
-                    tiles[w][h] = new Tile(Main.playerFromNumber(symbol), Tile.Property.fromChar('n'), w, h);
+                    tiles[w][h] = new Tile(Main.playerFromNumber(symbol), Tile.Property.DEFAULT, w, h);
                 } else if (symbol != 8722) {
                     //8722=='-' but Java behaved unexpected with (symbol != '-')
                     //Tile is not a hole --> Tile has Property
                     tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
                 } else {
                     //Tile is a hole
-                    tiles[w][h] = new Tile(null, Tile.Property.fromChar('-'), w, h);
+                    tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
                 }
 
             }
