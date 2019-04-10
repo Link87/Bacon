@@ -27,6 +27,7 @@ public class Player {
 
     public static Player readFromString(int number, int initOverrideStoneCount, int initBombCount){
         Player player = new Player(number, initOverrideStoneCount, initBombCount);
+        return player;
     }
 
     /**

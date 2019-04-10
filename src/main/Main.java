@@ -76,12 +76,12 @@ public class Main {
                 int sF = Integer.parseInt(specialFieldHex,16);
                 int p = Integer.parseInt(player,16);
 
-                player[p-1].placeStoneOnMap(myMap, x, y, sF);
+                Main.player[p-1].placeStoneOnMap(myMap, x, y, sF);
                 //TODO A lot more to be completed: override stones, bombs, bonuses, player swaps etc.
 
             case "07":
                 //Disqualify player
-                player[Integer.parseInt(message) - 1].disqualify();
+                Main.player[Integer.parseInt(message) - 1].disqualify();
 
             case "08":
                 //Phase one of the game ends
