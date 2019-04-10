@@ -5,7 +5,7 @@ import java.util.Arrays;
  */
 public class Game {
 
-    private static Game ourInstance = new Game();
+    private static Game game = new Game();
 
     private static Player[] player;
     private static Map myMap;
@@ -14,7 +14,11 @@ public class Game {
     private static GamePhase currentPhase;
 
     public static Game getInstance() {
-        return ourInstance;
+        if (game == null) {
+            game = new Game();
+        }
+
+        return game;
     }
 
     /**
@@ -50,7 +54,7 @@ public class Game {
                 bombRadius = Integer.parseInt(bomb[0]);
 
                 for (int i = 1; i <= playerCount; i++) {
-                    Game.playerFromNumber(i) = Player.readFromString(i, initOverrideStoneCount, initBombCount);
+                    player[i-1] = Player.readFromString(i, initOverrideStoneCount, initBombCount);
                 }
 
                 String[] bounds = lines[3].split(" ");
@@ -80,12 +84,12 @@ public class Game {
                 int sF = Integer.parseInt(specialFieldHex,16);
                 int p = Integer.parseInt(player,16);
 
-                Game.playerFromNumber(p).placeStoneOnMap(myMap, x, y, sF);
+                Game.player[p-1].placeStoneOnMap(myMap, x, y, sF);
                 //TODO A lot more to be completed: override stones, bombs, bonuses, player swaps etc.
 
             case "07":
                 //Disqualify player
-                Game.playerFromNumber(Integer.parseInt(message)).disqualify();
+                Game.player[Integer.parseInt(message)-1].disqualify();
 
             case "08":
                 //Phase one of the game ends
@@ -118,9 +122,17 @@ public class Game {
         return output.toString();
     }
 
+
     public static Player playerFromNumber(int nr) {
         return player[nr - 1];
     }
+
+    /**
+     *  This enum represents the Phases of the game.
+     *  <code>PHASEONE<\code> stands for the playing phase,
+     *  <code>PHASETWO<\code> for the bombing phase,
+     *  <code>ENDED<\code> for the end of the game
+     */
 
     public enum GamePhase {
         PHASEONE,
@@ -128,8 +140,8 @@ public class Game {
         ENDED;
     }
 
-    private Game() {
 
+    private Game() {
 
     }
 }
