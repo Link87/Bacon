@@ -2,7 +2,7 @@
 /**
  *  A class which represents placing a bomb on a tile
  */
-public class BombMove implements Move{
+public class BombMove extends Move{
 
     /**
      * execute a move

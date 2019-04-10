@@ -1,19 +1,20 @@
 /**
  * An interface which defines the basic functions of each typ of move
  */
-public interface Move {
+public abstract class Move {
+    Player player;
 
     /**
     * execute a move
     */
 
-    void doMove();
+    abstract void doMove();
 
     /**
      * checks if a move is legal
      *
      * @return whether the move is legal
      */
-    boolean isLegal();
+    abstract boolean isLegal();
 
 }

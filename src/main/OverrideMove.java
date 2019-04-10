@@ -1,7 +1,7 @@
 /**
  * A class which represents placing an override stone on a tile
  */
-public class OverrideMove implements Move {
+public class OverrideMove extends Move {
 
     /**
      * execute a move

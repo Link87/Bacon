@@ -2,7 +2,7 @@
 /**
  *  A class which represents placing a stone on a tile
  */
-public class RegularMove implements Move{
+public class RegularMove extends Move{
 
     /**
      * execute a move
