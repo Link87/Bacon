@@ -1,4 +1,6 @@
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.lang.System;
 
 /**
  * A Game class which contains the basic information about the current game.
@@ -12,6 +14,9 @@ public class Game {
     private static int bombRadius;
     private static int myPlayerNumber;
     private static GamePhase currentPhase;
+    private static ArrayList<Move> moveStack = new ArrayList<>();
+    private static ArrayList<Move> allMovesGlossary = new ArrayList<>();
+
 
     public static Game getInstance() {
         if (game == null) {
@@ -86,8 +91,19 @@ public class Game {
                 if (message.length() > 8) bonusRequest = Integer.parseInt(BonusRequestHex,16);
                 int p = Integer.parseInt(player,16);
                 Player movingPlayer = Game.playerFromNumber(p);
+                int moveStackTop = moveStack.size();
+                int glossaryTop = allMovesGlossary.size();
 
-                Move.createNewMove(myMap, movingPlayer, x, y, bonusRequest);
+                Move move = Move.createNewMove(glossaryTop, myMap, movingPlayer, x, y, bonusRequest);
+                allMovesGlossary.set(glossaryTop, move);
+
+                if (move.isLegal() == true) {
+                    System.out.println("Move is legal.");
+                    move.doMove();
+                    moveStack.set(moveStackTop, move);
+                }
+
+                else System.out.println("Move is illegal.");
 
             case "07":
                 //Disqualify player

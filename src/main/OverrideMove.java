@@ -3,6 +3,10 @@
  */
 public class OverrideMove extends Move {
 
+    public OverrideMove(int moveID, Map map, Player player, int x, int y) {
+        super(moveID, map, player, x, y);
+    }
+
     /**
      * execute a move
      */
