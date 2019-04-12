@@ -31,6 +31,16 @@ public class Player {
     }
 
     /**
+     * These methods return at
+     */
+    public boolean getStatus() {return this.disqualified;}
+
+    public int getOverrideStoneCount() {return this.overrideStoneCount;}
+
+    public int getBombCount() {return this.bombCount;}
+
+
+    /**
      * Increases the amount of override stones of this player.
      */
     public void receiveOverrideStone(int n) {

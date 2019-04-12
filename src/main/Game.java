@@ -76,16 +76,18 @@ public class Game {
                 //Server announces move by a player
                 String xCoordinateHex = message.substring(0,4);
                 String yCoordinateHex = message.substring(4,8);
-                String specialFieldHex = message.substring(8,10);
+                String BonusRequestHex = "";
+                if (message.length() > 8) BonusRequestHex = message.substring(8,10);
                 String player = message.substring(10,12);
 
                 int x = Integer.parseInt(xCoordinateHex,16);
                 int y = Integer.parseInt(yCoordinateHex,16);
-                int sF = Integer.parseInt(specialFieldHex,16);
+                int bonusRequest = 0;
+                if (message.length() > 8) bonusRequest = Integer.parseInt(BonusRequestHex,16);
                 int p = Integer.parseInt(player,16);
+                Player movingPlayer = Game.playerFromNumber(p);
 
-                //Game.player[p-1].placeStoneOnMap(myMap, x, y, sF);
-                //TODO A lot more to be completed: override stones, bombs, bonuses, player swaps etc.
+                Move.createNewMove(myMap, movingPlayer, x, y, bonusRequest);
 
             case "07":
                 //Disqualify player
@@ -139,6 +141,8 @@ public class Game {
         PHASETWO,
         ENDED;
     }
+
+    public static GamePhase getGamePhase() {return currentPhase;}
 
 
     private Game() {

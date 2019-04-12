@@ -71,13 +71,13 @@ public class Tile {
     }
 
     /**
-     * Gets the Tile the transition in the given direction leads to. Returns <code>null</code> if no transition is present.
+     * Returns the Tile the transition in the given direction leads to. Returns <code>null</code> if no transition is present.
      *
      * @param direction {@link Direction} in which the transition is applied
      * @return the Tile the transition points to or <code>null</code> if no transition is present
      */
     public Tile getTransition(Direction direction) {
-        return transitions[direction.ordinal()];
+        return this.transitions[direction.ordinal()];
     }
 
     /**
@@ -86,7 +86,7 @@ public class Tile {
      * @return the owner of this Tile
      */
     public Player getOwner() {
-        return owner;
+        return this.owner;
     }
 
     /**
@@ -95,7 +95,7 @@ public class Tile {
      * @return the Property of this Tile
      */
     public Property getProperty() {
-        return property;
+        return this.property;
     }
 
     /**
