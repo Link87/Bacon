@@ -27,8 +27,6 @@ public class Game {
      * @param hexData is the Message Data part of the server message (without the Type and Length parts)
      */
     public static void initGame(String hexData) {
-        currentPhase = GamePhase.PHASEONE;
-
         //Split message into components according to format
         String messageType = hexData.substring(0, 2);
         String messageLength = hexData.substring(2, 10);
@@ -40,6 +38,8 @@ public class Game {
 
             case "02":
                 //Receive map from server
+
+                currentPhase = GamePhase.PHASEONE;
 
                 //hex to ascii and replacing \r\n with \n
                 String asciiData = hexToAscii(message).replaceAll("\r", "");
@@ -84,7 +84,7 @@ public class Game {
                 int sF = Integer.parseInt(specialFieldHex,16);
                 int p = Integer.parseInt(player,16);
 
-                Game.player[p-1].placeStoneOnMap(myMap, x, y, sF);
+                //Game.player[p-1].placeStoneOnMap(myMap, x, y, sF);
                 //TODO A lot more to be completed: override stones, bombs, bonuses, player swaps etc.
 
             case "07":
