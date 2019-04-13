@@ -82,7 +82,7 @@ public class BombMove extends Move{
 
         for (ArrayList<Tile> u : m) {
             for(Tile w : u) {
-                w.bombTile();
+                if (w != null) w.bombTile();
             }
         }
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
