@@ -44,7 +44,10 @@ public abstract class Move {
         }
 
         else if (Game.getGame().getGamePhase() == Game.GamePhase.PHASE_TWO) {
-            return new BombMove(moveID, map, player, x, y, bonusRequest);
+
+            if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
+
+            else return new BombMove(moveID, map, player, x, y, bonusRequest);
         }
 
         else if (Game.getGame().getGamePhase() == Game.GamePhase.ENDED) throw new IllegalArgumentException("Game has already ended");
