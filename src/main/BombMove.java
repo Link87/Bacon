@@ -64,7 +64,9 @@ public class BombMove extends Move{
                     boolean redundant = false;
                     for (ArrayList<Tile> s : m) {
                         for (Tile v : s){
-                            if (m[i-1].get(j).getTransition(direction) == v) redundant=true;
+                            if (m[i-1].get(j) != null) {
+                                if (m[i-1].get(j).getTransition(direction) == v) redundant=true;
+                            }
                         }
                     }
 

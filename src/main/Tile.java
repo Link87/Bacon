@@ -79,14 +79,11 @@ public class Tile {
         setProperty(Property.HOLE);
         setOwner(null);
         for (Direction direction : Direction.values()) {
-            Tile neighbor = getTransition(direction);
+            Tile neighbor = this.getTransition(direction);
             if (neighbor == null) continue;
             for (Direction neighborDirection : Direction.values()){
                 Tile t = neighbor.getTransition(neighborDirection);
-                if (t == this) {
-                    neighbor.setTransition(null, neighborDirection);
-                    break;
-                }
+                if (t == this) neighbor.setTransition(null, neighborDirection);
             }
         }
         for (Direction direction : Direction.values()) {
