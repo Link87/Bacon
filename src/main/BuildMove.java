@@ -79,11 +79,10 @@ public class BuildMove extends Move {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
         Tile.Property property = tile.getProperty();
 
-        ArrayList<Tile> line = new ArrayList<>();   // line keeps track of tiles in one direction. When we're done searching
-        line.set(0, tile);                          // that direction line is reused for the next direction
+        ArrayList<Tile> line = new ArrayList<>();   // line keeps track of tiles in one direction. When we're done searching that direction line is reused for the next direction
 
         int[] turnOverLines = new int[8];   // turnOverLines keeps track of the number of stones that need to be overturned in each direction
-        int searchDirection = 0;                            // i keeps track of the direction we're searching in
+        int searchDirection = 0;            // searchDirection keeps track of the direction we're searching in
 
 
         if (!this.isLegal()) ;
@@ -92,12 +91,15 @@ public class BuildMove extends Move {
             tile.setOwner(this.player);     // new stone is placed on the map
 
             for (Direction direction : Direction.values()) {
+                line.clear();             // At the beginning of each loop cycle the tiles from the old direction are removed from line,
+                line.add(tile);           // and our playing tile is re-added to the bottom of the stack
                 int steps = 0;            // steps keeps track of the number of steps we've gone in this direction
+
                 while (true) {
                     if (line.get(steps).getTransition(direction) == null)
                         break;        // If the next tile is a hole we can stop searching in this direction,
                     else {
-                        line.set(steps + 1, line.get(steps).getTransition(direction));    // if not, we add it to line.
+                        line.add(line.get(steps).getTransition(direction));    // if not, we add it to line.
                         if (line.get(steps + 1).getOwner() == null && line.get(steps + 1).getProperty() != Tile.Property.EXPANSION)
                             break; // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         else if (line.get(steps + 1).getOwner() == this.player && steps + 1 == 1)
