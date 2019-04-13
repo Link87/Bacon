@@ -5,8 +5,6 @@ import java.util.ArrayList;
  */
 public class RegularMove extends Move{
 
-    int bonusRequest;
-
     public RegularMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
         super(moveID, map, player, x, y, bonusRequest);
     }
@@ -85,6 +83,8 @@ public class RegularMove extends Move{
         if (this.isLegal() == false);
 
         else {
+            tile.setOwner(this.player);
+
             for (Direction direction : Direction.values()) {
                 while (true) {
                     int steps=0;
@@ -113,12 +113,15 @@ public class RegularMove extends Move{
                 case BONUS:
                     if (this.bonusRequest == 20) this.player.receiveBomb(1);
                     else this.player.receiveOverrideStone(1);
+
                 case INVERSION:
 
                 case CHOICE:
 
                 default:
             }
+
+            tile.setProperty(Tile.Property.DEFAULT);
         }
 
     }
