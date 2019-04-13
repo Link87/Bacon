@@ -70,7 +70,11 @@ public class BombMove extends Move{
                         }
                     }
 
-                    if (redundant == false) m[i].add(m[i-1].get(j).getTransition(direction));
+                    if (m[i-1].get(j) != null) {
+                        if (m[i-1].get(j).getTransition(direction) != null) {
+                            if (redundant == false) m[i].add(m[i-1].get(j).getTransition(direction));
+                        }
+                    }
                 }
             }
         }
