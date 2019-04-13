@@ -70,6 +70,11 @@ public class Tile {
         this.transitions[direction.ordinal()] = other;
     }
 
+
+    /**
+     * Makes a hole out of a tile by removing its owner, its transitions to other tiles and other tiles' transition to it
+     * Also sets property to 'HOLE'
+     */
     public void bombTile() {
         setProperty(Property.HOLE);
         setOwner(null);

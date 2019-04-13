@@ -113,7 +113,7 @@ public class RegularMove extends Move{
                 case BONUS:
                     if (this.bonusRequest == 20) this.player.receiveBomb(1);
                     else this.player.receiveOverrideStone(1);
-
+                //TODO: Optimize Inversion and Choice fields
                 case INVERSION:
                     int n = Game.getTotalPlayerNumber();
                     for (int a=0; a<map.width; a++) {

@@ -31,7 +31,7 @@ public class Player {
     }
 
     /**
-     * These methods return at
+     * These methods return attributes of player instances
      */
     public int getPlayerNumber() {return this.number;}
 

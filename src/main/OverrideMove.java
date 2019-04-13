@@ -16,6 +16,7 @@ public class OverrideMove extends Move {
      */
     public boolean isLegal(){
         if (this.player.getOverrideStoneCount() == 0) return false;
+        if (this.bonusRequest != 0) return false;
 
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
         Tile[] surrounding = new Tile[8];
@@ -99,7 +100,7 @@ public class OverrideMove extends Move {
             }
 
             tile.setProperty(Tile.Property.DEFAULT);
-            player.receiveOverrideStone(-1);
+            this.player.receiveOverrideStone(-1);
         }
     }
 }
