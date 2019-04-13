@@ -167,6 +167,8 @@ public class Game {
 
     public static int getBombRadius() {return bombRadius;}
 
+    public static int getTotalPlayerNumber() {return player.length;}
+
 
     private Game() {
     }

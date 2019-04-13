@@ -46,6 +46,8 @@ public class BombMove extends Move{
             for (Tile u : tobeRemoved) {
                 u.bombTile();
             }
+
+            this.player.receiveBomb(-1);
         }
 
     }

@@ -115,10 +115,24 @@ public class RegularMove extends Move{
                     else this.player.receiveOverrideStone(1);
 
                 case INVERSION:
+                    int n = Game.getTotalPlayerNumber();
+                    for (int a=0; a<map.width; a++) {
+                        for (int b=0; b<map.height; b++) {
+                            Tile anyTile = map.getTileAt(a, b);
+                            int oldNumber = anyTile.getOwner().getPlayerNumber();
+                            int newNumber = (oldNumber + 1) % n;
+                            anyTile.setOwner(Game.playerFromNumber(newNumber));
+                        }
+                    }
 
                 case CHOICE:
-
-                default:
+                    for (int a=0; a<map.width; a++) {
+                        for (int b=0; b<map.height; b++) {
+                            Tile anyTile = map.getTileAt(a, b);
+                            if (anyTile.getOwner() == this.player) anyTile.setOwner(Game.playerFromNumber(this.bonusRequest));
+                            else if (anyTile.getOwner() == Game.playerFromNumber(this.bonusRequest)) anyTile.setOwner(this.player);
+                        }
+                    }
             }
 
             tile.setProperty(Tile.Property.DEFAULT);
