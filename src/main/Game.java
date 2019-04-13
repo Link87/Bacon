@@ -7,25 +7,28 @@ import java.lang.System;
  */
 public class Game {
 
-    private static Game game = new Game();
+    private static Game instance;
 
-    private static Player[] player;
-    private static Map myMap;
-    private static int bombRadius;
-    private static Player myPlayer;
-    private static GamePhase currentPhase;
-    private static ArrayList<Move> moveStack = new ArrayList<>();
-    private static ArrayList<Move> allMovesGlossary = new ArrayList<>();
-    // moveStack is a stack of actually executed moves,
-    //allMovesGlossary is a stack of all moves received (including illegal ones)
+    private Player[] player;
+    private Map map;
+    private int bombRadius;
+    private Player me;
+    private GamePhase currentPhase;
+    /**
+     * Stack of actually executed moves,
+     */
+    private ArrayList<Move> moveStack = new ArrayList<>();
+    /**
+     * Stack of all moves received (including illegal ones)
+     */
+    private ArrayList<Move> allMovesGlossary = new ArrayList<>();
 
-
-    public static Game getInstance() {
-        if (game == null) {
-            game = new Game();
+    public static Game getGame() {
+        if (instance == null) {
+            instance = new Game();
         }
 
-        return game;
+        return instance;
     }
 
     /**
@@ -33,7 +36,7 @@ public class Game {
      *
      * @param hexData is the Message Data part of the server message (without the Type and Length parts)
      */
-    public static void initGame(String hexData) {
+    public void initGame(String hexData) {
         //Split message into components according to format
         String messageType = hexData.substring(0, 2);
         String messageLength = hexData.substring(2, 10);
@@ -46,7 +49,7 @@ public class Game {
             case "02":
                 //Receive map from server
 
-                currentPhase = GamePhase.PHASEONE;
+                currentPhase = GamePhase.PHASE_ONE;
 
                 //hex to ascii and replacing \r\n with \n
                 String asciiData = hexToAscii(message).replaceAll("\r", "");
@@ -61,17 +64,17 @@ public class Game {
                 bombRadius = Integer.parseInt(bomb[0]);
 
                 for (int i = 1; i <= playerCount; i++) {
-                    player[i-1] = Player.readFromString(i, initOverrideStoneCount, initBombCount);
+                    player[i - 1] = Player.readFromString(i, initOverrideStoneCount, initBombCount);
                 }
 
                 String[] bounds = lines[3].split(" ");
                 int mapHeight = Integer.parseInt(bounds[0]);
                 int mapWidth = Integer.parseInt(bounds[1]);
 
-                myMap = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
+                map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
 
             case "03":
-                myPlayer = Game.playerFromNumber(Integer.parseInt(message));
+                me = Game.getGame().playerFromNumber(Integer.parseInt(message));
 
             case "04":
                 //Received move request from server (INCOMPLETE)
@@ -81,39 +84,37 @@ public class Game {
 
             case "06":
                 //Server announces move by a player
-                String xCoordinateHex = message.substring(0,4);
-                String yCoordinateHex = message.substring(4,8);
+                String xCoordinateHex = message.substring(0, 4);
+                String yCoordinateHex = message.substring(4, 8);
                 String BonusRequestHex = "";
-                if (message.length() > 8) BonusRequestHex = message.substring(8,10);
-                String player = message.substring(10,12);
+                if (message.length() > 8) BonusRequestHex = message.substring(8, 10);
+                String player = message.substring(10, 12);
 
-                int x = Integer.parseInt(xCoordinateHex,16);
-                int y = Integer.parseInt(yCoordinateHex,16);
+                int x = Integer.parseInt(xCoordinateHex, 16);
+                int y = Integer.parseInt(yCoordinateHex, 16);
                 int bonusRequest = 0;
-                if (message.length() > 8) bonusRequest = Integer.parseInt(BonusRequestHex,16);
-                int p = Integer.parseInt(player,16);
-                Player movingPlayer = Game.playerFromNumber(p);
+                if (message.length() > 8) bonusRequest = Integer.parseInt(BonusRequestHex, 16);
+                int p = Integer.parseInt(player, 16);
+                Player movingPlayer = Game.getGame().playerFromNumber(p);
                 int moveStackTop = moveStack.size();
                 int glossaryTop = allMovesGlossary.size();
 
-                Move move = Move.createNewMove(glossaryTop, myMap, movingPlayer, x, y, bonusRequest);
+                Move move = Move.createNewMove(glossaryTop, map, movingPlayer, x, y, bonusRequest);
                 allMovesGlossary.set(glossaryTop, move);
 
-                if (move.isLegal() == true) {
+                if (move.isLegal()) {
                     System.out.println("Move is legal.");
                     move.doMove();
                     moveStack.set(moveStackTop, move);
-                }
-
-                else System.out.println("Move is illegal.");
+                } else System.out.println("Move is illegal.");
 
             case "07":
                 //Disqualify player
-                Game.playerFromNumber(Integer.parseInt(message)).disqualify();
+                Game.getGame().playerFromNumber(Integer.parseInt(message)).disqualify();
 
             case "08":
                 //Phase one of the game ends
-                currentPhase = GamePhase.PHASETWO;
+                currentPhase = GamePhase.PHASE_TWO;
 
             case "09":
                 //Phase two of the game ends
@@ -126,7 +127,8 @@ public class Game {
     }
 
     /**
-     * converts hex String to ASCII String
+     * A helper method that converts a String with hex numbers to a
+     * String containing the corresponding ASCII characters.
      *
      * @param hexStr a not null hex String
      * @return corresponding ASCII String
@@ -148,9 +150,9 @@ public class Game {
      * @param nr
      * @return
      */
-    public static Player playerFromNumber(int nr) {
+    public Player playerFromNumber(int nr) {
         int n = player.length;
-        for (int i=0; i<n; i++) {
+        for (int i = 0; i < n; i++) {
             if (player[i].getPlayerNumber() == nr) return player[i];
         }
 
@@ -158,31 +160,35 @@ public class Game {
     }
 
     /**
-     *  This enum represents the Phases of the game.
-     *  <code>PHASEONE<\code> stands for the playing phase,
-     *  <code>PHASETWO<\code> for the bombing phase,
-     *  <code>ENDED<\code> for the end of the game
+     * This enum represents the Phases of the game.
+     * <code>PHASE_ONE<\code> stands for the playing phase,
+     * <code>PHASE_TWO<\code> for the bombing phase,
+     * <code>ENDED<\code> for the end of the game
      */
 
     public enum GamePhase {
-        PHASEONE,
-        PHASETWO,
+        PHASE_ONE,
+        PHASE_TWO,
         ENDED;
     }
 
     /**
-     *  These methods return base attributes about the game
-     *
+     * These methods return base attributes about the game
      */
-    public static GamePhase getGamePhase() {return currentPhase;}
+    public GamePhase getGamePhase() {
+        return currentPhase;
+    }
 
-    public static int getBombRadius() {return bombRadius;}
+    public int getBombRadius() {
+        return bombRadius;
+    }
 
-    public static int getTotalPlayerNumber() {return player.length;}
+    public int getTotalPlayerNumber() {
+        return player.length;
+    }
 
     /**
-     *  Dummy constructor
+     * Dummy constructor
      */
-    private Game() {
-    }
+    private Game() {}
 }

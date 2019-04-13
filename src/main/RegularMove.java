@@ -139,14 +139,14 @@ public class RegularMove extends Move{
 
                     //TODO: Optimize Inversion and Choice fields, they currently check every field on the map and assign each a new owner according to the rules
                 case INVERSION:
-                    int n = Game.getTotalPlayerNumber();
+                    int n = Game.getGame().getTotalPlayerNumber();
                     for (int a=0; a<map.width; a++) {
                         for (int b=0; b<map.height; b++) {
                             Tile anyTile = map.getTileAt(a, b);
                             if(anyTile.getOwner() != null) {
                                 int oldNumber = anyTile.getOwner().getPlayerNumber();
                                 int newNumber = (oldNumber + 1) % n;
-                                anyTile.setOwner(Game.playerFromNumber(newNumber));
+                                anyTile.setOwner(Game.getGame().playerFromNumber(newNumber));
                             }
                         }
                     }
@@ -155,8 +155,8 @@ public class RegularMove extends Move{
                     for (int a=0; a<map.width; a++) {
                         for (int b=0; b<map.height; b++) {
                             Tile anyTile = map.getTileAt(a, b);
-                            if (anyTile.getOwner() == this.player) anyTile.setOwner(Game.playerFromNumber(this.bonusRequest));
-                            else if (anyTile.getOwner() == Game.playerFromNumber(this.bonusRequest)) anyTile.setOwner(this.player);
+                            if (anyTile.getOwner() == this.player) anyTile.setOwner(Game.getGame().playerFromNumber(this.bonusRequest));
+                            else if (anyTile.getOwner() == Game.getGame().playerFromNumber(this.bonusRequest)) anyTile.setOwner(this.player);
                         }
                     }
             }
