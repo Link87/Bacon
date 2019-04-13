@@ -48,7 +48,7 @@ public class BombMove extends Move{
         if (this.isLegal() == false);
 
         else {
-            int r = Game.getBombRadius();
+            int r = Game.getGame().getBombRadius();
             Tile t = map.getTileAt(this.xCoordinate, this.yCoordinate);
             Tile[][] m = new Tile[r+1][];
 
