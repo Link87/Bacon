@@ -181,6 +181,29 @@ public class Game {
     public static int getTotalPlayerNumber() {return player.length;}
 
     /**
+     * These methods set base attributes about the game
+     */
+    public static void setBombRadius(int bombRadius) {
+        Game.bombRadius = bombRadius;
+    }
+
+    public static void setMyMap(Map myMap){
+        Game.myMap = myMap;
+    }
+
+    public static void setMyPlayer(Player myPlayer) {
+        Game.myPlayer = myPlayer;
+    }
+
+    public static void setCurrentPhase(GamePhase currentPhase) {
+        Game.currentPhase = currentPhase;
+    }
+
+    public static void setPlayer(Player[] player) {
+        Game.player = player;
+    }
+
+    /**
      *  Dummy constructor
      */
     private Game() {

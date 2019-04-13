@@ -17,11 +17,12 @@ public class OverrideMove extends Move {
      * @return whether the move is legal
      */
     public boolean isLegal(){
-        if (this.player.getOverrideStoneCount() == 0) return false; // player must have at least 1 override stone to make the move
-        if (this.bonusRequest != 0) return false;
+        if (this.player.getOverrideStoneCount() == 0 || this.bonusRequest != 0) return false; // player must have at least 1 override stone to make the move
 
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
-        Tile[] surrounding = new Tile[8];
+
+
+        Tile[] surrounding = new Tile[8]; //neighbouring tiles of the tile which is supposed to be overridden
         for (int j=0; j<8; j++) {
             surrounding[j] = tile;
         }
@@ -59,7 +60,7 @@ public class OverrideMove extends Move {
 
 
     /**
-     * execute a move
+     * execute an OverrideMove
      */
     public void doMove(){
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
