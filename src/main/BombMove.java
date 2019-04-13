@@ -11,16 +11,34 @@ public class BombMove extends Move{
      * execute a move
      */
     public void doMove(){
-        //TODO
+        int bombRadius = Game.getBombRadius();
+        Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
+        Tile[] tobeRemoved = new Tile[(2*bombRadius+1)*(2*bombRadius+1)];
+        Tile t = tile;
+
+        tobeRemoved[0] = tile;
+        int i=1;
+
+        for (Direction direction : Direction.values()) {
+            for (int j=1; j<=bombRadius; j++) {
+                t = t.getTransition(direction);
+                tobeRemoved[i] = t;
+                i++;
+            }
+        }
+
+        for (Tile u : tobeRemoved) {
+            u.bombTile();
+        }
     }
 
     /**
      * checks if a move is legal
+     * Return value is always 'true' for this class since all potential failure modes have been intercepted in the superclass
      *
      * @return whether the move is legal
      */
     public boolean isLegal(){
-        //TODO
         return true;
     }
 

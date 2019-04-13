@@ -14,12 +14,14 @@ public class DefaultIllegalMove extends Move{
 
     /**
      * execute a move
+     * No action is taken since all moves in this class are illegal
      */
     public void doMove(){
     }
 
     /**
      * checks if a move is legal
+     * Return value is always 'false' for this class
      *
      * @return whether the move is legal
      */

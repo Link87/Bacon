@@ -160,8 +160,9 @@ public class Game {
 
     public static GamePhase getGamePhase() {return currentPhase;}
 
+    public static int getBombRadius() {return bombRadius;}
+
 
     private Game() {
-
     }
 }

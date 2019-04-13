@@ -70,6 +70,23 @@ public class Tile {
         this.transitions[direction.ordinal()] = other;
     }
 
+    public void bombTile() {
+        setProperty(Property.HOLE);
+        setOwner(null);
+        for (Direction direction : Direction.values()) {
+            Tile neighbor = getTransition(direction);
+            for (Direction neighborDirection : Direction.values()){
+                Tile t = neighbor.getTransition(neighborDirection);
+                if (t == this) setTransition(null, neighborDirection);
+            }
+        }
+        for (Direction direction : Direction.values()) {
+            setTransition(null, direction);
+        }
+
+    }
+
+
     /**
      * Returns the Tile the transition in the given direction leads to. Returns <code>null</code> if no transition is present.
      *

@@ -2,11 +2,11 @@
  * An interface which defines the basic functions of each typ of move
  */
 public abstract class Move {
-    private int moveID;
-    private Map map;
-    private Player player;
-    private int xCoordinate;
-    private int yCoordinate;
+    protected int moveID;
+    protected Map map;
+    protected Player player;
+    protected int xCoordinate;
+    protected int yCoordinate;
 
 
     public static Move createNewMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
