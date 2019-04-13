@@ -99,10 +99,10 @@ public class RegularMove extends Move{
         line.set(0, tile);                          // that direction line is reused for the next direction
 
         int[] turnOverLines = new int[8];   // turnOverLines keeps track of the number of stones that need to be overturned in each direction
-        int i=0;                            // i keeps track of the direction we're searching in
+        int searchDirection =0;                            // i keeps track of the direction we're searching in
 
 
-        if (this.isLegal() == false);
+        if (!this.isLegal());
 
         else {
             tile.setOwner(this.player);     // new stone is placed on the map
@@ -116,19 +116,19 @@ public class RegularMove extends Move{
                         if (line.get(steps+1).getOwner() == null && line.get(steps+1).getProperty() != Tile.Property.EXPANSION) break; // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         else if (line.get(steps+1).getOwner() == this.player && steps+1 == 1) break;    // If on the first step we hit our own stone, we can stop searching in this direction
                         else if (line.get(steps+1).getOwner() == this.player && steps+1 > 1) {  // If on other steps we hit our own stone,
-                            turnOverLines[i] = steps;                                           // we get to overturn all stones on the way,
+                            turnOverLines[searchDirection] = steps;                                           // we get to overturn all stones on the way,
                             break;                                                              // and then we can stop searching in this direction
                         }
                     }
                     steps++;
                 }
 
-                for (int j=1; j<=turnOverLines[i]; j++) {               // When we're done searching one direction, this is the
+                for (int j=1; j<=turnOverLines[searchDirection]; j++) {               // When we're done searching one direction, this is the
                     line.get(j).setProperty(Tile.Property.DEFAULT);     // function that actually overturns the stones (including expansion fields)
                     line.get(j).setOwner(this.player);
                 }
 
-                i++;
+                searchDirection++;
             }
 
             // After overturning captured stones, we now have to consider the bonus/special effect of our tile
@@ -143,9 +143,11 @@ public class RegularMove extends Move{
                     for (int a=0; a<map.width; a++) {
                         for (int b=0; b<map.height; b++) {
                             Tile anyTile = map.getTileAt(a, b);
-                            int oldNumber = anyTile.getOwner().getPlayerNumber();
-                            int newNumber = (oldNumber + 1) % n;
-                            anyTile.setOwner(Game.playerFromNumber(newNumber));
+                            if(anyTile.getOwner() != null) {
+                                int oldNumber = anyTile.getOwner().getPlayerNumber();
+                                int newNumber = (oldNumber + 1) % n;
+                                anyTile.setOwner(Game.playerFromNumber(newNumber));
+                            }
                         }
                     }
 
