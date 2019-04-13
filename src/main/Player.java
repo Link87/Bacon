@@ -33,6 +33,8 @@ public class Player {
     /**
      * These methods return at
      */
+    public int getPlayerNumber() {return this.number;}
+
     public boolean getStatus() {return this.disqualified;}
 
     public int getOverrideStoneCount() {return this.overrideStoneCount;}

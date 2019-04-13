@@ -8,16 +8,10 @@
  */
 public class DefaultIllegalMove extends Move{
 
-    public DefaultIllegalMove(int moveID, Map map, Player player, int x, int y) {
-        super(moveID, map, player, x, y);
+    public DefaultIllegalMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
+        super(moveID, map, player, x, y, bonusRequest);
     }
 
-    /**
-     * execute a move
-     * No action is taken since all moves in this class are illegal
-     */
-    public void doMove(){
-    }
 
     /**
      * checks if a move is legal
@@ -27,6 +21,14 @@ public class DefaultIllegalMove extends Move{
      */
     public boolean isLegal(){
         return false;
+    }
+
+
+    /**
+     * execute a move
+     * No action is taken since all moves in this class are illegal
+     */
+    public void doMove(){
     }
 
 }

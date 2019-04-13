@@ -7,6 +7,7 @@ public abstract class Move {
     protected Player player;
     protected int xCoordinate;
     protected int yCoordinate;
+    protected int bonusRequest;
 
 
     public static Move createNewMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
@@ -29,29 +30,30 @@ public abstract class Move {
             }
 
             else {
-                Move overridemove = new OverrideMove(moveID, map, player, x, y);
+                Move overridemove = new OverrideMove(moveID, map, player, x, y, bonusRequest);
                 return overridemove;
             }
         }
 
         else if (Game.getGamePhase() == Game.GamePhase.PHASETWO) {
-            Move bombmove = new BombMove(moveID, map, player, x, y);
+            Move bombmove = new BombMove(moveID, map, player, x, y, bonusRequest);
             return bombmove;
         }
 
         else if (Game.getGamePhase() == Game.GamePhase.ENDED) throw new IllegalArgumentException("Game has already ended");
 
-        Move defaultillegalmove = new DefaultIllegalMove(moveID, map, player, x, y);
+        Move defaultillegalmove = new DefaultIllegalMove(moveID, map, player, x, y, bonusRequest);
         return defaultillegalmove;
     }
 
 
-    public Move(int moveID, Map map, Player player, int x, int y) {
+    public Move(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
         this.moveID = moveID;
         this.map = map;
         this.player = player;
         this.xCoordinate = x;
         this.yCoordinate = y;
+        this.bonusRequest = bonusRequest;
     }
 
     /**

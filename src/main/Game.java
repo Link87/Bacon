@@ -12,7 +12,7 @@ public class Game {
     private static Player[] player;
     private static Map myMap;
     private static int bombRadius;
-    private static int myPlayerNumber;
+    private static Player myPlayer;
     private static GamePhase currentPhase;
     private static ArrayList<Move> moveStack = new ArrayList<>();
     private static ArrayList<Move> allMovesGlossary = new ArrayList<>();
@@ -69,7 +69,7 @@ public class Game {
                 myMap = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
 
             case "03":
-                myPlayerNumber = Integer.parseInt(message);
+                myPlayer = Game.playerFromNumber(Integer.parseInt(message));
 
             case "04":
                 //Received move request from server (INCOMPLETE)
@@ -107,7 +107,7 @@ public class Game {
 
             case "07":
                 //Disqualify player
-                Game.player[Integer.parseInt(message)-1].disqualify();
+                Game.playerFromNumber(Integer.parseInt(message)).disqualify();
 
             case "08":
                 //Phase one of the game ends
@@ -142,7 +142,12 @@ public class Game {
 
 
     public static Player playerFromNumber(int nr) {
-        return player[nr - 1];
+        int n = player.length;
+        for (int i=0; i<n; i++) {
+            if (player[i].getPlayerNumber() == nr) return player[i];
+        }
+
+        throw new IllegalArgumentException("Invalid Player Number");
     }
 
     /**

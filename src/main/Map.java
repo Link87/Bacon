@@ -29,42 +29,6 @@ public class Map {
     }
 
     /**
-     * Places a stone from the given Player on the given Tile. This method checks whether the move is possible
-     * and calculates the resulting Map and Tile state changes.
-     *
-     * @param player the {@link Player} that executes the move
-     * @param x      the x coordinate of the tile the stone is placed on
-     * @param y      the y coordinate of the tile the stone is placed on
-     */
-    public void placeStone(Player player, int x, int y, int bonus) {
-
-    }
-
-    /**
-     * Places an override stone from the given Player on the given Tile. This method checks whether the move is possible
-     * and calculates the resulting Map and Tile state changes.
-     *
-     * @param player the {@link Player} that executes the move
-     * @param x      the x coordinate of the tile the stone is placed on
-     * @param y      the y coordinate of the tile the stone is placed on
-     */
-    public void placeOverrideStone(Player player, int x, int y, int bonus) {
-
-    }
-
-    /**
-     * Throws a bomb from the given Player on the given Tile. This method checks whether the move is possible
-     * and calculates the resulting Map and Tile state changes.
-     *
-     * @param player the {@link Player} that executes the move
-     * @param x      the x coordinate of the tile the stone is placed on
-     * @param y      the y coordinate of the tile the stone is placed on
-     */
-    public void throwBomb(Player player, int x, int y) {
-
-    }
-
-    /**
      * Extends the map with the given transition.
      *
      * @param tile1      First Tile of the transition
