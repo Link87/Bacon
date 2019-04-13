@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class RegularMove extends Move{
 
     /**
-     * Creates instance of BombMove via the constructor in its superclass Move
+     * Creates instance of RegularMove via the constructor in its superclass Move
      *
      * @param moveID
      * @param map
