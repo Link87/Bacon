@@ -83,11 +83,14 @@ public class Tile {
             if (neighbor == null) continue;
             for (Direction neighborDirection : Direction.values()){
                 Tile t = neighbor.getTransition(neighborDirection);
-                if (t == this) neighbor.setTransition(null, neighborDirection);
+                if (t == this) {
+                    neighbor.setTransition(null, neighborDirection);
+                    break;
+                }
             }
         }
         for (Direction direction : Direction.values()) {
-            setTransition(null, direction);
+            this.setTransition(null, direction);
         }
 
     }
