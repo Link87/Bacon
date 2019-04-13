@@ -16,6 +16,8 @@ public class Game {
     private static GamePhase currentPhase;
     private static ArrayList<Move> moveStack = new ArrayList<>();
     private static ArrayList<Move> allMovesGlossary = new ArrayList<>();
+    // moveStack is a stack of actually executed moves,
+    //allMovesGlossary is a stack of all moves received (including illegal ones)
 
 
     public static Game getInstance() {
@@ -140,7 +142,12 @@ public class Game {
         return output.toString();
     }
 
-
+    /**
+     * This method finds the player for a given player number
+     *
+     * @param nr
+     * @return
+     */
     public static Player playerFromNumber(int nr) {
         int n = player.length;
         for (int i=0; i<n; i++) {
@@ -163,13 +170,19 @@ public class Game {
         ENDED;
     }
 
+    /**
+     *  These methods return base attributes about the game
+     *
+     */
     public static GamePhase getGamePhase() {return currentPhase;}
 
     public static int getBombRadius() {return bombRadius;}
 
     public static int getTotalPlayerNumber() {return player.length;}
 
-
+    /**
+     *  Dummy constructor
+     */
     private Game() {
     }
 }

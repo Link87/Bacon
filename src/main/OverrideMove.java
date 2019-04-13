@@ -2,6 +2,8 @@ import java.util.ArrayList;
 
 /**
  * A class which represents placing an override stone on a tile
+ *
+ * This class is essentially a copy of RegularMoves, so only differences will be commented
  */
 public class OverrideMove extends Move {
 
@@ -15,7 +17,7 @@ public class OverrideMove extends Move {
      * @return whether the move is legal
      */
     public boolean isLegal(){
-        if (this.player.getOverrideStoneCount() == 0) return false;
+        if (this.player.getOverrideStoneCount() == 0) return false; // player must have at least 1 override stone to make the move
         if (this.bonusRequest != 0) return false;
 
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
@@ -73,7 +75,7 @@ public class OverrideMove extends Move {
         if (this.isLegal() == false);
 
         else {
-            tile.setOwner(this.player);
+            tile.setOwner(this.player); // Overriden stone is assigned to the player
 
             for (Direction direction : Direction.values()) {
                 int steps=0;
@@ -99,8 +101,8 @@ public class OverrideMove extends Move {
                 i++;
             }
 
-            tile.setProperty(Tile.Property.DEFAULT);
-            this.player.receiveOverrideStone(-1);
+            tile.setProperty(Tile.Property.DEFAULT);    // the tile we placed our override stone on could be an expansion field
+            this.player.receiveOverrideStone(-1);    // Subtract 1 override stone from player's inventory
         }
     }
 }

@@ -46,7 +46,16 @@ public abstract class Move {
         return defaultillegalmove;
     }
 
-
+    /**
+     * Constructor
+     *
+     * @param moveID
+     * @param map
+     * @param player
+     * @param x
+     * @param y
+     * @param bonusRequest
+     */
     public Move(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
         this.moveID = moveID;
         this.map = map;
