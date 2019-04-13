@@ -76,8 +76,8 @@ public class OverrideMove extends Move {
             tile.setOwner(this.player);
 
             for (Direction direction : Direction.values()) {
+                int steps=0;
                 while (true) {
-                    int steps=0;
                     if (line.get(steps).getTransition(direction) == null) break;
                     else {
                         line.set(steps+1, line.get(steps).getTransition(direction));
