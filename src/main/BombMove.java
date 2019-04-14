@@ -64,16 +64,13 @@ public class BombMove extends Move{
         for (int i=1; i<=r; i++){
             for (int j=0; j<m[i-1].size(); j++) {
                 for (Direction direction : Direction.values()) {
-                    boolean redundant = false;
-                    for (ArrayList<Tile> s : m) { //detects whether a tiles is named in the ArrayList
-                        for (Tile v : s){
-                            if (m[i-1].get(j) != null) {
-                                if (m[i-1].get(j).getTransition(direction) == v) redundant=true;
+                    if(m[i-1].get(j) != null){
+                        boolean redundant = false;for (ArrayList<Tile> s : m) { //detects whether a tiles is named in the ArrayList
+                            for (Tile v : s){
+                              if (m[i-1].get(j).getTransition(direction) == v) redundant=true;
                             }
                         }
-                    }
-
-                    if (m[i-1].get(j) != null) { //adding a tile in the ArrayList
+                       //adding a tile in the ArrayList
                         if (m[i-1].get(j).getTransition(direction) != null) {
                             if (!redundant) m[i].add(m[i-1].get(j).getTransition(direction));
                         }
