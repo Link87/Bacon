@@ -47,7 +47,7 @@ public class Game {
                 initializeMap(message);
                 break;
             case "03":
-                me = Game.getGame().getPlayerFromNumber(Integer.parseInt(message, 16));
+                me = getPlayerFromNumber(Integer.parseInt(message, 16));
                 break;
             case "06":
                 // Server announces move of a player
@@ -55,7 +55,7 @@ public class Game {
                 break;
             case "07":
                 // Disqualify player
-                Game.getGame().getPlayerFromNumber(Integer.parseInt(message, 16)).disqualify();
+                getPlayerFromNumber(Integer.parseInt(message, 16)).disqualify();
                 break;
             case "08":
                 // Phase one of the game ends
@@ -113,18 +113,15 @@ public class Game {
         if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10), 16);
 
         int p = Integer.parseInt(moveData.substring(10, 12), 16);
-        Player movingPlayer = Game.getGame().getPlayerFromNumber(p);
+        Player movingPlayer = getPlayerFromNumber(p);
 
-        int moveStackTop = moveStack.size();
-        int glossaryTop = allMovesGlossary.size();
-
-        Move move = Move.createNewMove(glossaryTop, map, movingPlayer, x, y, bonusRequest);
-        allMovesGlossary.set(glossaryTop, move);
+        Move move = Move.createNewMove(allMovesGlossary.size(), map, movingPlayer, x, y, bonusRequest);
+        allMovesGlossary.add(move);
 
         if (move.isLegal()) {
             System.out.println("Move is legal.");
             move.doMove();
-            moveStack.set(moveStackTop, move);
+            moveStack.add(move);
         } else System.out.println("Move is illegal.");
     }
 
