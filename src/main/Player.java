@@ -25,32 +25,52 @@ public class Player {
         this.disqualified = false;
     }
 
-    public static Player readFromString(int number, int initOverrideStoneCount, int initBombCount){
-        Player player = new Player(number, initOverrideStoneCount, initBombCount);
-        return player;
+    /**
+     * Returns the number of the player.
+     *
+     * @return number of player
+     */
+    public int getPlayerNumber() {
+        return this.number;
     }
 
     /**
-     * These methods return attributes of player instances
+     * Returns whether the player is disqualified.
+     *
+     * @return true if the player is disqualified
      */
-    public int getPlayerNumber() {return this.number;}
+    public boolean isDisqualified() {
+        return this.disqualified;
+    }
 
-    public boolean getStatus() {return this.disqualified;}
+    /**
+     * Returns the amount of override stones the player has left.
+     *
+     * @return amount of override stones
+     */
+    public int getOverrideStoneCount() {
+        return this.overrideStoneCount;
+    }
 
-    public int getOverrideStoneCount() {return this.overrideStoneCount;}
-
-    public int getBombCount() {return this.bombCount;}
+    /**
+     * Returns the amount of bombs the player has left.
+     *
+     * @return amount of bombs
+     */
+    public int getBombCount() {
+        return this.bombCount;
+    }
 
 
     /**
-     * Increases the amount of override stones of this player.
+     * Increases the amount of override stones of this player by one.
      */
     public void receiveOverrideStone(int n) {
         this.overrideStoneCount += n;
     }
 
     /**
-     * Increases the amount of bombs of this player.
+     * Increases the amount of bombs of this player by one.
      */
     public void receiveBomb(int n) {
         this.bombCount += n;

@@ -1,8 +1,9 @@
 import java.util.ArrayList;
 
 public class BuildMove extends Move {
+
     /**
-     * Constructor of a move
+     * Creates a new move from the given values.
      *
      * @param moveID       the ID of the move
      * @param map          the map on which the move is executed
@@ -16,18 +17,18 @@ public class BuildMove extends Move {
     }
 
     /**
-     * checks if a move is legal
+     * Checks if this move is legal.
      * We then use breadth-first search to find a tile already occupied by the player on a straight line from the tile
-     * we're playing on
+     * we're playing on.
      *
-     * @return whether the move is legal
+     * @return true if the move is legal, false otherwise
      */
     @Override
     boolean isLegal() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
         Tile[] surrounding = new Tile[8];
-        for (int j=0; j<8; j++) {
+        for (int j = 0; j < 8; j++) {
             surrounding[j] = tile;
         }
         int steps = 1;
@@ -36,7 +37,7 @@ public class BuildMove extends Move {
         // surrounding keeps track of the farthest field we've gone in each direction
 
         while (true) {
-            int i=0;
+            int i = 0;
             int emptyOrHole = 0;
             // i keeps track of the directions we're going through in each for loop cycle
             // emptyOrHole keeps track of the number of directions where we've hit a hole/blank field and thus stop searching
@@ -44,24 +45,23 @@ public class BuildMove extends Move {
 
             for (Direction direction : Direction.values()) {
 
-                if(surrounding[i] != null && surrounding[i].getTransition(direction) != null) { // If the next tile isn't a hole,
+                if (surrounding[i] != null && surrounding[i].getTransition(direction) != null) { // If the next tile isn't a hole,
                     surrounding[i] = surrounding[i].getTransition(direction);                   // increment the farthest tile in this direction.
-                    if (surrounding[i].getOwner() == this.player && steps > 1) return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
+                    if (surrounding[i].getOwner() == this.player && steps > 1)
+                        return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
                     else if (surrounding[i].getOwner() == this.player && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
                         surrounding[i] = null;                                                  // so set this tile to null and increment emptyOrHole
                         emptyOrHole++;
-                    }
-                    else if (surrounding[i].getOwner() == null && surrounding[i].getProperty() != Tile.Property.EXPANSION) {
+                    } else if (surrounding[i].getOwner() == null && surrounding[i].getProperty() != Tile.Property.EXPANSION) {
                         surrounding[i] = null;  // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         emptyOrHole++;
                     }
-                }
-
-                else emptyOrHole++;     // If this next tile is a hole, we can stop searching in this direction
+                } else emptyOrHole++;     // If this next tile is a hole, we can stop searching in this direction
                 i++;
             }
 
-            if (emptyOrHole >= 8) break;    // If we've hit a barrier in all 8 directions, we can stop searching altogether and declare the move illegal
+            if (emptyOrHole >= 8)
+                break;    // If we've hit a barrier in all 8 directions, we can stop searching altogether and declare the move illegal
             steps++;    // Increment radius from the center
         }
 
@@ -69,10 +69,9 @@ public class BuildMove extends Move {
     }
 
     /**
-     * execute a move
-     * Does nothing if isLegal() method determines the move to be illegal
-     * Otherwise uses depth-first search to find the number of stones that need to be overturned in each direction
-     *
+     * Executes this move.
+     * Does nothing if isLegal() method determines the move to be illegal.
+     * Otherwise uses depth-first search to find the number of stones that need to be overturned in each direction.
      */
     @Override
     void doMove() {

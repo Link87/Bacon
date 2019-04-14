@@ -1,6 +1,5 @@
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.lang.System;
 
 /**
  * A Game class which contains the basic information about the current game.
@@ -64,7 +63,7 @@ public class Game {
                 bombRadius = Integer.parseInt(bomb[0]);
 
                 for (int i = 1; i <= playerCount; i++) {
-                    player[i - 1] = Player.readFromString(i, initOverrideStoneCount, initBombCount);
+                    player[i - 1] = new Player(i, initOverrideStoneCount, initBombCount);
                 }
 
                 String[] bounds = lines[3].split(" ");
@@ -145,10 +144,10 @@ public class Game {
     }
 
     /**
-     * This method finds the player for a given player number
+     * This method finds the player for a given player number.
      *
-     * @param nr
-     * @return
+     * @param nr number of the player to search for
+     * @return the player that corresponds to the given number
      */
     public Player playerFromNumber(int nr) {
         int n = player.length;
@@ -173,22 +172,35 @@ public class Game {
     }
 
     /**
-     * These methods return base attributes about the game
+     * Returns the phase the game is currently in.
+     *
+     * @return {@link GamePhase} representing the current game phase
      */
     public GamePhase getGamePhase() {
         return currentPhase;
     }
 
+    /**
+     * Returns the radius bombs have in the game. This value is constant throughout the game.
+     *
+     * @return radius of bombs
+     */
     public int getBombRadius() {
         return bombRadius;
     }
 
-    public int getTotalPlayerNumber() {
+    /**
+     * Returns the total amount of players that participate in the game.
+     *
+     * @return the total player count
+     */
+    public int getTotalPlayerCount() {
         return player.length;
     }
 
     /**
-     * Dummy constructor
+     * Private dummy constructor because singleton.
      */
-    private Game() {}
+    private Game() {
+    }
 }

@@ -8,12 +8,13 @@ public class OverrideMove extends BuildMove {
     }
 
     /**
-     * checks if a move is legal
+     * Checks if this move is legal.
      *
-     * @return whether the move is legal
+     * @return true if the move is legal, false otherwise
      */
-    public boolean isLegal(){
-        if (this.player.getOverrideStoneCount() == 0) return false; // player must have at least 1 override stone to make the move
+    public boolean isLegal() {
+        if (this.player.getOverrideStoneCount() == 0)
+            return false; // player must have at least 1 override stone to make the move
         if (this.bonusRequest != 0) return false;
 
         return super.isLegal();
@@ -21,9 +22,9 @@ public class OverrideMove extends BuildMove {
 
 
     /**
-     * execute a move
+     * Executes this move.
      */
-    public void doMove(){
+    public void doMove() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
         super.doMove();

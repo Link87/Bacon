@@ -43,22 +43,21 @@ public class Map {
 
     /**
      * Deserialize a map object from the given String lines.
-     * The lines is expected to already be ASCII and must start with <code>height</code> lines with <code>width</code>
+     * The lines are expected to already be ASCII and must start with <code>height</code> lines with <code>width</code>
      * characters each that represent the map tiles according to the specification.
      * The map definition can be followed with a listing of transitions that also have to follow the specification.
-     * Transitions have to be separated by line breaks. "\n" is the only excepted line brake.
+     * Transitions have to be in separated lines.
      *
      * @param width  width of the map
      * @param height height of the map
      * @param lines  String Array that contains map and transition data split into lines
      * @return {@link #Map(Tile[][])} with tiles
      */
-    public static Map readFromString(int width, int height, String[] lines) {
+    public static Map readFromString(final int width, final int height, String[] lines) {
         Tile[][] tiles = new Tile[width][height];
-        int h;
 
-        //putting tile information into the array
-        for (h = 0; h < height; h++) {
+        // putting tile information into the array
+        for (int h = 0; h < height; h++) {
             String[] tile = lines[h].split(" ");
             for (int w = 0; w < width; w++) {
                 char symbol = tile[w].charAt(0);
@@ -122,7 +121,7 @@ public class Map {
         Map map = new Map(tiles);
 
         //adding additional transitions from map specification
-        for (int l = h; l < lines.length; l++) {
+        for (int l = height; l < lines.length; l++) {
             String[] elements = lines[l].split(" ");
             map.addTransition(tiles[Integer.parseInt(elements[0])][Integer.parseInt(elements[1])],
                     Integer.parseInt(elements[2]),

@@ -72,8 +72,8 @@ public class Tile {
 
 
     /**
-     * Makes a hole out of a tile by removing its owner, its transitions to other tiles and other tiles' transition to it
-     * Also sets property to 'HOLE'
+     * Makes a hole out of a tile by removing its owner, its transitions to other tiles and other tiles' transition to it.
+     * Also sets property to 'HOLE'.
      */
     public void bombTile() {
         setProperty(Property.HOLE);
@@ -83,7 +83,7 @@ public class Tile {
         for (Direction direction : Direction.values()) {
             Tile neighbor = this.getTransition(direction);
             if (neighbor == null) continue;
-            for (Direction neighborDirection : Direction.values()){
+            for (Direction neighborDirection : Direction.values()) {
                 Tile t = neighbor.getTransition(neighborDirection);
                 if (t == this) neighbor.setTransition(null, neighborDirection);
             }
@@ -107,7 +107,7 @@ public class Tile {
     }
 
     /**
-     * Returns the owner of this Tile
+     * Returns the owner of this Tile.
      *
      * @return the owner of this Tile
      */

@@ -1,5 +1,5 @@
 /**
- * An interface which defines the basic functions of each typ of move
+ * An interface which defines the basic functions of each typ of move.
  */
 public abstract class Move {
     protected int moveID;
@@ -10,12 +10,11 @@ public abstract class Move {
     protected int bonusRequest;
 
     /**
-     *
-     * @param moveID the ID of the move
-     * @param map the map on which the move is executed
-     * @param player the player of the move
-     * @param x the x coordinate
-     * @param y the y coordinate
+     * @param moveID       the ID of the move
+     * @param map          the map on which the move is executed
+     * @param player       the player of the move
+     * @param x            the x coordinate
+     * @param y            the y coordinate
      * @param bonusRequest
      * @return Move
      */
@@ -24,9 +23,9 @@ public abstract class Move {
         Player owner = tile.getOwner();
         Tile.Property tileProperty = tile.getProperty();
 
-        if (player.getStatus()) throw new IllegalArgumentException("Player has already been disqualified");
+        if (player.isDisqualified()) throw new IllegalArgumentException("Player has already been disqualified");
 
-        if (x >= map.width || y>= map.height) throw new IllegalArgumentException("Coordinate out of bounds");
+        if (x >= map.width || y >= map.height) throw new IllegalArgumentException("Coordinate out of bounds");
 
         if (Game.getGame().getGamePhase() == Game.GamePhase.PHASE_ONE) {
 
@@ -36,33 +35,28 @@ public abstract class Move {
 
             else if (owner == null && tileProperty != Tile.Property.EXPANSION) {
                 return new RegularMove(moveID, map, player, x, y, bonusRequest);
-            }
-
-            else {
+            } else {
                 return new OverrideMove(moveID, map, player, x, y, bonusRequest);
             }
-        }
-
-        else if (Game.getGame().getGamePhase() == Game.GamePhase.PHASE_TWO) {
+        } else if (Game.getGame().getGamePhase() == Game.GamePhase.PHASE_TWO) {
 
             if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
 
             else return new BombMove(moveID, map, player, x, y, bonusRequest);
-        }
-
-        else if (Game.getGame().getGamePhase() == Game.GamePhase.ENDED) throw new IllegalArgumentException("Game has already ended");
+        } else if (Game.getGame().getGamePhase() == Game.GamePhase.ENDED)
+            throw new IllegalArgumentException("Game has already ended");
 
         return new DefaultIllegalMove(moveID, map, player, x, y, bonusRequest);
     }
 
     /**
-     * Constructor of a move
+     * Creates a new move from the given values.
      *
-     * @param moveID the ID of the move
-     * @param map the map on which the move is executed
-     * @param player the player of the move
-     * @param x the x coordinate
-     * @param y the y coordinate
+     * @param moveID       the ID of the move
+     * @param map          the map on which the move is executed
+     * @param player       the player of the move
+     * @param x            the x coordinate
+     * @param y            the y coordinate
      * @param bonusRequest
      */
     public Move(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
@@ -75,16 +69,16 @@ public abstract class Move {
     }
 
     /**
-     * checks if a move is legal
+     * Checks if this move is legal.
      *
-     * @return whether the move is legal
+     * @return true if the move is legal, false otherwise
      */
     abstract boolean isLegal();
 
 
     /**
-    * execute a move
-    */
+     * Executes this move.
+     */
     abstract void doMove();
 
 }
