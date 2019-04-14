@@ -32,13 +32,13 @@ public class Map {
      * Extends the map with the given transition.
      *
      * @param tile1      First Tile of the transition
-     * @param direction1 Direction in which the transition applies on the first tile (clockwise, 0 is at the top)
+     * @param direction1 Direction in which the transition applies on the first tile
      * @param tile2      Second Tile of the transition
-     * @param direction2 Direction in which the transition applies on the second tile (clockwise, 0 is at the top)
+     * @param direction2 Direction in which the transition applies on the second tile
      */
-    private void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
-        tile1.setTransition(tile2, Direction.values()[direction1]);
-        tile2.setTransition(tile1, Direction.values()[direction2]);
+    private void addTransition(Tile tile1, Direction direction1, Tile tile2, Direction direction2) {
+        tile1.setTransition(tile2, direction1, direction2);
+        tile2.setTransition(tile1, direction2, direction1);
     }
 
     /**
@@ -88,31 +88,31 @@ public class Map {
                 }
                 if (y != 0) {
                     if (tiles[x][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP);
+                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP, Direction.DOWN);
                     }
                     if (x != 0 && tiles[x - 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT);
+                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT, Direction.DOWN_RIGHT);
                     }
                     if (x != width - 1 && tiles[x + 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT);
+                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT, Direction.DOWN_LEFT);
                     }
                 }
                 if (y != height - 1) {
                     if (tiles[x][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN);
+                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN, Direction.UP);
                     }
                     if (x != 0 && tiles[x - 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT);
+                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT, Direction.UP_RIGHT);
                     }
                     if (x != width - 1 && tiles[x + 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT);
+                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT, Direction.UP_LEFT);
                     }
                 }
                 if (x != width - 1 && tiles[x + 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT);
+                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT, Direction.LEFT);
                 }
                 if (x != 0 && tiles[x - 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT);
+                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT, Direction.RIGHT);
                 }
 
             }
@@ -124,9 +124,9 @@ public class Map {
         for (int l = height; l < lines.length; l++) {
             String[] elements = lines[l].split(" ");
             map.addTransition(tiles[Integer.parseInt(elements[0])][Integer.parseInt(elements[1])],
-                    Integer.parseInt(elements[2]),
+                    Direction.values()[Integer.parseInt(elements[2])],
                     tiles[Integer.parseInt(elements[4])][Integer.parseInt(elements[5])],
-                    Integer.parseInt(elements[6])
+                    Direction.values()[Integer.parseInt(elements[6])]
             );
         }
 

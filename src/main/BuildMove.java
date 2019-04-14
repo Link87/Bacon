@@ -27,40 +27,42 @@ public class BuildMove extends Move {
     boolean isLegal() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
-        Tile[] surrounding = new Tile[8];
-        for (int j = 0; j < 8; j++) {
-            surrounding[j] = tile;
+        // farthest reachable tile in each direction
+        Tile[] surrounding = new Tile[Direction.values().length];
+        // direction in which to walk for each starting direction
+        Direction[] searchDirections = new Direction[Direction.values().length];
+        for (int i = 0; i < surrounding.length; i++) {
+            surrounding[i] = tile;
+            searchDirections[i] = Direction.values()[i];
         }
-        int steps = 1;
 
         // Going radially outward in 8 straight lines, one step for each while loop cycle, beginning with the same center tile
         // surrounding keeps track of the farthest field we've gone in each direction
-
-        while (true) {
-            int i = 0;
-            int emptyOrHole = 0;
-            // i keeps track of the directions we're going through in each for loop cycle
-            // emptyOrHole keeps track of the number of directions where we've hit a hole/blank field and thus stop searching
+        for (int steps = 1; true;) {
+            // keeps track of the number of directions where we've hit a hole/blank field and thus stop searching
             // in this direction
+            int emptyOrHoleCount = 0;
 
-            for (Direction direction : Direction.values()) {
+            // iterating over directions
+            for (int i = 0; i < surrounding.length; i++) {
+                var direction = searchDirections[i];
 
                 if (surrounding[i] != null && surrounding[i].getTransition(direction) != null) { // If the next tile isn't a hole,
+                    searchDirections[i] = surrounding[i].getArrivalDirection(direction).opposite();        // update direction
                     surrounding[i] = surrounding[i].getTransition(direction);                   // increment the farthest tile in this direction.
                     if (surrounding[i].getOwner() == this.player && steps > 1)
                         return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
                     else if (surrounding[i].getOwner() == this.player && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
-                        surrounding[i] = null;                                                  // so set this tile to null and increment emptyOrHole
-                        emptyOrHole++;
+                        surrounding[i] = null;                                                  // so set this tile to null and increment emptyOrHoleCount
+                        emptyOrHoleCount++;
                     } else if (surrounding[i].getOwner() == null && surrounding[i].getProperty() != Tile.Property.EXPANSION) {
                         surrounding[i] = null;  // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
-                        emptyOrHole++;
+                        emptyOrHoleCount++;
                     }
-                } else emptyOrHole++;     // If this next tile is a hole, we can stop searching in this direction
-                i++;
+                } else emptyOrHoleCount++;     // If this next tile is a hole, we can stop searching in this direction
             }
 
-            if (emptyOrHole >= 8)
+            if (emptyOrHoleCount >= Direction.values().length)
                 break;    // If we've hit a barrier in all 8 directions, we can stop searching altogether and declare the move illegal
             steps++;    // Increment radius from the center
         }

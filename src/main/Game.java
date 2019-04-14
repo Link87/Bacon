@@ -154,7 +154,7 @@ public class Game {
             if (value.getPlayerNumber() == nr) return value;
         }
 
-        throw new IllegalArgumentException("Invalid Player Number");
+        throw new IllegalArgumentException("Invalid Player Number:" + nr);
     }
 
     /**
