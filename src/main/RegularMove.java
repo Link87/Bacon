@@ -28,9 +28,6 @@ public class RegularMove extends BuildMove{
      */
     public boolean isLegal(){
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
-        if(tile.getOwner()!=null){
-            return false;
-        }
         Tile.Property property = tile.getProperty();
         switch (property) {
             case BONUS:
@@ -62,7 +59,7 @@ public class RegularMove extends BuildMove{
                 if (this.bonusRequest == 20) this.player.receiveBomb(1);
                 else this.player.receiveOverrideStone(1);
             break;
-                //TODO: Optimize Inversion and Choice fields, they currently check every field on the map and assign each a new owner according to the rules
+
             case INVERSION:
                 int n = Game.getGame().getTotalPlayerNumber();
                     for (int a=0; a<map.width; a++) {
