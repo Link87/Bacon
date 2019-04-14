@@ -67,7 +67,7 @@ public class Map {
                     tiles[w][h] = new Tile(null, Tile.Property.DEFAULT, w, h);
                 } else if (symbol <= '8' && symbol > '0') {
                     //Tile has a Stone (an owner)
-                    tiles[w][h] = new Tile(Game.getGame().playerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
+                    tiles[w][h] = new Tile(Game.getGame().getPlayerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
                 } else if (symbol != 8722) {
                     //8722=='-' but Java behaved unexpected with (symbol != '-')
                     //Tile is not a hole --> Tile has Property

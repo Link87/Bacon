@@ -31,98 +31,101 @@ public class Game {
     }
 
     /**
-     * This is ExampleCode mend to show the processing/flow of data from the server
+     * Processes the given message string according to the network specification.
      *
-     * @param hexData is the Message Data part of the server message (without the Type and Length parts)
+     * @param data String containing hexadecimal data
      */
-    public void initGame(String hexData) {
-        //Split message into components according to format
-        String messageType = hexData.substring(0, 2);
-        String messageLength = hexData.substring(2, 10);
-        String message = hexData.substring(10);
+    public void processMessage(String data) {
+        // Split message into components according to format. Message length is skipped, because Java *yay*
+        String messageType = data.substring(0, 2);
+        String message = data.substring(10);
 
         switch (messageType) {
-            case "01":
-                //Send group number to server (INCOMPLETE)
-
             case "02":
-                //Receive map from server
-
-                currentPhase = GamePhase.PHASE_ONE;
-
-                //hex to ascii and replacing \r\n with \n
-                String asciiData = hexToAscii(message).replaceAll("\r", "");
-
-                String[] lines = asciiData.split("\n");
-
-                int playerCount = Integer.parseInt(lines[0]);
-                int initOverrideStoneCount = Integer.parseInt(lines[1]);
-
-                String[] bomb = lines[2].split(" ");
-                int initBombCount = Integer.parseInt(bomb[0]);
-                bombRadius = Integer.parseInt(bomb[0]);
-
-                for (int i = 1; i <= playerCount; i++) {
-                    player[i - 1] = new Player(i, initOverrideStoneCount, initBombCount);
-                }
-
-                String[] bounds = lines[3].split(" ");
-                int mapHeight = Integer.parseInt(bounds[0]);
-                int mapWidth = Integer.parseInt(bounds[1]);
-
-                map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
-
+                // Receive map from server
+                // parse data and initialize the Game instance with given values
+                initializeMap(message);
+                break;
             case "03":
-                me = Game.getGame().playerFromNumber(Integer.parseInt(message));
-
-            case "04":
-                //Received move request from server (INCOMPLETE)
-
-            case "05":
-                //Send move response to server (INCOMPLETE)
-
+                me = Game.getGame().getPlayerFromNumber(Integer.parseInt(message, 16));
+                break;
             case "06":
-                //Server announces move by a player
-                String xCoordinateHex = message.substring(0, 4);
-                String yCoordinateHex = message.substring(4, 8);
-                String BonusRequestHex = "";
-                if (message.length() > 8) BonusRequestHex = message.substring(8, 10);
-                String player = message.substring(10, 12);
-
-                int x = Integer.parseInt(xCoordinateHex, 16);
-                int y = Integer.parseInt(yCoordinateHex, 16);
-                int bonusRequest = 0;
-                if (message.length() > 8) bonusRequest = Integer.parseInt(BonusRequestHex, 16);
-                int p = Integer.parseInt(player, 16);
-                Player movingPlayer = Game.getGame().playerFromNumber(p);
-                int moveStackTop = moveStack.size();
-                int glossaryTop = allMovesGlossary.size();
-
-                Move move = Move.createNewMove(glossaryTop, map, movingPlayer, x, y, bonusRequest);
-                allMovesGlossary.set(glossaryTop, move);
-
-                if (move.isLegal()) {
-                    System.out.println("Move is legal.");
-                    move.doMove();
-                    moveStack.set(moveStackTop, move);
-                } else System.out.println("Move is illegal.");
-
+                // Server announces move of a player
+                executeMove(message);
+                break;
             case "07":
-                //Disqualify player
-                Game.getGame().playerFromNumber(Integer.parseInt(message)).disqualify();
-
+                // Disqualify player
+                Game.getGame().getPlayerFromNumber(Integer.parseInt(message, 16)).disqualify();
+                break;
             case "08":
-                //Phase one of the game ends
+                // Phase one of the game ends
                 currentPhase = GamePhase.PHASE_TWO;
-
+                break;
             case "09":
-                //Phase two of the game ends
+                // Phase two of the game ends
                 currentPhase = GamePhase.ENDED;
-
+                break;
             default:
                 throw new IllegalArgumentException("Invalid Message Type: " + messageType);
         }
+    }
 
+    /**
+     * Reads the given String and initializes fields with the contained map data.
+     * String must follow specifications of message type 3.
+     *
+     * @param mapData String holding a map
+     */
+    private void initializeMap(String mapData) {
+        this.currentPhase = GamePhase.PHASE_ONE;
+
+        String[] lines = hexToAscii(mapData).split("\r?\n");
+
+        int playerCount = Integer.parseInt(lines[0]);
+        int initOverrideStoneCount = Integer.parseInt(lines[1]);
+
+        String[] bomb = lines[2].split(" ");
+        int bombCount = Integer.parseInt(bomb[0]);
+        this.bombRadius = Integer.parseInt(bomb[1]);
+
+        this.player = new Player[playerCount];
+        for (int i = 1; i <= playerCount; i++) {
+            this.player[i - 1] = new Player(i, initOverrideStoneCount, bombCount);
+        }
+
+        String[] bounds = lines[3].split(" ");
+        int mapHeight = Integer.parseInt(bounds[0]);
+        int mapWidth = Integer.parseInt(bounds[1]);
+
+        this.map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
+    }
+
+    /**
+     * Reads the given String and executes the contained move. String must follow the specification of message type 6.
+     *
+     * @param moveData String holding a move
+     */
+    private void executeMove(String moveData) {
+        int x = Integer.parseInt(moveData.substring(0, 4), 16);
+        int y = Integer.parseInt(moveData.substring(4, 8), 16);
+
+        int bonusRequest = 0;
+        if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10), 16);
+
+        int p = Integer.parseInt(moveData.substring(10, 12), 16);
+        Player movingPlayer = Game.getGame().getPlayerFromNumber(p);
+
+        int moveStackTop = moveStack.size();
+        int glossaryTop = allMovesGlossary.size();
+
+        Move move = Move.createNewMove(glossaryTop, map, movingPlayer, x, y, bonusRequest);
+        allMovesGlossary.set(glossaryTop, move);
+
+        if (move.isLegal()) {
+            System.out.println("Move is legal.");
+            move.doMove();
+            moveStack.set(moveStackTop, move);
+        } else System.out.println("Move is illegal.");
     }
 
     /**
@@ -149,10 +152,10 @@ public class Game {
      * @param nr number of the player to search for
      * @return the player that corresponds to the given number
      */
-    public Player playerFromNumber(int nr) {
+    public Player getPlayerFromNumber(int nr) {
         int n = player.length;
-        for (int i = 0; i < n; i++) {
-            if (player[i].getPlayerNumber() == nr) return player[i];
+        for (Player value : player) {
+            if (value.getPlayerNumber() == nr) return value;
         }
 
         throw new IllegalArgumentException("Invalid Player Number");
@@ -168,7 +171,7 @@ public class Game {
     public enum GamePhase {
         PHASE_ONE,
         PHASE_TWO,
-        ENDED;
+        ENDED
     }
 
     /**
@@ -196,6 +199,15 @@ public class Game {
      */
     public int getTotalPlayerCount() {
         return player.length;
+    }
+
+    /**
+     * Returns the map this game is played on.
+     *
+     * @return the map of this game
+     */
+    public Map getMap() {
+        return map;
     }
 
     /**
