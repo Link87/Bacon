@@ -50,19 +50,22 @@ public class BombMove extends Move{
         int r = Game.getGame().getBombRadius();
         Tile t = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
-        ArrayList<Tile>[] m = new ArrayList[r+1];
         // initializing ArrayLists of tiles
+        ArrayList<Tile>[] m = new ArrayList[r+1];
+
+        // initializing ArrayList to save the tiles which are i away from the tile which is bombed
         for (int l = 0; l < r+1; l++) {
             m[l] = new ArrayList();
         }
 
         m[0].add(t);
 
+        //searches for all neighbours that need to be bombed out
         for (int i=1; i<=r; i++){
             for (int j=0; j<m[i-1].size(); j++) {
                 for (Direction direction : Direction.values()) {
                     boolean redundant = false;
-                    for (ArrayList<Tile> s : m) {
+                    for (ArrayList<Tile> s : m) { //detects whether a tiles is named in the ArrayList
                         for (Tile v : s){
                             if (m[i-1].get(j) != null) {
                                 if (m[i-1].get(j).getTransition(direction) == v) redundant=true;
@@ -70,26 +73,23 @@ public class BombMove extends Move{
                         }
                     }
 
-                    if (m[i-1].get(j) != null) {
+                    if (m[i-1].get(j) != null) { //adding a tile in the ArrayList
                         if (m[i-1].get(j).getTransition(direction) != null) {
-                            if (redundant == false) m[i].add(m[i-1].get(j).getTransition(direction));
+                            if (!redundant) m[i].add(m[i-1].get(j).getTransition(direction));
                         }
                     }
                 }
             }
         }
 
-
+        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
         for (ArrayList<Tile> u : m) {
             for(Tile w : u) {
                 w.bombTile();
             }
         }
-        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
 
-        this.player.receiveBomb(-1);
         // Subtract 1 bomb from player's inventory
-
+        this.player.receiveBomb(-1);
     }
-
 }
