@@ -28,6 +28,9 @@ public class RegularMove extends BuildMove{
      */
     public boolean isLegal(){
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
+        if(tile.getOwner()!=null){
+            return false;
+        }
         Tile.Property property = tile.getProperty();
         switch (property) {
             case BONUS:
