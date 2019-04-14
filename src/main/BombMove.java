@@ -29,8 +29,7 @@ public class BombMove extends Move {
      */
     public boolean isLegal() {
         if (player.getBombCount() == 0) return false;
-        if (this.bonusRequest != 0) return false;
-        return true;
+        return this.bonusRequest == 0;
     }
 
 
@@ -42,7 +41,7 @@ public class BombMove extends Move {
      * Tile class.
      */
     public void doMove() {
-        // m is an array of ArrayLists of tiles, where m[1] contains all tiles (at least) 1 step away from t, m[2] contains
+        // m is an 2D ArrayList of tiles, where m.get(1) contains all tiles (at least) 1 step away from t, m.get(2) contains
         // all tiles (at least) 2 steps away from t etc.
         // We start at radius 0 and work our way up to radius r. We consider every transition of every tile in the previous
         // radius-layer i-1 and check whether this entry has already appeared. If not, we stack this entry onto m[i]
@@ -50,29 +49,25 @@ public class BombMove extends Move {
         int r = Game.getGame().getBombRadius();
         Tile t = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
-        // initializing ArrayLists of tiles
-        ArrayList<Tile>[] m = new ArrayList[r + 1];
-
         // initializing ArrayList to save the tiles which are i away from the tile which is bombed
-        for (int l = 0; l < r + 1; l++) {
-            m[l] = new ArrayList();
-        }
-
-        m[0].add(t);
+        var m = new ArrayList<ArrayList<Tile>>(r + 1);
+        m.add(new ArrayList<>());
+        m.get(0).add(t);
 
         //searches for all neighbours that need to be bombed out
         for (int i = 1; i <= r; i++) {
-            for (int j = 0; j < m[i - 1].size(); j++) {
+            m.add(new ArrayList<>());
+            for (int j = 0; j < m.get(i - 1).size(); j++) {
                 for (Direction direction : Direction.values()) {
                     boolean redundant = false;
                     for (ArrayList<Tile> s : m) { //detects whether a tiles is named in the ArrayList
-                        for (Tile v : s){
-                            if (m[i-1].get(j).getTransition(direction) == v) redundant=true;
+                        for (Tile v : s) {
+                            if (m.get(i - 1).get(j).getTransition(direction) == v) redundant = true;
                         }
                     }
                     //adding a tile in the ArrayList
-                    if (m[i-1].get(j).getTransition(direction) != null) {
-                        if (!redundant) m[i].add(m[i-1].get(j).getTransition(direction));
+                    if (m.get(i - 1).get(j).getTransition(direction) != null) {
+                        if (!redundant) m.get(i).add(m.get(i - 1).get(j).getTransition(direction));
                     }
 
                 }

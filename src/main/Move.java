@@ -10,6 +10,8 @@ public abstract class Move {
     protected int bonusRequest;
 
     /**
+     * Returns an instance of a Move subclass. The subclass is selected according to the provided data.
+     *
      * @param moveID       the ID of the move
      * @param map          the map on which the move is executed
      * @param player       the player of the move
@@ -17,6 +19,7 @@ public abstract class Move {
      * @param y            the y coordinate
      * @param bonusRequest
      * @return Move
+     * @throws IllegalArgumentException when the illegal data is provided
      */
     public static Move createNewMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
         Tile tile = map.getTileAt(x, y);
@@ -33,16 +36,17 @@ public abstract class Move {
 
             else if (owner == player) throw new IllegalArgumentException("Tile is already occupied by player");
 
-            else if (owner == null && tileProperty != Tile.Property.EXPANSION) {
+            else if (owner == null && tileProperty != Tile.Property.EXPANSION)
                 return new RegularMove(moveID, map, player, x, y, bonusRequest);
-            } else {
-                return new OverrideMove(moveID, map, player, x, y, bonusRequest);
-            }
+
+            else return new OverrideMove(moveID, map, player, x, y, bonusRequest);
+
         } else if (Game.getGame().getGamePhase() == Game.GamePhase.PHASE_TWO) {
 
             if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
 
             else return new BombMove(moveID, map, player, x, y, bonusRequest);
+
         } else if (Game.getGame().getGamePhase() == Game.GamePhase.ENDED)
             throw new IllegalArgumentException("Game has already ended");
 

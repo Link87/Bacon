@@ -76,7 +76,6 @@ public class BuildMove extends Move {
     @Override
     void doMove() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
-        Tile.Property property = tile.getProperty();
 
         ArrayList<Tile> line = new ArrayList<>();   // line keeps track of tiles in one direction. When we're done searching that direction line is reused for the next direction
 

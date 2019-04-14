@@ -153,7 +153,6 @@ public class Game {
      * @return the player that corresponds to the given number
      */
     public Player getPlayerFromNumber(int nr) {
-        int n = player.length;
         for (Player value : player) {
             if (value.getPlayerNumber() == nr) return value;
         }

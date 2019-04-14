@@ -13,5 +13,5 @@ public enum Direction {
     DOWN,
     DOWN_LEFT,
     LEFT,
-    UP_LEFT;
+    UP_LEFT
 }

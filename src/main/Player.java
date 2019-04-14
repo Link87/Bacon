@@ -63,14 +63,18 @@ public class Player {
 
 
     /**
-     * Increases the amount of override stones of this player by one.
+     * Changes the amount of override stones of this player by given number.
+     *
+     * @param n amount of stones that are added (or removed when negative)
      */
     public void receiveOverrideStone(int n) {
         this.overrideStoneCount += n;
     }
 
     /**
-     * Increases the amount of bombs of this player by one.
+     * Changes the amount of bombs of this player by given number.
+     *
+     * @param n amount of stones that are added (or removed when negative)
      */
     public void receiveBomb(int n) {
         this.bombCount += n;

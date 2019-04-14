@@ -28,8 +28,7 @@ public class RegularMove extends BuildMove {
      */
     public boolean isLegal() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
-        Tile.Property property = tile.getProperty();
-        switch (property) {
+        switch (tile.getProperty()) {
             case BONUS:
                 if (this.bonusRequest != 20 && this.bonusRequest != 21) return false;
             case CHOICE:
@@ -48,25 +47,24 @@ public class RegularMove extends BuildMove {
      */
     public void doMove() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
-        Tile.Property property = tile.getProperty();
 
         super.doMove();
 
         // After overturning captured stones, we now have to consider the bonus/special effect of our tile
-        switch (property) {
+        switch (tile.getProperty()) {
             case BONUS:
                 if (this.bonusRequest == 20) this.player.receiveBomb(1);
                 else this.player.receiveOverrideStone(1);
                 break;
 
             case INVERSION:
-                int n = Game.getGame().getTotalPlayerCount();
-                for (int a = 0; a < map.width; a++) {
-                    for (int b = 0; b < map.height; b++) {
-                        Tile anyTile = map.getTileAt(a, b);
+                int playerCount = Game.getGame().getTotalPlayerCount();
+                for (int x = 0; x < map.width; x++) {
+                    for (int y = 0; y < map.height; y++) {
+                        Tile anyTile = map.getTileAt(x, y);
                         if (anyTile.getOwner() != null) {
                             int oldNumber = anyTile.getOwner().getPlayerNumber();
-                            int newNumber = (oldNumber + 1) % n;
+                            int newNumber = (oldNumber + 1) % playerCount;
                             anyTile.setOwner(Game.getGame().getPlayerFromNumber(newNumber));
                         }
                     }
@@ -74,9 +72,9 @@ public class RegularMove extends BuildMove {
                 break;
 
             case CHOICE:
-                for (int a = 0; a < map.width; a++) {
-                    for (int b = 0; b < map.height; b++) {
-                        Tile anyTile = map.getTileAt(a, b);
+                for (int x = 0; x < map.width; x++) {
+                    for (int y = 0; y < map.height; y++) {
+                        Tile anyTile = map.getTileAt(x, y);
                         if (anyTile.getOwner() == this.player)
                             anyTile.setOwner(Game.getGame().getPlayerFromNumber(this.bonusRequest));
                         else if (anyTile.getOwner() == Game.getGame().getPlayerFromNumber(this.bonusRequest))
