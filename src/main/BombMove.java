@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  *  A class which represents placing a bomb on a tile
  */
@@ -38,52 +40,55 @@ public class BombMove extends Move{
      * Does nothing if isLegal() method determines the move to be illegal
      * Otherwise uses dynamic programming to calculate all tiles that need to be bombed with bombTile() method in
      * Tile class
-     * m is a 2-dimensional array of tiles, where m[1] contains all tiles (at least) 1 step away from t, m[2] contains
+     * m is an array of ArrayLists of tiles, where m[1] contains all tiles (at least) 1 step away from t, m[2] contains
      * all tiles (at least) 2 steps away from t etc.
      * We start at radius 0 and work our way up to radius r. We consider every transition of every tile in the previous
      * radius-layer i-1 and check whether this entry has already appeared. If not, we stack this entry onto m[i]
      *
      */
     public void doMove(){
-        if (this.isLegal() == false);
+        int r = Game.getGame().getBombRadius();
+        Tile t = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
-        else {
-            int r = Game.getGame().getBombRadius();
-            Tile t = map.getTileAt(this.xCoordinate, this.yCoordinate);
-            Tile[][] m = new Tile[r+1][];
+        ArrayList<Tile>[] m = new ArrayList[r+1];
+        // initializing ArrayLists of tiles
+        for (int l = 0; l < r+1; l++) {
+            m[l] = new ArrayList();
+        }
 
-            m[0][0] = t;
+        m[0].add(t);
 
-            for (int i=1; i<=r; i++){
-                int k=0;
-                for (int j=0; j<m[i-1].length; j++) {
-                    for (Direction direction : Direction.values()) {
-                        boolean redundant = false;
-                        for (Tile[] s : m) {
-                            for (Tile v : s){
-                                if (m[i-1][j].getTransition(direction) == v) redundant=true;
+        for (int i=1; i<=r; i++){
+            for (int j=0; j<m[i-1].size(); j++) {
+                for (Direction direction : Direction.values()) {
+                    boolean redundant = false;
+                    for (ArrayList<Tile> s : m) {
+                        for (Tile v : s){
+                            if (m[i-1].get(j) != null) {
+                                if (m[i-1].get(j).getTransition(direction) == v) redundant=true;
                             }
                         }
+                    }
 
-                        if (redundant == false) {
-                            m[i][k] = m[i-1][j].getTransition(direction);
-                            k++;
+                    if (m[i-1].get(j) != null) {
+                        if (m[i-1].get(j).getTransition(direction) != null) {
+                            if (redundant == false) m[i].add(m[i-1].get(j).getTransition(direction));
                         }
                     }
                 }
             }
-
-
-            for (Tile[] u : m) {
-                for(Tile w : u) {
-                    w.bombTile();
-                }
-            }
-            //"Bomb away" tiles, i.e. turning them into holes and removing transitions
-
-            this.player.receiveBomb(-1);
-            // Subtract 1 bomb from player's inventory
         }
+
+
+        for (ArrayList<Tile> u : m) {
+            for(Tile w : u) {
+                w.bombTile();
+            }
+        }
+        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
+
+        this.player.receiveBomb(-1);
+        // Subtract 1 bomb from player's inventory
 
     }
 

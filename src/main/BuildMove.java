@@ -44,7 +44,7 @@ public class BuildMove extends Move {
 
             for (Direction direction : Direction.values()) {
 
-                if(surrounding[i].getTransition(direction) != null) {                           // If the next tile isn't a hole,
+                if(surrounding[i] != null && surrounding[i].getTransition(direction) != null) { // If the next tile isn't a hole,
                     surrounding[i] = surrounding[i].getTransition(direction);                   // increment the farthest tile in this direction.
                     if (surrounding[i].getOwner() == this.player && steps > 1) return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
                     else if (surrounding[i].getOwner() == this.player && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
@@ -84,41 +84,37 @@ public class BuildMove extends Move {
         int[] turnOverLines = new int[8];   // turnOverLines keeps track of the number of stones that need to be overturned in each direction
         int searchDirection = 0;            // searchDirection keeps track of the direction we're searching in
 
+        tile.setOwner(this.player);     // new stone is placed on the map
 
-        if (!this.isLegal()) ;
+        for (Direction direction : Direction.values()) {
+            line.clear();             // At the beginning of each loop cycle the tiles from the old direction are removed from line,
+            line.add(tile);           // and our playing tile is re-added to the bottom of the stack
+            int steps = 0;            // steps keeps track of the number of steps we've gone in this direction
 
-        else {
-            tile.setOwner(this.player);     // new stone is placed on the map
-
-            for (Direction direction : Direction.values()) {
-                line.clear();             // At the beginning of each loop cycle the tiles from the old direction are removed from line,
-                line.add(tile);           // and our playing tile is re-added to the bottom of the stack
-                int steps = 0;            // steps keeps track of the number of steps we've gone in this direction
-
-                while (true) {
-                    if (line.get(steps).getTransition(direction) == null)
-                        break;        // If the next tile is a hole we can stop searching in this direction,
-                    else {
-                        line.add(line.get(steps).getTransition(direction));    // if not, we add it to line.
-                        if (line.get(steps + 1).getOwner() == null && line.get(steps + 1).getProperty() != Tile.Property.EXPANSION)
-                            break; // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
-                        else if (line.get(steps + 1).getOwner() == this.player && steps + 1 == 1)
-                            break;    // If on the first step we hit our own stone, we can stop searching in this direction
-                        else if (line.get(steps + 1).getOwner() == this.player && steps + 1 > 1) {  // If on other steps we hit our own stone,
-                            turnOverLines[searchDirection] = steps;                                           // we get to overturn all stones on the way,
-                            break;                                                              // and then we can stop searching in this direction
-                        }
+            while (true) {
+                if (line.get(steps).getTransition(direction) == null)
+                    break;        // If the next tile is a hole we can stop searching in this direction,
+                else {
+                    line.add(line.get(steps).getTransition(direction));    // if not, we add it to line.
+                    if (line.get(steps + 1).getOwner() == null && line.get(steps + 1).getProperty() != Tile.Property.EXPANSION)
+                        break; // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
+                    else if (line.get(steps + 1).getOwner() == this.player && steps + 1 == 1)
+                        break;    // If on the first step we hit our own stone, we can stop searching in this direction
+                    else if (line.get(steps + 1).getOwner() == this.player && steps + 1 > 1) {  // If on other steps we hit our own stone,
+                        turnOverLines[searchDirection] = steps;                                           // we get to overturn all stones on the way,
+                        break;                                                              // and then we can stop searching in this direction
                     }
-                    steps++;
                 }
-
-                for (int j = 1; j <= turnOverLines[searchDirection]; j++) {               // When we're done searching one direction, this is the
-                    line.get(j).setProperty(Tile.Property.DEFAULT);     // function that actually overturns the stones (including expansion fields)
-                    line.get(j).setOwner(this.player);
-                }
-
-                searchDirection++;
+                steps++;
             }
+
+            for (int j = 1; j <= turnOverLines[searchDirection]; j++) {               // When we're done searching one direction, this is the
+                line.get(j).setProperty(Tile.Property.DEFAULT);     // function that actually overturns the stones (including expansion fields)
+                line.get(j).setOwner(this.player);
+            }
+
+            searchDirection++;
         }
+
     }
 }
