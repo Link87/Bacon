@@ -81,15 +81,15 @@ public class Game {
 
         String[] lines = hexToAscii(mapData).split("\r?\n");
 
-        int playerCount = Integer.parseInt(lines[0]);
+        int PlayerCount = Integer.parseInt(lines[0]);
         int initOverrideStoneCount = Integer.parseInt(lines[1]);
 
         String[] bomb = lines[2].split(" ");
         int bombCount = Integer.parseInt(bomb[0]);
         bombRadius = Integer.parseInt(bomb[1]);
 
-        player = new Player[playerCount];
-        for (int i = 1; i <= playerCount; i++) {
+        player = new Player[PlayerCount];
+        for (int i = 1; i <= PlayerCount; i++) {
             player[i - 1] = new Player(i, initOverrideStoneCount, bombCount);
         }
 
@@ -97,7 +97,7 @@ public class Game {
         int mapHeight = Integer.parseInt(bounds[0]);
         int mapWidth = Integer.parseInt(bounds[1]);
 
-        map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
+        map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length), getTotalPlayerCount());
     }
 
     /**
@@ -109,11 +109,15 @@ public class Game {
         int x = Integer.parseInt(moveData.substring(0, 4), 16);
         int y = Integer.parseInt(moveData.substring(4, 8), 16);
 
-        int bonusRequest = 0;
-        if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10), 16);
+        int bonusRequestNr = 0;
+        if (moveData.length() > 8) bonusRequestNr = Integer.parseInt(moveData.substring(8, 10), 16);
+
+
+        BonusRequest bonusRequest = getBonusRequestFromNumber(bonusRequestNr);
 
         int p = Integer.parseInt(moveData.substring(10, 12), 16);
         Player movingPlayer = getPlayerFromNumber(p);
+
 
         Move move = Move.createNewMove(allMovesGlossary.size(), map, movingPlayer, x, y, bonusRequest);
         allMovesGlossary.add(move);
@@ -171,6 +175,42 @@ public class Game {
     }
 
     /**
+     * Translate the BonusRequest string number into an enum
+     *
+     * @param bonusNr The BonusRequest as a number
+     * @return The BonusRequest as an enum
+     * @throws IllegalArgumentException for bonusNr which cannot be translated to the enum
+     */
+    public BonusRequest getBonusRequestFromNumber(int bonusNr){
+        switch(bonusNr){
+            case 0:
+                return BonusRequest.NONE;
+            case 1:
+                return BonusRequest.ONE;
+            case 2:
+                return BonusRequest.TWO;
+            case 3:
+                return BonusRequest.THREE;
+            case 4:
+                return BonusRequest.FOUR;
+            case 5:
+                return BonusRequest.FIVE;
+            case 6:
+                return BonusRequest.SIX;
+            case 7:
+                return BonusRequest.SEVEN;
+            case 8:
+                return BonusRequest.EIGHT;
+            case 20:
+                return BonusRequest.BOMB;
+            case 21:
+                return BonusRequest.OVERRIDE;
+            default:
+                throw new IllegalArgumentException("The BonusRequestNumber is not valid");
+        }
+    }
+
+    /**
      * Returns the phase the game is currently in.
      *
      * @return {@link GamePhase} representing the current game phase
@@ -194,7 +234,7 @@ public class Game {
      * @return the total player count
      */
     public int getTotalPlayerCount() {
-        return player.length;
+        return this.player.length;
     }
 
     /**

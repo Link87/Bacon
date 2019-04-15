@@ -23,7 +23,7 @@ public abstract class Move {
      */
     public static Move createNewMove(int moveID, Map map, Player player, int x, int y, BonusRequest bonusRequest) {
         Tile tile = map.getTileAt(x, y);
-        Player owner = tile.getOwner();
+        int owner = tile.getOwner();
         Tile.Property tileProperty = tile.getProperty();
 
         if (player.isDisqualified()) throw new IllegalArgumentException("Player has already been disqualified");
@@ -34,9 +34,9 @@ public abstract class Move {
 
             if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
 
-            else if (owner == player) throw new IllegalArgumentException("Tile is already occupied by player");
+            else if (owner == player.number) throw new IllegalArgumentException("Tile is already occupied by player");
 
-            else if (owner == null && tileProperty != Tile.Property.EXPANSION)
+            else if (owner == 0 && tileProperty != Tile.Property.EXPANSION)
                 return new RegularMove(moveID, map, player, x, y, bonusRequest);
 
             else return new OverrideMove(moveID, map, player, x, y, bonusRequest);

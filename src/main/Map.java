@@ -73,8 +73,8 @@ public class Map {
      * @param direction2 Direction in which the transition applies on the second tile (clockwise, 0 is at the top)
      */
     private void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
-        tile1.setTransition(tile2, Direction.values()[direction1]);
-        tile2.setTransition(tile1, Direction.values()[direction2]);
+        tile1.setTransition(tile2, Direction.values()[direction1],  Direction.values()[direction2]);
+        tile2.setTransition(tile1, Direction.values()[direction2],  Direction.values()[direction1]);
     }
 
     /**
@@ -89,7 +89,7 @@ public class Map {
      * @param lines  String Array that contains map and transition data split into lines
      * @return {@link #Map(Tile[][])} with tiles
      */
-    public static Map readFromString(int width, int height, String[] lines) {
+    public static Map readFromString(int width, int height, String[] lines, int playercount) {
         Tile[][] tiles = new Tile[width][height];
         int h;
 
@@ -101,18 +101,18 @@ public class Map {
 
                 if (symbol == '0') {
                     //Tile is empty
-                    tiles[w][h] = new Tile(null, Tile.Property.DEFAULT, w, h);
+                    tiles[w][h] = new Tile(0, Tile.Property.DEFAULT, playercount, w, h);
                 } else if (symbol <= '8' && symbol > '0') {
                     //Tile has a Stone (an owner)
-                    //TODO: adjust the method of deriving Player from his Playernumber
-                    tiles[w][h] = new Tile(Main.playerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
+                    //TODO: adjust the method of deriving Player from his Player number
+                    tiles[w][h] = new Tile(symbol, Tile.Property.DEFAULT, playercount, w, h);
                 } else if (symbol != 8722) {
                     //8722=='-' but Java behaved unexpected with (symbol != '-')
                     //Tile is not a hole --> Tile has Property
-                    tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
+                    tiles[w][h] = new Tile(0, Tile.Property.fromChar(symbol), playercount, w, h);
                 } else {
                     //Tile is a hole
-                    tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
+                    tiles[w][h] = new Tile(0, Tile.Property.HOLE, playercount, w, h);
                 }
 
             }
@@ -126,33 +126,32 @@ public class Map {
                 }
                 if (y != 0) {
                     if (tiles[x][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP);
+                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP, Direction.DOWN);
                     }
                     if (x != 0 && tiles[x - 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT);
+                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT, Direction.DOWN_RIGHT);
                     }
                     if (x != width - 1 && tiles[x + 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT);
+                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT, Direction.DOWN_LEFT);
                     }
                 }
                 if (y != height - 1) {
                     if (tiles[x][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN);
+                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN, Direction.UP);
                     }
                     if (x != 0 && tiles[x - 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT);
+                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT, Direction.UP_RIGHT);
                     }
                     if (x != width - 1 && tiles[x + 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT);
+                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT, Direction.UP_LEFT);
                     }
                 }
                 if (x != width - 1 && tiles[x + 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT);
+                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT, Direction.LEFT);
                 }
                 if (x != 0 && tiles[x - 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT);
+                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT, Direction.RIGHT);
                 }
-
             }
         }
 
