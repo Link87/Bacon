@@ -108,8 +108,8 @@ public class Game {
         int x = Integer.parseInt(moveData.substring(0, 4), 16);
         int y = Integer.parseInt(moveData.substring(4, 8), 16);
 
-        int bonusRequest = 0;
-        if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10), 16);
+        BonusRequest bonusRequest = BonusRequest.NONE;
+        if (moveData.length() > 8) bonusRequest = BonusRequest.fromNumber(Integer.parseInt(moveData.substring(8, 10), 16));
 
         int p = Integer.parseInt(moveData.substring(10, 12), 16);
         Player movingPlayer = getPlayerFromNumber(p);

@@ -64,17 +64,17 @@ public class Map {
 
                 if (symbol == '0') {
                     //Tile is empty
-                    tiles[w][h] = new Tile(null, Tile.Property.DEFAULT, w, h);
+                    tiles[w][h] = new Tile(0, Tile.Property.DEFAULT, w, h);
                 } else if (symbol <= '8' && symbol > '0') {
                     //Tile has a Stone (an owner)
-                    tiles[w][h] = new Tile(Game.getGame().getPlayerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
+                    tiles[w][h] = new Tile(Character.getNumericValue(symbol), Tile.Property.DEFAULT, w, h);
                 } else if (symbol != 8722) {
                     //8722=='-' but Java behaved unexpected with (symbol != '-')
                     //Tile is not a hole --> Tile has Property
-                    tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
+                    tiles[w][h] = new Tile(0, Tile.Property.fromChar(symbol), w, h);
                 } else {
                     //Tile is a hole
-                    tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
+                    tiles[w][h] = new Tile(0, Tile.Property.HOLE, w, h);
                 }
 
             }

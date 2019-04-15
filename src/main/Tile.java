@@ -22,7 +22,7 @@ public class Tile {
      */
     private final Direction[] arrivals;
 
-    private Player owner;
+    private int ownerId;
     private Property property;
 
     public final int x;
@@ -31,15 +31,15 @@ public class Tile {
     /**
      * Creates a new Tile at the given position. If the owner is set, the property has to be set to <code>DEFAULT</code>.
      *
-     * @param owner    {@link Player} that owns the stone on this Tile. Set to <code>null</code> if there is no stone on this Tile.
+     * @param ownerId  Number of {@link Player} that owns the stone on this Tile. Set to <code>null</code> if there is no stone on this Tile.
      * @param property Special {@link Property} that this Tile has
      * @param x        horizontal coordinate of this Tile
      * @param y        vertical coordinate of this Tile
      */
-    public Tile(Player owner, Property property, int x, int y) {
-        this.owner = owner;
+    public Tile(int ownerId, Property property, int x, int y) {
+        this.ownerId = ownerId;
 
-        if (this.owner != null && property != Property.DEFAULT)
+        if (this.ownerId > 0 && property != Property.DEFAULT)
             throw new IllegalArgumentException("Only default state can define initial owner");
         else this.property = property;
 
@@ -53,10 +53,10 @@ public class Tile {
     /**
      * Sets the owner of this Tile. Use <code>null</code> to remove any ownership.
      *
-     * @param owner new owner of this Tile. <code>null</code> resets ownership
+     * @param owner id of new owner of this Tile. 0 resets ownership
      */
-    public void setOwner(Player owner) {
-        this.owner = owner;
+    public void setOwner(int owner) {
+        this.ownerId = ownerId;
     }
 
     /**
@@ -88,7 +88,7 @@ public class Tile {
      */
     public void bombTile() {
         setProperty(Property.HOLE);
-        setOwner(null);
+        setOwner(0);
 
         //remove transition from neighbors to bombed tile
         for (Direction direction : Direction.values()) {
@@ -128,12 +128,12 @@ public class Tile {
     }
 
     /**
-     * Returns the owner of this Tile.
+     * Returns the id of the owner of this Tile.
      *
-     * @return the owner of this Tile
+     * @return the id of the owner of this Tile or 0 if this tile is unoccupied
      */
-    public Player getOwner() {
-        return this.owner;
+    public int getOwner() {
+        return this.ownerId;
     }
 
     /**

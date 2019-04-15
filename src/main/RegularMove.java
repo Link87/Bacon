@@ -67,10 +67,10 @@ public class RegularMove extends BuildMove {
                 for (int x = 0; x < map.width; x++) {
                     for (int y = 0; y < map.height; y++) {
                         Tile anyTile = map.getTileAt(x, y);
-                        if (anyTile.getOwner() != null) {
-                            int oldNumber = anyTile.getOwner().getPlayerNumber();
+                        if (anyTile.getOwner() != 0) {
+                            int oldNumber = anyTile.getOwner();
                             int newNumber = (oldNumber + 1) % playerCount;
-                            anyTile.setOwner(Game.getGame().getPlayerFromNumber(newNumber));
+                            anyTile.setOwner(newNumber);
                         }
                     }
                 }
@@ -80,44 +80,16 @@ public class RegularMove extends BuildMove {
                 for (int x = 0; x < map.width; x++) {
                     for (int y = 0; y < map.height; y++) {
                         Tile anyTile = map.getTileAt(x, y);
-                        if (anyTile.getOwner() == this.player)
-                            anyTile.setOwner(Game.getGame().getPlayerFromNumber(PlayerNrFromBonusRequest(this.bonusRequest)));
-                        else if (anyTile.getOwner() == Game.getGame().getPlayerFromNumber(PlayerNrFromBonusRequest(this.bonusRequest)))
-                            anyTile.setOwner(this.player);
+                        if (anyTile.getOwner() == this.player.number)
+                            anyTile.setOwner(this.bonusRequest.getPlayerNumber());
+                        else if (anyTile.getOwner() == this.bonusRequest.getPlayerNumber())
+                            anyTile.setOwner(this.player.number);
                     }
                 }
         }
 
         tile.setProperty(Tile.Property.DEFAULT); // After playing our move, the tile becomes default (no bonus anymore)
     }
-    /**
-     * Translates the enum BonusRequest in a number
-     *
-     * @param playerNr number of player in the enum
-     * @return the number of the player in an int
-     * @throws IllegalArgumentException if input is not a playersNr
-     */
-    private int PlayerNrFromBonusRequest(BonusRequest playerNr){
-        switch (playerNr){
-            case ONE:
-                return 1;
-            case TWO:
-                return 2;
-            case THREE:
-                return 3;
-            case FOUR:
-                return 4;
-            case FIVE:
-                return 5;
-            case SIX:
-                return 6;
-            case SEVEN:
-                return 7;
-            case EIGHT:
-                return 8;
-            default:
-                throw new IllegalArgumentException("BonusRequest is not a player's number");
-        }
-    }
+
 }
 

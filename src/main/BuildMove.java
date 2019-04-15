@@ -50,12 +50,12 @@ public class BuildMove extends Move {
                 if (surrounding[i] != null && surrounding[i].getTransition(direction) != null) { // If the next tile isn't a hole,
                     searchDirections[i] = surrounding[i].getArrivalDirection(direction).opposite();        // update direction
                     surrounding[i] = surrounding[i].getTransition(direction);                   // increment the farthest tile in this direction.
-                    if (surrounding[i].getOwner() == this.player && steps > 1)
+                    if (surrounding[i].getOwner() == this.player.number && steps > 1)
                         return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
-                    else if (surrounding[i].getOwner() == this.player && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
+                    else if (surrounding[i].getOwner() == this.player.number && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
                         surrounding[i] = null;                                                  // so set this tile to null and increment emptyOrHoleCount
                         emptyOrHoleCount++;
-                    } else if (surrounding[i].getOwner() == null && surrounding[i].getProperty() != Tile.Property.EXPANSION) {
+                    } else if (surrounding[i].getOwner() == 0 && surrounding[i].getProperty() != Tile.Property.EXPANSION) {
                         surrounding[i] = null;  // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         emptyOrHoleCount++;
                     }
@@ -81,7 +81,7 @@ public class BuildMove extends Move {
 
         int[] turnOverLines = new int[8];   // turnOverLines keeps track of the number of stones that need to be overturned in each direction
 
-        tile.setOwner(this.player);         // new stone is placed on the map
+        tile.setOwner(this.player.number);         // new stone is placed on the map
 
         for (Direction direction : Direction.values()) {
             var path = new ArrayList<Tile>();   // path in the given direction
@@ -102,13 +102,13 @@ public class BuildMove extends Move {
                     last = last.getTransition(helper);
                     path.add(last);
 
-                    if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
+                    if (last.getOwner() == 0 && last.getProperty() != Tile.Property.EXPANSION)
                         // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         break;
-                    else if (last.getOwner() == this.player && path.size() == 1)
+                    else if (last.getOwner() == this.player.number && path.size() == 1)
                         // If on the first step we hit our own stone, we can stop searching in this direction
                         break;
-                    else if (last.getOwner() == this.player && path.size() > 1) {
+                    else if (last.getOwner() == this.player.number && path.size() > 1) {
                         // If on other steps we hit our own stone, we get to overturn all stones on the way
                         // and then we can stop searching in this direction
                         turnOverLines[direction.ordinal()] = path.size() - 1;
@@ -121,7 +121,7 @@ public class BuildMove extends Move {
             // function that actually overturns the stones (including expansion fields)
             for (int i = 1; i <= turnOverLines[direction.ordinal()]; i++) {
                 path.get(i).setProperty(Tile.Property.DEFAULT);
-                path.get(i).setOwner(this.player);
+                path.get(i).setOwner(this.player.number);
             }
         }
 
