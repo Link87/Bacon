@@ -81,8 +81,6 @@ public class BuildMove extends Move {
 
         int[] turnOverLines = new int[8];   // turnOverLines keeps track of the number of stones that need to be overturned in each direction
 
-        tile.setOwner(this.player);         // new stone is placed on the map
-
         for (Direction direction : Direction.values()) {
             var path = new ArrayList<Tile>();   // path in the given direction
             path.add(tile);
@@ -124,6 +122,8 @@ public class BuildMove extends Move {
                 path.get(i).setOwner(this.player);
             }
         }
+
+        tile.setOwner(this.player);         // new stone is placed on the map
 
     }
 }
