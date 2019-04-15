@@ -12,7 +12,7 @@ public class BuildMove extends Move {
      * @param y            the y coordinate
      * @param bonusRequest
      */
-    public BuildMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
+    public BuildMove(int moveID, Map map, Player player, int x, int y, BonusRequest bonusRequest) {
         super(moveID, map, player, x, y, bonusRequest);
     }
 

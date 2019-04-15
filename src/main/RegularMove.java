@@ -13,7 +13,7 @@ public class RegularMove extends BuildMove {
      * @param y            the y coordinate
      * @param bonusRequest
      */
-    public RegularMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
+    public RegularMove(int moveID, Map map, Player player, int x, int y, BonusRequest bonusRequest) {
         super(moveID, map, player, x, y, bonusRequest);
     }
 
@@ -28,14 +28,18 @@ public class RegularMove extends BuildMove {
      */
     public boolean isLegal() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
-        switch (tile.getProperty()) {
-            case BONUS:
-                if (this.bonusRequest != 20 && this.bonusRequest != 21) return false;
-            case CHOICE:
-                if (this.bonusRequest < 1 || this.bonusRequest > 8) return false;
+
+        switch(this.bonusRequest){
+            case OVERRIDE:
+            case BOMB:
+                if(tile.getProperty() != Tile.Property.BONUS) return false;
+                break;
+            case NONE:
+                break;
             default:
-                if (this.bonusRequest != 0) return false;
+                if(tile.getProperty() != Tile.Property.CHOICE) return false;
         }
+
         return super.isLegal();
     }
 
@@ -53,7 +57,7 @@ public class RegularMove extends BuildMove {
         // After overturning captured stones, we now have to consider the bonus/special effect of our tile
         switch (tile.getProperty()) {
             case BONUS:
-                if (this.bonusRequest == 20) this.player.receiveBomb(1);
+                if (this.bonusRequest == BonusRequest.BOMB) this.player.receiveBomb(1);
                 else this.player.receiveOverrideStone(1);
                 break;
 
@@ -77,8 +81,8 @@ public class RegularMove extends BuildMove {
                     for (int y = 0; y < map.height; y++) {
                         Tile anyTile = map.getTileAt(x, y);
                         if (anyTile.getOwner() == this.player)
-                            anyTile.setOwner(Game.getGame().getPlayerFromNumber(this.bonusRequest));
-                        else if (anyTile.getOwner() == Game.getGame().getPlayerFromNumber(this.bonusRequest))
+                            anyTile.setOwner(Game.getGame().getPlayerFromNumber(PlayerNrFromBonusRequest(this.bonusRequest)));
+                        else if (anyTile.getOwner() == Game.getGame().getPlayerFromNumber(PlayerNrFromBonusRequest(this.bonusRequest)))
                             anyTile.setOwner(this.player);
                     }
                 }
@@ -86,5 +90,34 @@ public class RegularMove extends BuildMove {
 
         tile.setProperty(Tile.Property.DEFAULT); // After playing our move, the tile becomes default (no bonus anymore)
     }
-
+    /**
+     * Translates the enum BonusRequest in a number
+     *
+     * @param playerNr number of player in the enum
+     * @return the number of the player in an int
+     * @throws IllegalArgumentException if input is not a playersNr
+     */
+    private int PlayerNrFromBonusRequest(BonusRequest playerNr){
+        switch (playerNr){
+            case ONE:
+                return 1;
+            case TWO:
+                return 2;
+            case THREE:
+                return 3;
+            case FOUR:
+                return 4;
+            case FIVE:
+                return 5;
+            case SIX:
+                return 6;
+            case SEVEN:
+                return 7;
+            case EIGHT:
+                return 8;
+            default:
+                throw new IllegalArgumentException("BonusRequest is not a player's number");
+        }
+    }
 }
+

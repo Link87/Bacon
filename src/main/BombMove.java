@@ -4,7 +4,6 @@ import java.util.ArrayList;
  * A class which represents placing a bomb on a tile.
  */
 public class BombMove extends Move {
-
     /**
      * Creates instance of BombMove via the constructor in its superclass {@link BuildMove}
      *
@@ -15,10 +14,9 @@ public class BombMove extends Move {
      * @param y            the y coordinate
      * @param bonusRequest
      */
-    public BombMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
+    public BombMove(int moveID, Map map, Player player, int x, int y, BonusRequest bonusRequest) {
         super(moveID, map, player, x, y, bonusRequest);
     }
-
 
     /**
      * Checks if this move is legal.
@@ -29,7 +27,7 @@ public class BombMove extends Move {
      */
     public boolean isLegal() {
         if (player.getBombCount() == 0) return false;
-        return this.bonusRequest == 0;
+        return this.bonusRequest == BonusRequest.NONE;
     }
 
 

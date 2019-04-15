@@ -7,7 +7,7 @@ public abstract class Move {
     protected Player player;
     protected int xCoordinate;
     protected int yCoordinate;
-    protected int bonusRequest;
+    protected BonusRequest bonusRequest;
 
     /**
      * Returns an instance of a Move subclass. The subclass is selected according to the provided data.
@@ -17,11 +17,11 @@ public abstract class Move {
      * @param player       the player of the move
      * @param x            the x coordinate
      * @param y            the y coordinate
-     * @param bonusRequest
+     * @param bonusRequest stands for the bonus argument which is necessary for special fields
      * @return Move
      * @throws IllegalArgumentException when the illegal data is provided
      */
-    public static Move createNewMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
+    public static Move createNewMove(int moveID, Map map, Player player, int x, int y, BonusRequest bonusRequest) {
         Tile tile = map.getTileAt(x, y);
         Player owner = tile.getOwner();
         Tile.Property tileProperty = tile.getProperty();
@@ -63,7 +63,7 @@ public abstract class Move {
      * @param y            the y coordinate
      * @param bonusRequest
      */
-    public Move(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
+    public Move(int moveID, Map map, Player player, int x, int y, BonusRequest bonusRequest) {
         this.moveID = moveID;
         this.map = map;
         this.player = player;
