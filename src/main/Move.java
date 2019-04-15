@@ -50,7 +50,7 @@ public abstract class Move {
         } else if (Game.getGame().getGamePhase() == Game.GamePhase.ENDED)
             throw new IllegalArgumentException("Game has already ended");
 
-        return new DefaultIllegalMove(moveID, map, player, x, y, bonusRequest);
+        throw new IllegalArgumentException("Default Illegal Move");
     }
 
     /**

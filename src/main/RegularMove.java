@@ -57,6 +57,7 @@ public class RegularMove extends BuildMove {
                 else this.player.receiveOverrideStone(1);
                 break;
 
+            // TODO: Current approach checks every tile on the map. Increase efficiency by using TileOwnerID swap between players instead
             case INVERSION:
                 int playerCount = Game.getGame().getTotalPlayerCount();
                 for (int x = 0; x < map.width; x++) {
