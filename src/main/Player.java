@@ -25,48 +25,64 @@ public class Player {
         this.disqualified = false;
     }
 
-    public static Player readFromString(int number, int initOverrideStoneCount, int initBombCount){
-        Player player = new Player(number, initOverrideStoneCount, initBombCount);
-        return player;
+    /**
+     * Returns the number of the player.
+     *
+     * @return number of player
+     */
+    public int getPlayerNumber() {
+        return this.number;
     }
 
     /**
-     * Places a stone from this Player on the given Map instance at the given position.
+     * Returns whether the player is disqualified.
      *
-     * @param map the Map the stone is placed on
-     * @param x   x coordinate of the Tile the stone is placed on
-     * @param y   y coordinate of the Tile the stone is placed on
+     * @return true if the player is disqualified
      */
-    public void placeStoneOnMap(Map map, int x, int y, int bonus) {
-        map.placeStone(this, x, y, bonus);
+    public boolean isDisqualified() {
+        return this.disqualified;
     }
 
     /**
-     * Places an override stone from this Player on the given Map instance at the given position.
-     * Decreases the amount of override stones of this player.
+     * Returns the amount of override stones the player has left.
      *
-     * @param map the Map the override stone is placed on
-     * @param x   x coordinate of the Tile the override stone is placed on
-     * @param y   y coordinate of the Tile the override stone is placed on
+     * @return amount of override stones
      */
-    public void useOverrideStone(Map map, int x, int y, int bonus) {
-        this.overrideStoneCount--;
-        map.placeOverrideStone(this, x, y, bonus);
+    public int getOverrideStoneCount() {
+        return this.overrideStoneCount;
     }
 
     /**
-     * Throws a bomb from this Player on the given Map instance at the given position.
-     * Decreases the amount of bombs of this player.
+     * Returns the amount of bombs the player has left.
      *
-     * @param map the Map the bomb is thrown on
-     * @param x   x coordinate of the Tile the bomb is thrown on
-     * @param y   y coordinate of the Tile the bomb is thrown on
+     * @return amount of bombs
      */
-    public void useBomb(Map map, int x, int y) {
-        this.bombCount--;
-        map.throwBomb(this, x, y);
+    public int getBombCount() {
+        return this.bombCount;
     }
 
+
+    /**
+     * Changes the amount of override stones of this player by given number.
+     *
+     * @param n amount of stones that are added (or removed when negative)
+     */
+    public void receiveOverrideStone(int n) {
+        this.overrideStoneCount += n;
+    }
+
+    /**
+     * Changes the amount of bombs of this player by given number.
+     *
+     * @param n amount of stones that are added (or removed when negative)
+     */
+    public void receiveBomb(int n) {
+        this.bombCount += n;
+    }
+
+    /**
+     * Marks this player as disqualified.
+     */
     public void disqualify() {
         this.disqualified = true;
     }

@@ -14,4 +14,8 @@ public enum Direction {
     DOWN_LEFT,
     LEFT,
     UP_LEFT;
+
+    public Direction opposite() {
+        return Direction.values()[(this.ordinal() + 4) % 8];
+    }
 }

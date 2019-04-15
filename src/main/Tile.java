@@ -14,6 +14,14 @@ public class Tile {
      */
     private final Tile[] transitions;
 
+    /**
+     * Direction in which the according transition arrives at the other tile.
+     * The direction is defined by the array index, as defined in {@link Direction}.
+     * <p>
+     * If no transition is possible in a given direction, the array element is set to  <code>null</code>.
+     */
+    private final Direction[] arrivals;
+
     private Player owner;
     private Property property;
 
@@ -39,6 +47,7 @@ public class Tile {
         this.y = y;
 
         this.transitions = new Tile[Direction.values().length];
+        this.arrivals = new Direction[Direction.values().length];
     }
 
     /**
@@ -65,28 +74,66 @@ public class Tile {
      *
      * @param other     Tile the transition leads to
      * @param direction Direction in which the transition is applied
+     * @param arrival   Direction in which the transition arrives at the other tile
      */
-    public void setTransition(Tile other, Direction direction) {
+    public void setTransition(Tile other, Direction direction, Direction arrival) {
         this.transitions[direction.ordinal()] = other;
+        this.arrivals[direction.ordinal()] = arrival;
     }
 
+
     /**
-     * Gets the Tile the transition in the given direction leads to. Returns <code>null</code> if no transition is present.
+     * Makes a hole out of a tile by removing its owner, its transitions to other tiles and other tiles' transition to it.
+     * Also sets property to 'HOLE'.
+     */
+    public void bombTile() {
+        setProperty(Property.HOLE);
+        setOwner(null);
+
+        //remove transition from neighbors to bombed tile
+        for (Direction direction : Direction.values()) {
+            Tile neighbor = this.getTransition(direction);
+            if (neighbor == null) continue;
+            for (Direction neighborDirection : Direction.values()) {
+                Tile t = neighbor.getTransition(neighborDirection);
+                if (t == this) neighbor.setTransition(null, neighborDirection, null);
+            }
+        }
+        //remove transitions from bombed tile to neighbors
+        for (Direction direction : Direction.values()) {
+            this.setTransition(null, direction, null);
+        }
+
+    }
+
+
+    /**
+     * Returns the Tile the transition in the given direction leads to. Returns <code>null</code> if no transition is present.
      *
      * @param direction {@link Direction} in which the transition is applied
      * @return the Tile the transition points to or <code>null</code> if no transition is present
      */
     public Tile getTransition(Direction direction) {
-        return transitions[direction.ordinal()];
+        return this.transitions[direction.ordinal()];
     }
 
     /**
-     * Returns the owner of this Tile
+     * Returns the direction in which the transition arrives. Returns <code>null</code> if no transition is present.
+     *
+     * @param direction {@link Direction} in which the transition starts on this tile
+     * @return the arriving direction or <code>null</code> if no transition is present in the given direction
+     */
+    public Direction getArrivalDirection(Direction direction) {
+        return this.arrivals[direction.ordinal()];
+    }
+
+    /**
+     * Returns the owner of this Tile.
      *
      * @return the owner of this Tile
      */
     public Player getOwner() {
-        return owner;
+        return this.owner;
     }
 
     /**
@@ -95,7 +142,7 @@ public class Tile {
      * @return the Property of this Tile
      */
     public Property getProperty() {
-        return property;
+        return this.property;
     }
 
     /**
