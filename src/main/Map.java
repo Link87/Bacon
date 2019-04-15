@@ -29,35 +29,72 @@ public class Map {
     }
 
     /**
+     * Places a stone from the given Player on the given Tile. This method checks whether the move is possible
+     * and calculates the resulting Map and Tile state changes.
+     *
+     * @param player the {@link Player} that executes the move
+     * @param x      the x coordinate of the tile the stone is placed on
+     * @param y      the y coordinate of the tile the stone is placed on
+     */
+    public void placeStone(Player player, int x, int y, int bonus) {
+
+    }
+
+    /**
+     * Places an override stone from the given Player on the given Tile. This method checks whether the move is possible
+     * and calculates the resulting Map and Tile state changes.
+     *
+     * @param player the {@link Player} that executes the move
+     * @param x      the x coordinate of the tile the stone is placed on
+     * @param y      the y coordinate of the tile the stone is placed on
+     */
+    public void placeOverrideStone(Player player, int x, int y, int bonus) {
+
+    }
+
+    /**
+     * Throws a bomb from the given Player on the given Tile. This method checks whether the move is possible
+     * and calculates the resulting Map and Tile state changes.
+     *
+     * @param player the {@link Player} that executes the move
+     * @param x      the x coordinate of the tile the stone is placed on
+     * @param y      the y coordinate of the tile the stone is placed on
+     */
+    public void throwBomb(Player player, int x, int y) {
+
+    }
+
+    /**
      * Extends the map with the given transition.
      *
      * @param tile1      First Tile of the transition
-     * @param direction1 Direction in which the transition applies on the first tile
+     * @param direction1 Direction in which the transition applies on the first tile (clockwise, 0 is at the top)
      * @param tile2      Second Tile of the transition
-     * @param direction2 Direction in which the transition applies on the second tile
+     * @param direction2 Direction in which the transition applies on the second tile (clockwise, 0 is at the top)
      */
-    private void addTransition(Tile tile1, Direction direction1, Tile tile2, Direction direction2) {
-        tile1.setTransition(tile2, direction1, direction2);
-        tile2.setTransition(tile1, direction2, direction1);
+    private void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
+        tile1.setTransition(tile2, Direction.values()[direction1]);
+        tile2.setTransition(tile1, Direction.values()[direction2]);
     }
 
     /**
      * Deserialize a map object from the given String lines.
-     * The lines are expected to already be ASCII and must start with <code>height</code> lines with <code>width</code>
+     * The lines is expected to already be ASCII and must start with <code>height</code> lines with <code>width</code>
      * characters each that represent the map tiles according to the specification.
      * The map definition can be followed with a listing of transitions that also have to follow the specification.
-     * Transitions have to be in separated lines.
+     * Transitions have to be separated by line breaks. "\n" is the only excepted line brake.
      *
      * @param width  width of the map
      * @param height height of the map
      * @param lines  String Array that contains map and transition data split into lines
      * @return {@link #Map(Tile[][])} with tiles
      */
-    public static Map readFromString(final int width, final int height, String[] lines) {
+    public static Map readFromString(int width, int height, String[] lines) {
         Tile[][] tiles = new Tile[width][height];
+        int h;
 
-        // putting tile information into the array
-        for (int h = 0; h < height; h++) {
+        //putting tile information into the array
+        for (h = 0; h < height; h++) {
             String[] tile = lines[h].split(" ");
             for (int w = 0; w < width; w++) {
                 char symbol = tile[w].charAt(0);
@@ -67,7 +104,8 @@ public class Map {
                     tiles[w][h] = new Tile(null, Tile.Property.DEFAULT, w, h);
                 } else if (symbol <= '8' && symbol > '0') {
                     //Tile has a Stone (an owner)
-                    tiles[w][h] = new Tile(Game.getGame().getPlayerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
+                    //TODO: adjust the method of deriving Player from his Playernumber
+                    tiles[w][h] = new Tile(Main.playerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
                 } else if (symbol != 8722) {
                     //8722=='-' but Java behaved unexpected with (symbol != '-')
                     //Tile is not a hole --> Tile has Property
@@ -88,31 +126,31 @@ public class Map {
                 }
                 if (y != 0) {
                     if (tiles[x][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP, Direction.DOWN);
+                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP);
                     }
                     if (x != 0 && tiles[x - 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT, Direction.DOWN_RIGHT);
+                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT);
                     }
                     if (x != width - 1 && tiles[x + 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT, Direction.DOWN_LEFT);
+                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT);
                     }
                 }
                 if (y != height - 1) {
                     if (tiles[x][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN, Direction.UP);
+                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN);
                     }
                     if (x != 0 && tiles[x - 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT, Direction.UP_RIGHT);
+                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT);
                     }
                     if (x != width - 1 && tiles[x + 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT, Direction.UP_LEFT);
+                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT);
                     }
                 }
                 if (x != width - 1 && tiles[x + 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT, Direction.LEFT);
+                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT);
                 }
                 if (x != 0 && tiles[x - 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT, Direction.RIGHT);
+                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT);
                 }
 
             }
@@ -121,12 +159,12 @@ public class Map {
         Map map = new Map(tiles);
 
         //adding additional transitions from map specification
-        for (int l = height; l < lines.length; l++) {
+        for (int l = h; l < lines.length; l++) {
             String[] elements = lines[l].split(" ");
             map.addTransition(tiles[Integer.parseInt(elements[0])][Integer.parseInt(elements[1])],
-                    Direction.values()[Integer.parseInt(elements[2])],
+                    Integer.parseInt(elements[2]),
                     tiles[Integer.parseInt(elements[4])][Integer.parseInt(elements[5])],
-                    Direction.values()[Integer.parseInt(elements[6])]
+                    Integer.parseInt(elements[6])
             );
         }
 
