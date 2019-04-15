@@ -7,7 +7,7 @@ stages:
 build:
   stage: build
   script:
-    - ant jar
+    - ant build
 
 test:
   stage: test

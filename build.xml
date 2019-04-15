@@ -50,6 +50,7 @@
         <mkdir dir="${test.build.dir}"/>
         <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" source="11" target="11"
                includeantruntime="false">
+            <compilerarg line="-encoding utf-8"/>
             <classpath refid="classpath.test"/>
         </javac>
     </target>
