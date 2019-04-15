@@ -77,7 +77,7 @@ public class Game {
      * @param mapData String holding a map
      */
     private void initializeMap(String mapData) {
-        this.currentPhase = GamePhase.PHASE_ONE;
+        currentPhase = GamePhase.PHASE_ONE;
 
         String[] lines = hexToAscii(mapData).split("\r?\n");
 
@@ -86,18 +86,18 @@ public class Game {
 
         String[] bomb = lines[2].split(" ");
         int bombCount = Integer.parseInt(bomb[0]);
-        this.bombRadius = Integer.parseInt(bomb[1]);
+        bombRadius = Integer.parseInt(bomb[1]);
 
-        this.player = new Player[playerCount];
+        player = new Player[playerCount];
         for (int i = 1; i <= playerCount; i++) {
-            this.player[i - 1] = new Player(i, initOverrideStoneCount, bombCount);
+            player[i - 1] = new Player(i, initOverrideStoneCount, bombCount);
         }
 
         String[] bounds = lines[3].split(" ");
         int mapHeight = Integer.parseInt(bounds[0]);
         int mapWidth = Integer.parseInt(bounds[1]);
 
-        this.map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
+        map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
     }
 
     /**

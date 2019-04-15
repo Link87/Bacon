@@ -90,7 +90,7 @@ public class Tile {
         setProperty(Property.HOLE);
         setOwner(null);
 
-        //remove transition from neighbours to bombed tile
+        //remove transition from neighbors to bombed tile
         for (Direction direction : Direction.values()) {
             Tile neighbor = this.getTransition(direction);
             if (neighbor == null) continue;
@@ -99,7 +99,7 @@ public class Tile {
                 if (t == this) neighbor.setTransition(null, neighborDirection, null);
             }
         }
-        //remove neighbours of bombed tile
+        //remove transitions from bombed tile to neighbors
         for (Direction direction : Direction.values()) {
             this.setTransition(null, direction, null);
         }
