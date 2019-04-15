@@ -97,8 +97,9 @@ public class BuildMove extends Move {
                 else {
                     // if not, we add it to path
                     // determine new search direction, is opposite to arrival direction
+                    Direction helper = searchDirection;
                     searchDirection = last.getArrivalDirection(searchDirection).opposite();
-                    last = last.getTransition(searchDirection);
+                    last = last.getTransition(helper);
                     path.add(last);
 
                     if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
