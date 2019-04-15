@@ -6,9 +6,12 @@ import java.util.ArrayList;
  */
 public class Game {
 
-    private static Game instance;
+    private static Game instance = new Game();
 
-    private Player[] player;
+    /**
+     * Contains players in order, where index is number - 1.
+     */
+    private Player[] players;
     private Map map;
     private int bombRadius;
     private Player me;
@@ -23,10 +26,6 @@ public class Game {
     private ArrayList<Move> allMovesGlossary = new ArrayList<>();
 
     public static Game getGame() {
-        if (instance == null) {
-            instance = new Game();
-        }
-
         return instance;
     }
 
@@ -88,9 +87,9 @@ public class Game {
         int bombCount = Integer.parseInt(bomb[0]);
         bombRadius = Integer.parseInt(bomb[1]);
 
-        player = new Player[playerCount];
+        players = new Player[playerCount];
         for (int i = 1; i <= playerCount; i++) {
-            player[i - 1] = new Player(i, initOverrideStoneCount, bombCount);
+            players[i - 1] = new Player(i, initOverrideStoneCount, bombCount);
         }
 
         String[] bounds = lines[3].split(" ");
@@ -148,13 +147,11 @@ public class Game {
      *
      * @param nr number of the player to search for
      * @return the player that corresponds to the given number
+     * @throws ArrayIndexOutOfBoundsException when player number is illegal
      */
     public Player getPlayerFromNumber(int nr) {
-        for (Player value : player) {
-            if (value.getPlayerNumber() == nr) return value;
-        }
-
-        throw new IllegalArgumentException("Invalid Player Number:" + nr);
+        // the player array is 0-based
+        return players[nr - 1];
     }
 
     /**
@@ -194,7 +191,7 @@ public class Game {
      * @return the total player count
      */
     public int getTotalPlayerCount() {
-        return player.length;
+        return players.length;
     }
 
     /**
