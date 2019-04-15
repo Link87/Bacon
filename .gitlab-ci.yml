@@ -1,0 +1,15 @@
+image: whatthefuckisadockerid666/swp19-image:latest
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+    - ant jar
+
+test:
+  stage: test
+  script:
+    - ant test
