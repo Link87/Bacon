@@ -70,7 +70,10 @@ public class RegularMove extends BuildMove {
                         Tile anyTile = map.getTileAt(x, y);
                         if (anyTile.getOwner() != null) {
                             int oldNumber = anyTile.getOwner().getPlayerNumber();
-                            int newNumber = (oldNumber + 1) % playerCount;
+                            int newNumber = oldNumber+1;
+                            if(newNumber > playerCount){
+                                newNumber=1;
+                            }
                             anyTile.setOwner(Game.getGame().getPlayerFromNumber(newNumber));
                         }
                     }
