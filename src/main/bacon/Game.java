@@ -45,14 +45,14 @@ public class Game {
             case "02":
                 // Receive map from server
                 // parse data and initialize the Game instance with given values
-                initializeMap(message);
+                readMap(hexToAscii(message));
                 break;
             case "03":
                 me = getPlayerFromNumber(Integer.parseInt(message, 16));
                 break;
             case "06":
                 // Server announces move of a player
-                executeMove(message);
+                executeMove(hexToAscii(message));
                 break;
             case "07":
                 // Disqualify player
@@ -77,10 +77,10 @@ public class Game {
      *
      * @param mapData String holding a map
      */
-    private void initializeMap(String mapData) {
+    public void readMap(String mapData) {
         currentPhase = GamePhase.PHASE_ONE;
 
-        String[] lines = hexToAscii(mapData).split("\r?\n");
+        String[] lines = mapData.split("\r?\n");
 
         int playerCount = Integer.parseInt(lines[0]);
         int initOverrideStoneCount = Integer.parseInt(lines[1]);
@@ -107,13 +107,13 @@ public class Game {
      * @param moveData String holding a move
      */
     private void executeMove(String moveData) {
-        int x = Integer.parseInt(moveData.substring(0, 4), 16);
-        int y = Integer.parseInt(moveData.substring(4, 8), 16);
+        int x = Integer.parseInt(moveData.substring(0, 4));
+        int y = Integer.parseInt(moveData.substring(4, 8));
 
         int bonusRequest = 0;
-        if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10), 16);
+        if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10));
 
-        int p = Integer.parseInt(moveData.substring(10, 12), 16);
+        int p = Integer.parseInt(moveData.substring(10, 12));
         Player movingPlayer = getPlayerFromNumber(p);
 
         Move move = Move.createNewMove(allMovesGlossary.size(), map, movingPlayer, x, y, bonusRequest);
