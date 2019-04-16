@@ -42,7 +42,7 @@
 
     <!-- JavaDoc -->
     <target name="doc">
-        <javadoc sourcepath="${src.dir}" destdir="doc"/>
+        <javadoc sourcepath="${src.dir}" packagenames="bacon" destdir="doc"/>
     </target>
 
     <!-- JUnit 4 -->
