@@ -24,6 +24,12 @@ ant run
 
 to run the project.
 
+```bash
+ant doc
+```
+
+generates the JavaDoc in the `doc` directory.
+
 ## Tests
 
 Run
