@@ -33,10 +33,13 @@ public class RegularMove extends BuildMove {
         switch (tile.getProperty()) {
             case BONUS:
                 if (this.bonusRequest != 20 && this.bonusRequest != 21) return false;
+                break;
             case CHOICE:
                 if (this.bonusRequest < 1 || this.bonusRequest > 8) return false;
+                break;
             default:
                 if (this.bonusRequest != 0) return false;
+                break;
         }
         return super.isLegal();
     }
