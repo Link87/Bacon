@@ -1,3 +1,5 @@
+package bacon;
+
 import java.util.ArrayList;
 
 /**

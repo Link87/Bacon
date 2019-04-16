@@ -1,4 +1,4 @@
-<project name="ReversiAI6" default="build">
+<project name="Bacon" default="build">
 
     <property name="build.dir" value="bin/classes"/>
     <property name="jar.dir" value="bin/jar/"/>
@@ -6,8 +6,8 @@
     <property name="test.build.dir" value="bin/test/"/>
     <property name="test.src.dir" value="src/test/"/>
 
-    <property name="mainClass.name" value="Main"/>
-    <property name="outputJar.name" value="Group6AI.jar"/>
+    <property name="mainClass.name" value="bacon.Main"/>
+    <property name="outputJar.name" value="bacon.jar"/>
 
     <path id="classpath.test">
         <pathelement location="lib/junit-4.13-beta-2.jar"/>
@@ -63,7 +63,7 @@
             </classpath>
             <formatter type="brief" usefile="false" />
             <batchtest>
-                <fileset dir="${test.src.dir}" includes="**/*Test.java" />
+                <fileset dir="${test.src.dir}" includes="**/*.java" />
             </batchtest>
         </junit>
     </target>

@@ -1,3 +1,5 @@
+package bacon;
+
 /**
  * This enum defines the directions that transitions can be assigned to.
  * The corresponding integer value can be determined with <code>ordinal()</code>.

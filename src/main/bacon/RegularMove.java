@@ -1,3 +1,5 @@
+package bacon;
+
 /**
  * A class which represents placing a stone on a tile.
  */

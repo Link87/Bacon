@@ -1,3 +1,5 @@
+package bacon;
+
 /**
  * A tile on the map. A Tile may have a special {@link Property}.
  * <p>

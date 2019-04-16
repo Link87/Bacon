@@ -1,3 +1,5 @@
+package bacon;
+
 /**
  * An interface which defines the basic functions of each typ of move.
  */

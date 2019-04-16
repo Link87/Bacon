@@ -1,3 +1,5 @@
+package bacon;
+
 /**
  * A map on which Reversi is played.
  */
