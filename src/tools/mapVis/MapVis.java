@@ -1,4 +1,4 @@
-package tools.mapVis;
+package src.tools.mapVis;
 
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
