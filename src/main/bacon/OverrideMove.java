@@ -1,3 +1,5 @@
+package bacon;
+
 /**
  * A class which represents placing an override stone on a tile
  */

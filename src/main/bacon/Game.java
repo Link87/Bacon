@@ -1,3 +1,5 @@
+package bacon;
+
 import java.util.Arrays;
 import java.util.ArrayList;
 
@@ -156,9 +158,9 @@ public class Game {
 
     /**
      * This enum represents the Phases of the game.
-     * <code>PHASE_ONE<\code> stands for the playing phase,
-     * <code>PHASE_TWO<\code> for the bombing phase,
-     * <code>ENDED<\code> for the end of the game
+     * <code>PHASE_ONE</code> stands for the playing phase,
+     * <code>PHASE_TWO</code> for the bombing phase,
+     * <code>ENDED</code> for the end of the game
      */
 
     public enum GamePhase {

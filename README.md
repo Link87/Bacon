@@ -1,4 +1,6 @@
-# Reversi AI of Group 6
+# Bacon
+
+**Reversi AI of Group 6**
 
 ## Overview
 
