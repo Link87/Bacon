@@ -79,12 +79,12 @@ public abstract class Move {
      *
      * @return true if the move is legal, false otherwise
      */
-    abstract boolean isLegal();
+    public abstract boolean isLegal();
 
 
     /**
      * Executes this move.
      */
-    abstract void doMove();
+    public abstract void doMove();
 
 }
