@@ -26,7 +26,7 @@ public class BuildMove extends Move {
      * @return true if the move is legal, false otherwise
      */
     @Override
-    boolean isLegal() {
+    public boolean isLegal() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
         // farthest reachable tile in each direction
@@ -78,7 +78,7 @@ public class BuildMove extends Move {
      * Otherwise uses depth-first search to find the number of stones that need to be overturned in each direction.
      */
     @Override
-    void doMove() {
+    public void doMove() {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
         int[] turnOverLines = new int[8];   // turnOverLines keeps track of the number of stones that need to be overturned in each direction
