@@ -1,5 +1,9 @@
-package bacon;
+package bacon.move;
 
+import bacon.Game;
+import bacon.Maps;
+import bacon.Tile;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -24,7 +28,7 @@ public class BombMoveTest {
                 9, 0, 0);
         bomb1.doMove();
         // tiles to the left
-        assertEquals(Tile.Property.HOLE, Game.getGame().getMap().getTileAt(9, 0).getProperty());
+        Assert.assertEquals(Tile.Property.HOLE, Game.getGame().getMap().getTileAt(9, 0).getProperty());
         assertEquals(Tile.Property.HOLE, Game.getGame().getMap().getTileAt(8, 0).getProperty());
         assertEquals(Tile.Property.HOLE, Game.getGame().getMap().getTileAt(7, 0).getProperty());
         assertEquals(Tile.Property.HOLE, Game.getGame().getMap().getTileAt(6, 0).getProperty());

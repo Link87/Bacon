@@ -1,4 +1,9 @@
-package bacon;
+package bacon.move;
+
+import bacon.Direction;
+import bacon.Map;
+import bacon.Player;
+import bacon.Tile;
 
 import java.util.ArrayList;
 

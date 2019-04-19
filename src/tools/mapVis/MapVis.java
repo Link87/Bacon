@@ -1,5 +1,9 @@
 package mapVis;
 
+import bacon.move.BombMove;
+import bacon.move.Move;
+import bacon.move.OverrideMove;
+import bacon.move.RegularMove;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

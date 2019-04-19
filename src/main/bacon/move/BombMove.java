@@ -1,4 +1,6 @@
-package bacon;
+package bacon.move;
+
+import bacon.*;
 
 import java.util.ArrayList;
 

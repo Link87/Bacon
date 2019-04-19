@@ -1,5 +1,7 @@
-package bacon;
+package bacon.move;
 
+import bacon.Game;
+import bacon.Tile;
 import org.junit.Test;
 
 import static bacon.Tile.Property.DEFAULT;
