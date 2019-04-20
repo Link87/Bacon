@@ -58,9 +58,14 @@ public class Tile {
      * @param owner new owner of this Tile. <code>null</code> resets ownership
      */
     public void setOwner(Player owner) {
-        this.owner.removeStone(this);
-        this.owner = owner;
-        this.owner.setStone(this);
+        if (owner != null) {
+            this.owner.removeStone(this);
+        }
+            this.owner = owner;
+
+        if (owner != null) {
+            this.owner.setStone(this);
+        }
     }
 
     /**

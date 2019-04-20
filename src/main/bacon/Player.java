@@ -14,7 +14,7 @@ public class Player {
     private int overrideStoneCount;
     private int bombCount;
     private boolean disqualified;
-    private HashSet<Tile> stones;
+    public HashSet<Tile> stones;
 
     /**
      * Creates a new Player instance.
@@ -28,6 +28,7 @@ public class Player {
         this.overrideStoneCount = overrideStoneCount;
         this.bombCount = bombCount;
         this.disqualified = false;
+        this.stones = new HashSet<Tile>();
     }
 
     /**
@@ -71,14 +72,22 @@ public class Player {
      *
      * @param tile which now belongs to the player
      */
-    public void setStone(Tile tile){ stones.add(tile);}
+    public void setStone(Tile tile){
+        if (tile != null) {
+            stones.add(tile);
+        }
+    }
 
     /**
      * Removes ownership of the tile owned by this owner
      *
      * @param tile which no longer belongs to this player
      */
-    public void removeStone(Tile tile){ stones.remove(tile);}
+    public void removeStone(Tile tile){
+        if (stones.contains(tile)) {
+            stones.remove(tile);
+        }
+    }
 
     /**
      * Changes the amount of override stones of this player by given number.
