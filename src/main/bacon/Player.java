@@ -83,11 +83,7 @@ public class Player {
      *
      * @param tile which no longer belongs to this player
      */
-    public void removeStone(Tile tile){
-        if (stones.contains(tile)) {
-            stones.remove(tile);
-        }
-    }
+    public void removeStone(Tile tile) { stones.remove(tile); }
 
     /**
      * Changes the amount of override stones of this player by given number.
