@@ -3,6 +3,7 @@ package bacon.move;
 import bacon.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * A class which represents placing a bomb on a tile.
@@ -50,39 +51,41 @@ public class BombMove extends Move {
         // We start at radius 0 and work our way up to radius r. We consider every transition of every tile in the previous
         // radius-layer i-1 and check whether this entry has already appeared. If not, we stack this entry onto m[i]
 
-        int r = Game.getGame().getBombRadius();
-        Tile t = map.getTileAt(this.xCoordinate, this.yCoordinate);
+        int radius = Game.getGame().getBombRadius();
+        Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
-        // initializing ArrayList to save the tiles which are i away from the tile which is bombed
-        var m = new ArrayList<ArrayList<Tile>>(r + 1);
-        m.add(new ArrayList<>());
-        m.get(0).add(t);
+        // set of already examined tiles
+        var bombSet = new HashSet<Tile>();
+        // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
+        var curRadiusList = new ArrayList<Tile>();
+        // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
+        var nextRadiusList = new ArrayList<Tile>();
+
+        bombSet.add(tile);
+        curRadiusList.add(tile);
 
         //searches for all neighbours that need to be bombed out
-        for (int i = 1; i <= r; i++) {
-            m.add(new ArrayList<>());
-            for (int j = 0; j < m.get(i - 1).size(); j++) {
+        for (int i = 0; i < radius; i++) {
+            for (int j = 0; j < curRadiusList.size(); j++) {
                 for (Direction direction : Direction.values()) {
-                    boolean redundant = false;
-                    for (ArrayList<Tile> s : m) { //detects whether a tiles is named in the ArrayList
-                        for (Tile v : s) {
-                            if (m.get(i - 1).get(j).getTransition(direction) == v) redundant = true;
+                    if(curRadiusList.get(j).getTransition(direction) != null) {
+                        if (!bombSet.contains(curRadiusList.get(j).getTransition(direction))) {
+                            bombSet.add(curRadiusList.get(j).getTransition(direction));
+                            nextRadiusList.add(curRadiusList.get(j).getTransition(direction));
                         }
                     }
-                    //adding a tile in the ArrayList
-                    if (m.get(i - 1).get(j).getTransition(direction) != null) {
-                        if (!redundant) m.get(i).add(m.get(i - 1).get(j).getTransition(direction));
-                    }
-
                 }
             }
+            curRadiusList.clear();
+            for (int k=0; k<nextRadiusList.size(); k++) {
+                curRadiusList.add(nextRadiusList.get(k));
+            }
+            nextRadiusList.clear();
         }
 
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
-        for (ArrayList<Tile> u : m) {
-            for (Tile w : u) {
-                w.bombTile();
-            }
+        for (Tile u: bombSet) {
+            u.bombTile();
         }
 
         // Subtract 1 bomb from player's inventory
