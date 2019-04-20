@@ -54,6 +54,7 @@ public class Tile {
 
     /**
      * Sets the owner of this Tile. Use <code>null</code> to remove any ownership.
+     * Also updates the player.
      *
      * @param owner new owner of this Tile. <code>null</code> resets ownership
      */
@@ -61,7 +62,7 @@ public class Tile {
         if (this.owner != null) {
             this.owner.removeStone(this);
         }
-            this.owner = owner;
+        this.owner = owner;
 
         if (owner != null) {
             this.owner.addStone(this);
