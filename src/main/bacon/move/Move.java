@@ -6,7 +6,7 @@ import bacon.Player;
 import bacon.Tile;
 
 /**
- * An abstract class which defines the basic functions of each typ of move.
+ * An interface which defines the basic functions of each typ of move.
  */
 public abstract class Move {
     protected int moveID;
