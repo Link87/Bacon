@@ -72,7 +72,7 @@ public class Player {
      *
      * @param tile which now belongs to the player
      */
-    public void setStone(Tile tile){
+    public void addStone(Tile tile){
         if (tile != null) {
             stones.add(tile);
         }

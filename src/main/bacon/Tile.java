@@ -64,7 +64,7 @@ public class Tile {
             this.owner = owner;
 
         if (owner != null) {
-            this.owner.setStone(this);
+            this.owner.addStone(this);
         }
     }
 
