@@ -6,6 +6,22 @@ package bacon;
  */
 public class GameState {
 
+    public void setPlayers(Player[] players) {
+        this.players = players;
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
+    }
+
+    public void setCurrentPhase(GamePhase currentPhase) {
+        this.currentPhase = currentPhase;
+    }
+
+    public void setMe(Player me) {
+        this.me = me;
+    }
+
     /**
      * Contains players in order, where index is number - 1.
      */
@@ -14,10 +30,8 @@ public class GameState {
     private GamePhase currentPhase;
     private Player me;
 
-    public GameState(Player[] players,Map map,GamePhase currentPhase){
-        this.players = players;
-        this.map = map;
-        this.currentPhase = currentPhase;
+    public GameState(){
+
     }
 
     public GameState getDeepCopy(){
