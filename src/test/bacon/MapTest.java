@@ -83,7 +83,7 @@ public class MapTest {
     public void readFromString() {
         Game.getGame().readMap(Maps.EXAMPLE);
 
-        var map = Game.getGame().getMap();
+        var map = Game.getGame().getCurrentState().getMap();
         assertEquals(15, map.width);
         assertEquals(15, map.height);
 

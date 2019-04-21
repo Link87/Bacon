@@ -9,7 +9,7 @@ public class BuildMoveTest {
     @Test
     public void isLegal() {
         Game.getGame().readMap(bacon.Maps.STARFISH);
-        var map = Game.getGame().getMap();
+        var map = Game.getGame().getCurrentState().getMap();
 
         map.getTileAt(8, 3).setOwner(Game.getGame().getPlayerFromNumber(8));
         map.getTileAt(3, 8).setOwner(Game.getGame().getPlayerFromNumber(8));
@@ -26,7 +26,7 @@ public class BuildMoveTest {
     @Test
     public void doMove() {
         Game.getGame().readMap(bacon.Maps.STARFISH);
-        var map = Game.getGame().getMap();
+        var map = Game.getGame().getCurrentState().getMap();
 
         map.getTileAt(8, 3).setOwner(Game.getGame().getPlayerFromNumber(8));
         map.getTileAt(3, 8).setOwner(Game.getGame().getPlayerFromNumber(8));

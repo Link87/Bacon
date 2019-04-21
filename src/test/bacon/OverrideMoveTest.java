@@ -9,8 +9,8 @@ public class OverrideMoveTest {
 
     @Test
     public void isLegal() {
-        Game.getGame().readMap(bacon.Maps.STARFISH);
-        var map = Game.getGame().getMap();
+        Game.getGame().readMap(Maps.STARFISH);
+        var map = Game.getGame().getCurrentState().getMap();
 
         map.getTileAt(9, 1).setOwner(Game.getGame().getPlayerFromNumber(6));
 
@@ -21,8 +21,8 @@ public class OverrideMoveTest {
 
     @Test
     public void doMove() {
-        Game.getGame().readMap(bacon.Maps.STARFISH);
-        var map = Game.getGame().getMap();
+        Game.getGame().readMap(Maps.STARFISH);
+        var map = Game.getGame().getCurrentState().getMap();
 
         map.getTileAt(11, 3).setProperty(Tile.Property.EXPANSION);
         Move.createNewMove(0, map, Game.getGame().getPlayerFromNumber(8),11, 3, 0).doMove();

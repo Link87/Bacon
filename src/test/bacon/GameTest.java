@@ -13,8 +13,8 @@ public class GameTest {
         assertEquals(0, Game.getGame().getPlayerFromNumber(1).getOverrideStoneCount());
         assertEquals(1, Game.getGame().getPlayerFromNumber(1).getBombCount());
         assertEquals(1, Game.getGame().getBombRadius());
-        assertEquals(2, Game.getGame().getMap().height);
-        assertEquals(6, Game.getGame().getMap().width);
+        assertEquals(2, Game.getGame().getCurrentState().getMap().height);
+        assertEquals(6, Game.getGame().getCurrentState().getMap().width);
         assertEquals(GamePhase.PHASE_ONE, Game.getGame().getGamePhase());
     }
 }

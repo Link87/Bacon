@@ -191,15 +191,6 @@ public class Game {
     }
 
     /**
-     * Returns the map in its current state.
-     *
-     * @return current map
-     */
-    public Map getMap() {
-        return currentGameState.getMap();
-    }
-
-    /**
      * Private dummy constructor because singleton.
      */
     private Game() {

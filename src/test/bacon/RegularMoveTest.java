@@ -10,8 +10,8 @@ public class RegularMoveTest {
 
     @Test
     public void doMove() {
-        Game.getGame().readMap(bacon.Maps.STARFISH);
-        var map = Game.getGame().getMap();
+        Game.getGame().readMap(Maps.STARFISH);
+        var map = Game.getGame().getCurrentState().getMap();
 
         // Test inversion tiles
         var tiles = new ArrayList<Tile>();

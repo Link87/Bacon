@@ -61,7 +61,7 @@ public class MapVis extends Application {
         //init some stuff
         game = Game.getGame();
         game.processMessage(hexString);
-        myMap = game.getMap();
+        myMap = game.getCurrentState().getMap();
 
         //making the map out of labels in a grid
         labels = new Label[myMap.width][myMap.height];
