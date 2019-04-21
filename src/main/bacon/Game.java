@@ -32,7 +32,9 @@ public class Game {
         return instance;
     }
 
-    public GameState getCurrentState(){return currentGameState;}
+    public GameState getCurrentState() {
+        return currentGameState;
+    }
 
     /**
      * Processes the given message string according to the network specification.
@@ -163,16 +165,8 @@ public class Game {
     }
 
     /**
-     * Returns the phase the game is currently in.
-     *
-     * @return {@link GamePhase} representing the current game phase
-     */
-    public GamePhase getGamePhase() {
-        return currentGameState.getGamePhase();
-    }
-
-    /**
-     * Returns the radius bombs have in the game. This value is constant throughout the game.
+     * Returns the radius bombs have in the game.
+     * This value is constant throughout the game.
      *
      * @return radius of bombs
      */
