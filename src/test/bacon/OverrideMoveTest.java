@@ -12,10 +12,10 @@ public class OverrideMoveTest {
         Game.getGame().readMap(Maps.STARFISH);
         var map = Game.getGame().getCurrentState().getMap();
 
-        map.getTileAt(9, 1).setOwner(Game.getGame().getPlayerFromNumber(6));
+        map.getTileAt(9, 1).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(6));
 
-        assertTrue(Move.createNewMove(0, map, Game.getGame().getPlayerFromNumber(8),9, 1, 0).isLegal());
-        assertFalse(Move.createNewMove(0, map, Game.getGame().getPlayerFromNumber(8),10, 1, 0).isLegal());
+        assertTrue(Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(8),9, 1, 0).isLegal());
+        assertFalse(Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(8),10, 1, 0).isLegal());
 
     }
 
@@ -25,9 +25,9 @@ public class OverrideMoveTest {
         var map = Game.getGame().getCurrentState().getMap();
 
         map.getTileAt(11, 3).setProperty(Tile.Property.EXPANSION);
-        Move.createNewMove(0, map, Game.getGame().getPlayerFromNumber(8),11, 3, 0).doMove();
+        Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(8),11, 3, 0).doMove();
 
         assertEquals(DEFAULT, map.getTileAt(11, 3).getProperty());
-        assertEquals(5, Game.getGame().getPlayerFromNumber(8).getOverrideStoneCount());
+        assertEquals(5, Game.getGame().getCurrentState().getPlayerFromNumber(8).getOverrideStoneCount());
     }
 }

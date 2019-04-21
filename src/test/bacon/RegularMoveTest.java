@@ -22,14 +22,14 @@ public class RegularMoveTest {
                 if (map.getTileAt(x, y).getOwner() != null) {
                     tiles.add(map.getTileAt(x, y));
                     if (x == 9 && (y == 1 || y == 2))
-                        owners.add(Game.getGame().getPlayerFromNumber(8));
+                        owners.add(Game.getGame().getCurrentState().getPlayerFromNumber(8));
                     else owners.add(map.getTileAt(x, y).getOwner());
                 }
             }
         }
 
         map.getTileAt(9, 1).setProperty(Tile.Property.INVERSION);
-        Move.createNewMove(0, map, Game.getGame().getPlayerFromNumber(8), 9, 1, 0).doMove();
+        Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(8), 9, 1, 0).doMove();
 
         for (int i = 0; i < tiles.size(); i++) {
             int num = (owners.get(i).getPlayerNumber() + 1) % (Game.getGame().getTotalPlayerCount() + 1);

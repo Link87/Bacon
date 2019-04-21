@@ -53,7 +53,7 @@ public class Game {
                 readMap(hexToAscii(message));
                 break;
             case "03":
-                currentGameState.setMe(getPlayerFromNumber(Integer.parseInt(message, 16)));
+                currentGameState.setMe(getCurrentState().getPlayerFromNumber(Integer.parseInt(message, 16)));
                 break;
             case "06":
                 // Server announces move of a player
@@ -61,7 +61,7 @@ public class Game {
                 break;
             case "07":
                 // Disqualify player
-                getPlayerFromNumber(Integer.parseInt(message, 16)).disqualify();
+                getCurrentState().getPlayerFromNumber(Integer.parseInt(message, 16)).disqualify();
                 break;
             case "08":
                 // Phase one of the game ends
@@ -150,18 +150,6 @@ public class Game {
         }
 
         return output.toString();
-    }
-
-    /**
-     * This method finds the current player for a given player number.
-     *
-     * @param nr number of the player to search for
-     * @return the player that corresponds to the given number
-     * @throws ArrayIndexOutOfBoundsException when player number is illegal
-     */
-    public Player getPlayerFromNumber(int nr) {
-        // the player array is 0-based
-        return currentGameState.getPlayerFromNumber(nr);
     }
 
     /**

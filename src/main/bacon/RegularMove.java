@@ -74,7 +74,7 @@ public class RegularMove extends BuildMove {
                             if(newNumber > playerCount){
                                 newNumber=1;
                             }
-                            anyTile.setOwner(Game.getGame().getPlayerFromNumber(newNumber));
+                            anyTile.setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(newNumber));
                         }
                     }
                 }
@@ -85,8 +85,8 @@ public class RegularMove extends BuildMove {
                     for (int y = 0; y < map.height; y++) {
                         Tile anyTile = map.getTileAt(x, y);
                         if (anyTile.getOwner() == this.player)
-                            anyTile.setOwner(Game.getGame().getPlayerFromNumber(this.bonusRequest));
-                        else if (anyTile.getOwner() == Game.getGame().getPlayerFromNumber(this.bonusRequest))
+                            anyTile.setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(this.bonusRequest));
+                        else if (anyTile.getOwner() == Game.getGame().getCurrentState().getPlayerFromNumber(this.bonusRequest))
                             anyTile.setOwner(this.player);
                     }
                 }

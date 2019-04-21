@@ -37,6 +37,13 @@ public class GameState {
         return null;
     }
 
+    /**
+     * This method finds the current player for a given player number.
+     *
+     * @param nr number of the player to search for
+     * @return the player that corresponds to the given number
+     * @throws ArrayIndexOutOfBoundsException when player number is illegal
+     */
     public Player getPlayerFromNumber(int nr) {
         // the player array is 0-based
         return players[nr - 1];
