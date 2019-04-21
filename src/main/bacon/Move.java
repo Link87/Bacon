@@ -32,7 +32,7 @@ public abstract class Move {
 
         if (x >= map.width || y >= map.height) throw new IllegalArgumentException("Coordinate out of bounds");
 
-        if (Game.getGame().getGamePhase() == Game.GamePhase.PHASE_ONE) {
+        if (Game.getGame().getGamePhase() == GamePhase.PHASE_ONE) {
 
             if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
 
@@ -43,13 +43,13 @@ public abstract class Move {
 
             else return new OverrideMove(moveID, map, player, x, y, bonusRequest);
 
-        } else if (Game.getGame().getGamePhase() == Game.GamePhase.PHASE_TWO) {
+        } else if (Game.getGame().getGamePhase() == GamePhase.PHASE_TWO) {
 
             if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
 
             else return new BombMove(moveID, map, player, x, y, bonusRequest);
 
-        } else if (Game.getGame().getGamePhase() == Game.GamePhase.ENDED)
+        } else if (Game.getGame().getGamePhase() == GamePhase.ENDED)
             throw new IllegalArgumentException("Game has already ended");
 
         throw new IllegalArgumentException("Default Illegal Move");

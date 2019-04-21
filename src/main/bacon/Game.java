@@ -18,6 +18,7 @@ public class Game {
     private int bombRadius;
     private Player me;
     private GamePhase currentPhase;
+    private GameState currentGameState;
     /**
      * Stack of actually executed moves,
      */
@@ -30,6 +31,8 @@ public class Game {
     public static Game getGame() {
         return instance;
     }
+
+    public GameState getCurrentState(){return currentGameState;}
 
     /**
      * Processes the given message string according to the network specification.
@@ -99,6 +102,8 @@ public class Game {
         int mapWidth = Integer.parseInt(bounds[1]);
 
         map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
+
+        currentGameState = new GameState(players,map,currentPhase);
     }
 
     /**
@@ -114,9 +119,9 @@ public class Game {
         if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10));
 
         int p = Integer.parseInt(moveData.substring(10, 12));
-        Player movingPlayer = getPlayerFromNumber(p);
+        Player movingPlayer = currentGameState.getPlayerFromNumber(p);
 
-        Move move = Move.createNewMove(allMovesGlossary.size(), map, movingPlayer, x, y, bonusRequest);
+        Move move = Move.createNewMove(allMovesGlossary.size(), currentGameState.getMap(), movingPlayer, x, y, bonusRequest);
         allMovesGlossary.add(move);
 
         if (move.isLegal()) {
@@ -154,19 +159,6 @@ public class Game {
     public Player getPlayerFromNumber(int nr) {
         // the player array is 0-based
         return players[nr - 1];
-    }
-
-    /**
-     * This enum represents the Phases of the game.
-     * <code>PHASE_ONE</code> stands for the playing phase,
-     * <code>PHASE_TWO</code> for the bombing phase,
-     * <code>ENDED</code> for the end of the game
-     */
-
-    public enum GamePhase {
-        PHASE_ONE,
-        PHASE_TWO,
-        ENDED
     }
 
     /**

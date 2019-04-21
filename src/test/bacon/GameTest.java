@@ -15,6 +15,6 @@ public class GameTest {
         assertEquals(1, Game.getGame().getBombRadius());
         assertEquals(2, Game.getGame().getMap().height);
         assertEquals(6, Game.getGame().getMap().width);
-        assertEquals(Game.GamePhase.PHASE_ONE, Game.getGame().getGamePhase());
+        assertEquals(GamePhase.PHASE_ONE, Game.getGame().getGamePhase());
     }
 }
