@@ -6,22 +6,6 @@ package bacon;
  */
 public class GameState {
 
-    public void setPlayers(Player[] players) {
-        this.players = players;
-    }
-
-    public void setMap(Map map) {
-        this.map = map;
-    }
-
-    public void setCurrentPhase(GamePhase currentPhase) {
-        this.currentPhase = currentPhase;
-    }
-
-    public void setMe(Player me) {
-        this.me = me;
-    }
-
     /**
      * Contains players in order, where index is number - 1.
      */
@@ -30,8 +14,23 @@ public class GameState {
     private GamePhase currentPhase;
     private Player me;
 
-    public GameState(){
+    /**
+     * constructor for when no information is known
+     */
+    public GameState(){}
 
+    /**
+     * shallow copy constructor for deepCopy method
+     * @param players
+     * @param map
+     * @param currentPhase
+     * @param me
+     */
+    public  GameState(Player[] players,Map map, GamePhase currentPhase, Player me){
+        this.players = players;
+        this.map = map;
+        this.currentPhase = currentPhase;
+        this.me = me;
     }
 
     public GameState getDeepCopy(){
@@ -63,11 +62,12 @@ public class GameState {
 
     /**
      * Returns the total amount of players that participate in the game.
+     * This value is constant throughout the game.
      *
      * @return the total player count
      */
     public int getTotalPlayerCount() {
-        return players.length;
+        return Game.getGame().getTotalPlayerCount();
     }
 
     /**
@@ -77,6 +77,22 @@ public class GameState {
      */
     public Map getMap() {
         return map;
+    }
+
+    public void setPlayers(Player[] players) {
+        this.players = players;
+    }
+
+    public void setMap(Map map) {
+        this.map = map;
+    }
+
+    public void setCurrentPhase(GamePhase currentPhase) {
+        this.currentPhase = currentPhase;
+    }
+
+    public void setMe(Player me) {
+        this.me = me;
     }
 
 }
