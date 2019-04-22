@@ -4,20 +4,21 @@ import java.util.Arrays;
 import java.util.ArrayList;
 
 /**
- * A Game class which contains the basic information about the current game.
+ * A Game class which contains the stateless information about the current game
+ * and provides access to the currentGameState
  */
 public class Game {
 
     private static Game instance = new Game();
 
-    /**
-     * Contains players in order, where index is number - 1.
-     */
-    private Player[] players;
-    private Map map;
+
     private int bombRadius;
-    private Player me;
-    private GamePhase currentPhase;
+    private int playerCount;
+
+    /**
+     * all stateful information is contained inside this object
+     */
+    private GameState currentGameState = new GameState();
     /**
      * Stack of actually executed moves,
      */
@@ -29,6 +30,10 @@ public class Game {
 
     public static Game getGame() {
         return instance;
+    }
+
+    public GameState getCurrentState() {
+        return currentGameState;
     }
 
     /**
@@ -48,7 +53,7 @@ public class Game {
                 readMap(hexToAscii(message));
                 break;
             case "03":
-                me = getPlayerFromNumber(Integer.parseInt(message, 16));
+                currentGameState.setMe(getCurrentState().getPlayerFromNumber(Integer.parseInt(message, 16)));
                 break;
             case "06":
                 // Server announces move of a player
@@ -56,15 +61,15 @@ public class Game {
                 break;
             case "07":
                 // Disqualify player
-                getPlayerFromNumber(Integer.parseInt(message, 16)).disqualify();
+                getCurrentState().getPlayerFromNumber(Integer.parseInt(message, 16)).disqualify();
                 break;
             case "08":
                 // Phase one of the game ends
-                currentPhase = GamePhase.PHASE_TWO;
+                currentGameState.setCurrentPhase(GamePhase.PHASE_TWO);
                 break;
             case "09":
                 // Phase two of the game ends
-                currentPhase = GamePhase.ENDED;
+                currentGameState.setCurrentPhase(GamePhase.ENDED);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid Message Type: " + messageType);
@@ -78,31 +83,34 @@ public class Game {
      * @param mapData String holding a map
      */
     public void readMap(String mapData) {
-        currentPhase = GamePhase.PHASE_ONE;
+        currentGameState.setCurrentPhase(GamePhase.PHASE_ONE);
 
         String[] lines = mapData.split("\r?\n");
 
-        int playerCount = Integer.parseInt(lines[0]);
+        playerCount = Integer.parseInt(lines[0]);
         int initOverrideStoneCount = Integer.parseInt(lines[1]);
 
         String[] bomb = lines[2].split(" ");
         int bombCount = Integer.parseInt(bomb[0]);
         bombRadius = Integer.parseInt(bomb[1]);
 
-        players = new Player[playerCount];
+        Player[] players = new Player[playerCount];
         for (int i = 1; i <= playerCount; i++) {
             players[i - 1] = new Player(i, initOverrideStoneCount, bombCount);
         }
+        currentGameState.setPlayers(players);
 
         String[] bounds = lines[3].split(" ");
         int mapHeight = Integer.parseInt(bounds[0]);
         int mapWidth = Integer.parseInt(bounds[1]);
 
-        map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
+        Map map = Map.readFromString(mapWidth, mapHeight, Arrays.copyOfRange(lines, 4, lines.length));
+        currentGameState.setMap(map);
     }
 
     /**
-     * Reads the given String and executes the contained move. String must follow the specification of message type 6.
+     * Reads the given String and executes the contained move on the current map (in currentGameState).
+     * String must follow the specification of message type 6.
      *
      * @param moveData String holding a move
      */
@@ -114,9 +122,9 @@ public class Game {
         if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10));
 
         int p = Integer.parseInt(moveData.substring(10, 12));
-        Player movingPlayer = getPlayerFromNumber(p);
+        Player movingPlayer = currentGameState.getPlayerFromNumber(p);
 
-        Move move = Move.createNewMove(allMovesGlossary.size(), map, movingPlayer, x, y, bonusRequest);
+        Move move = Move.createNewMove(allMovesGlossary.size(), currentGameState.getMap(), movingPlayer, x, y, bonusRequest);
         allMovesGlossary.add(move);
 
         if (move.isLegal()) {
@@ -145,41 +153,8 @@ public class Game {
     }
 
     /**
-     * This method finds the player for a given player number.
-     *
-     * @param nr number of the player to search for
-     * @return the player that corresponds to the given number
-     * @throws ArrayIndexOutOfBoundsException when player number is illegal
-     */
-    public Player getPlayerFromNumber(int nr) {
-        // the player array is 0-based
-        return players[nr - 1];
-    }
-
-    /**
-     * This enum represents the Phases of the game.
-     * <code>PHASE_ONE</code> stands for the playing phase,
-     * <code>PHASE_TWO</code> for the bombing phase,
-     * <code>ENDED</code> for the end of the game
-     */
-
-    public enum GamePhase {
-        PHASE_ONE,
-        PHASE_TWO,
-        ENDED
-    }
-
-    /**
-     * Returns the phase the game is currently in.
-     *
-     * @return {@link GamePhase} representing the current game phase
-     */
-    public GamePhase getGamePhase() {
-        return currentPhase;
-    }
-
-    /**
-     * Returns the radius bombs have in the game. This value is constant throughout the game.
+     * Returns the radius bombs have in the game.
+     * This value is constant throughout the game.
      *
      * @return radius of bombs
      */
@@ -189,20 +164,12 @@ public class Game {
 
     /**
      * Returns the total amount of players that participate in the game.
+     * This value is constant throughout the game.
      *
      * @return the total player count
      */
     public int getTotalPlayerCount() {
-        return players.length;
-    }
-
-    /**
-     * Returns the map this game is played on.
-     *
-     * @return the map of this game
-     */
-    public Map getMap() {
-        return map;
+        return playerCount;
     }
 
     /**
