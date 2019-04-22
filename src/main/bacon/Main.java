@@ -12,7 +12,6 @@ public class Main {
                 printHelp();
                 System.exit(0);
             }
-            // TODO otherwise start program with config
 
         } catch (IllegalArgumentException iae) {
             System.err.println("Sorry, I don't understand that.");
@@ -28,7 +27,11 @@ public class Main {
      * Prints the cli help information for this program.
      */
     private static void printHelp() {
-        String helpInfo = "";
+        String nl = System.getProperty("line.separator");
+        String helpInfo = "usage: bacon [--help] [-s | --server <server> -p | --port <port>]" + nl +
+                "-s, --server <host>\t server to connect with (mandatory)" + nl +
+                "-p, --port <port>  \t port to connect to (mandatory)" + nl +
+                "    --help         \t displays this help text" + nl;
 
         System.out.println(helpInfo);
     }
