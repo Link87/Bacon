@@ -1,5 +1,11 @@
 package bacon;
 
+import bacon.net.Message;
+import bacon.net.ServerConnection;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.ArrayList;
 
@@ -9,8 +15,8 @@ import java.util.ArrayList;
  */
 public class Game {
 
-    private static Game instance = new Game();
-
+    private static final int GROUP_NUMBER = 6;
+    private static final Game INSTANCE = new Game();
 
     private int bombRadius;
     private int playerCount;
@@ -29,7 +35,7 @@ public class Game {
     private ArrayList<Move> allMovesGlossary = new ArrayList<>();
 
     public static Game getGame() {
-        return instance;
+        return INSTANCE;
     }
 
     public GameState getCurrentState() {
@@ -37,42 +43,83 @@ public class Game {
     }
 
     /**
-     * Processes the given message string according to the network specification.
+     * Initialize the game with the given {@link Config}. This sends the group number and receives
+     * the map date and the starts the game loop.
      *
-     * @param data String containing hexadecimal data
+     * @param cfg the {@link Config} to use
      */
-    public void processMessage(String data) {
-        // Split message into components according to format. Message length is skipped, because Java *yay*
-        String messageType = data.substring(0, 2);
-        String message = data.substring(10);
+    void startGame(Config cfg) {
+        ServerConnection connection = null;
+        try {
+            connection = new ServerConnection(cfg.getHost(), cfg.getPort());
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            System.exit(1);
+        }
 
-        switch (messageType) {
-            case "02":
+        // send group number to server
+        connection.sendMessage(new Message(Message.Type.GROUP_NUMBER, new byte[]{GROUP_NUMBER}));
+
+        // receive map data from server
+        var mapMsg = connection.awaitMessage();
+        assert mapMsg.getType() == Message.Type.MAP_CONTENT;
+        processMessage(mapMsg);
+
+        runGame(connection);
+    }
+
+    /**
+     * Runs the main game loop. Returns when game ends.
+     *
+     * @param connection the {@link ServerConnection} to use for the game
+     */
+    private void runGame(ServerConnection connection) {
+        while (currentGameState.getGamePhase() != GamePhase.ENDED) {
+            var msg = connection.awaitMessage();
+            processMessage(msg);
+        }
+    }
+
+    /**
+     * Processes the given message according to the network specification.
+     *
+     * @param msg Message to process
+     */
+    public void processMessage(Message msg) {
+        // Split message into components according to format. Message length is skipped, because Java *yay*
+        // get representations of the message data
+        var buffer = ByteBuffer.wrap(msg.getBinaryContent());
+        var string = new String(msg.getBinaryContent(), StandardCharsets.US_ASCII);
+        switch (msg.getType()) {
+            case MAP_CONTENT:
                 // Receive map from server
                 // parse data and initialize the Game instance with given values
-                readMap(hexToAscii(message));
+                readMap(string);
                 break;
-            case "03":
-                currentGameState.setMe(getCurrentState().getPlayerFromNumber(Integer.parseInt(message, 16)));
+            case PLAYER_NUMBER:
+                currentGameState.setMe(getCurrentState().getPlayerFromNumber(buffer.get()));
                 break;
-            case "06":
+            case MOVE_ANNOUNCE:
                 // Server announces move of a player
-                executeMove(hexToAscii(message));
+                executeMove(new String(msg.getBinaryContent(), StandardCharsets.US_ASCII));
                 break;
-            case "07":
-                // Disqualify player
-                getCurrentState().getPlayerFromNumber(Integer.parseInt(message, 16)).disqualify();
+            case DISQUALIFICATION:
+                // Disqualify player -- quit when *we* where disqualified
+                byte disqualified = buffer.get();
+                if (currentGameState.getMe().number == disqualified)
+                    currentGameState.setGamePhase(GamePhase.ENDED);
+                getCurrentState().getPlayerFromNumber(disqualified).disqualify();
                 break;
-            case "08":
+            case FIRST_PHASE_END:
                 // Phase one of the game ends
-                currentGameState.setCurrentPhase(GamePhase.PHASE_TWO);
+                currentGameState.setGamePhase(GamePhase.PHASE_TWO);
                 break;
-            case "09":
+            case GAME_END:
                 // Phase two of the game ends
-                currentGameState.setCurrentPhase(GamePhase.ENDED);
+                currentGameState.setGamePhase(GamePhase.ENDED);
                 break;
             default:
-                throw new IllegalArgumentException("Invalid Message Type: " + messageType);
+                throw new IllegalArgumentException("Invalid Message Type: " + msg.getType());
         }
     }
 
@@ -82,8 +129,8 @@ public class Game {
      *
      * @param mapData String holding a map
      */
-    public void readMap(String mapData) {
-        currentGameState.setCurrentPhase(GamePhase.PHASE_ONE);
+    void readMap(String mapData) {
+        currentGameState.setGamePhase(GamePhase.PHASE_ONE);
 
         String[] lines = mapData.split("\r?\n");
 
