@@ -1,4 +1,8 @@
-package bacon;
+package bacon.move;
+
+import bacon.Map;
+import bacon.Player;
+import bacon.Tile;
 
 /**
  * A class which represents placing an override stone on a tile

@@ -1,5 +1,6 @@
-package bacon;
+package bacon.move;
 
+import bacon.Game;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

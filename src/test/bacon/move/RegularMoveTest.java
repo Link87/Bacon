@@ -1,5 +1,8 @@
-package bacon;
+package bacon.move;
 
+import bacon.Game;
+import bacon.Player;
+import bacon.Tile;
 import org.junit.Test;
 
 import java.util.ArrayList;

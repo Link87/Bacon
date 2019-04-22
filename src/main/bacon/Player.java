@@ -1,5 +1,9 @@
 package bacon;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 /**
  * A Player class which contains player data and performs player actions.
  */
@@ -12,6 +16,7 @@ public class Player {
     private int overrideStoneCount;
     private int bombCount;
     private boolean disqualified;
+    private Set<Tile> stones;
 
     /**
      * Creates a new Player instance.
@@ -25,6 +30,7 @@ public class Player {
         this.overrideStoneCount = overrideStoneCount;
         this.bombCount = bombCount;
         this.disqualified = false;
+        this.stones = new HashSet<>();
     }
 
     /**
@@ -63,6 +69,34 @@ public class Player {
         return this.bombCount;
     }
 
+    /**
+     * Places tile in players possession.
+     * <p>
+     * Behavior is undefined on <code>null</code> values.
+     *
+     * @param tile which now belongs to the player
+     */
+    void addStone(Tile tile) {
+        stones.add(tile);
+    }
+
+    /**
+     * Removes ownership of the tile owned by this owner
+     *
+     * @param tile which no longer belongs to this player
+     */
+    void removeStone(Tile tile) {
+        stones.remove(tile);
+    }
+
+    /**
+     * Returns an iterator over all tiles owned by the player.
+     *
+     * @return an iterator containing all of the players tiles
+     */
+    public Iterator<Tile> getStonesIterator() {
+        return this.stones.iterator();
+    }
 
     /**
      * Changes the amount of override stones of this player by given number.

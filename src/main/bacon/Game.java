@@ -1,5 +1,7 @@
 package bacon;
 
+import bacon.move.Move;
+
 import java.util.Arrays;
 import java.util.ArrayList;
 

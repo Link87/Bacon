@@ -1,4 +1,9 @@
-package bacon;
+package bacon.move;
+
+import bacon.Game;
+import bacon.Map;
+import bacon.Player;
+import bacon.Tile;
 
 /**
  * A class which represents placing a stone on a tile.
