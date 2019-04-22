@@ -86,6 +86,10 @@ public class GameState {
         return map;
     }
 
+    public Player getMe() {
+        return me;
+    }
+
     public void setPlayers(Player[] players) {
         this.players = players;
     }
@@ -94,7 +98,7 @@ public class GameState {
         this.map = map;
     }
 
-    public void setCurrentPhase(GamePhase currentPhase) {
+    public void setGamePhase(GamePhase currentPhase) {
         this.currentPhase = currentPhase;
     }
 
