@@ -3,6 +3,7 @@ package bacon.move;
 import bacon.Game;
 import bacon.Player;
 import bacon.Tile;
+import bacon.Maps;
 import org.junit.Test;
 
 import java.util.ArrayList;

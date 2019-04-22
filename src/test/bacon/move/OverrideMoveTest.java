@@ -2,6 +2,7 @@ package bacon.move;
 
 import bacon.Game;
 import bacon.Tile;
+import bacon.Maps;
 import org.junit.Test;
 
 import static bacon.Tile.Property.DEFAULT;

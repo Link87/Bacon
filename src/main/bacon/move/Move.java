@@ -4,6 +4,7 @@ import bacon.Game;
 import bacon.Map;
 import bacon.Player;
 import bacon.Tile;
+import bacon.GamePhase;
 
 /**
  * An interface which defines the basic functions of each typ of move.
