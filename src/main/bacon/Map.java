@@ -38,22 +38,26 @@ public class Map {
      * @return a one level deep copy
      */
     public Map semiDeepCopy(){
-        Tile[][] copyTiles = Arrays.copyOf(this.tiles,this.tiles.length);
+        Tile[][] copyTiles = new Tile[this.width][this.width];
+
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
-                //fixing tile transition pointers to point to tiles in copyTiles
+                Tile original = this.getTileAt(x,y);
+                copyTiles[x][y] = new Tile(original.getOwner(),original.getProperty(),original.x,original.y);
+                //setting tile transition pointers to point to tiles in copyTiles
                 Tile currentTile = copyTiles[x][y];
                 for (Direction direction : Direction.values()) {
-                    if(currentTile.getTransition(direction) != null){
-                        int xOfTrans = currentTile.getTransition(direction).x;
-                        int yOfTrans = currentTile.getTransition(direction).y;
+                    if(original.getTransition(direction) != null){
+                        int xOfTrans = original.getTransition(direction).x;
+                        int yOfTrans = original.getTransition(direction).y;
                         currentTile.setTransition(copyTiles[xOfTrans][yOfTrans],
-                                direction, currentTile.getArrivalDirection(direction));
+                                direction, original.getArrivalDirection(direction));
                     }
                 }
 
             }
         }
+
         Map copy = new Map(copyTiles);
         return copy;
     }
