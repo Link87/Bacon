@@ -65,6 +65,7 @@ public class MapVis extends Application {
         //init some stuff
         game = Game.getGame();
         game.readMap(asciString);
+        game.getCurrentState().setMe(game.getCurrentState().getPlayerFromNumber(1));
         myMap = game.getCurrentState().getMap();
 
         //making the map out of labels in a grid
@@ -197,7 +198,7 @@ public class MapVis extends Application {
         primaryStage.setTitle("MapVis");
         primaryStage.setScene(scene);
         primaryStage.show();
-
+        
     }
 
     public void hover(Label label) {

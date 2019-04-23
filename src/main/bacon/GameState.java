@@ -1,5 +1,7 @@
 package bacon;
 
+import java.util.Iterator;
+
 /**
  * Instances of this class contain stateful information about the game.
  * Queries for stateless information are redirected to the Game singleton
@@ -33,8 +35,32 @@ public class GameState {
         this.me = me;
     }
 
+    /**
+     * Creates a meaningfull deepCopy of GameState.
+     * Tiles and theyr owners are linked up here.
+     * @return deepCopy of GameState
+     */
     public GameState getDeepCopy(){
-        return null;
+        Map mapCopy = this.map.semiDeepCopy();
+
+        Player[] playersCopy = new Player[this.getTotalPlayerCount()];
+        //every Tile in CopyMap with an owner gets the correct owner linked
+        //every Player gets the tiles he owns correctly assigned
+        for (int i = 0; i < playersCopy.length; i++) {
+            playersCopy[i] = this.players[i].shallowCopy();
+            Iterator<Tile> itr = this.players[i].getStonesIterator();
+            while (itr.hasNext()){
+                Tile stone = itr.next();
+                int xPos = stone.x;
+                int yPos = stone.y;
+                mapCopy.getTileAt(xPos,yPos).setOwner(playersCopy[i]);
+                playersCopy[i].addStone(mapCopy.getTileAt(xPos,yPos));
+            }
+        }
+
+        Player meCopy = playersCopy[this.me.getPlayerNumber()-1];
+
+        return new GameState(playersCopy,mapCopy,this.currentPhase,meCopy);
     }
 
     /**
