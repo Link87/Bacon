@@ -99,7 +99,7 @@ public class Game {
                 // parse data and initialize the Game instance with given values
                 break;
             case PLAYER_NUMBER:
-                currentGameState.setMe(getCurrentState().getPlayerFromNumber(buffer.get()));
+                currentGameState.setMe(getCurrentState().getPlayerFromNumber(msg.getBinaryContent()[0]));
                 break;
             case MOVE_ANNOUNCE:
                 // Server announces move of a player

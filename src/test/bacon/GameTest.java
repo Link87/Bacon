@@ -43,6 +43,10 @@ public class GameTest {
                     out.writeInt(Maps.EXAMPLE.getBytes().length);
                     out.write(Maps.EXAMPLE.getBytes());
 
+                    out.writeByte(Message.Type.PLAYER_NUMBER.getValue());
+                    out.writeInt(1);
+                    out.writeByte(1);
+
                     out.writeByte(Message.Type.GAME_END.getValue());
                     out.writeInt(0);
 
