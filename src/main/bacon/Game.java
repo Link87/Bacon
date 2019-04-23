@@ -50,23 +50,26 @@ public class Game {
      * @param cfg the {@link Config} to use
      */
     void startGame(Config cfg) {
-        ServerConnection connection = null;
-        try {
-            connection = new ServerConnection(cfg.getHost(), cfg.getPort());
+
+        try (var connection = new ServerConnection(cfg.getHost(), cfg.getPort())){
+            // send group number to server
+            connection.sendMessage(new Message(Message.Type.GROUP_NUMBER, new byte[]{GROUP_NUMBER}));
+
+            // receive map data from server
+            var mapMsg = connection.awaitMessage();
+            assert mapMsg.getType() == Message.Type.MAP_CONTENT;
+            processMessage(mapMsg);
+
+            // receive player number from server
+            var numMsg = connection.awaitMessage();
+            assert numMsg.getType() == Message.Type.PLAYER_NUMBER;
+            processMessage(numMsg);
+
+            runGame(connection);
         } catch (IOException ioe) {
             ioe.printStackTrace();
             System.exit(1);
         }
-
-        // send group number to server
-        connection.sendMessage(new Message(Message.Type.GROUP_NUMBER, new byte[]{GROUP_NUMBER}));
-
-        // receive map data from server
-        var mapMsg = connection.awaitMessage();
-        assert mapMsg.getType() == Message.Type.MAP_CONTENT;
-        processMessage(mapMsg);
-
-        runGame(connection);
     }
 
     /**
@@ -89,24 +92,22 @@ public class Game {
     public void processMessage(Message msg) {
         // Split message into components according to format. Message length is skipped, because Java *yay*
         // get representations of the message data
-        var buffer = ByteBuffer.wrap(msg.getBinaryContent());
         var string = new String(msg.getBinaryContent(), StandardCharsets.US_ASCII);
         switch (msg.getType()) {
             case MAP_CONTENT:
                 // Receive map from server
                 // parse data and initialize the Game instance with given values
-                readMap(string);
                 break;
             case PLAYER_NUMBER:
                 currentGameState.setMe(getCurrentState().getPlayerFromNumber(buffer.get()));
                 break;
             case MOVE_ANNOUNCE:
                 // Server announces move of a player
-                executeMove(new String(msg.getBinaryContent(), StandardCharsets.US_ASCII));
+                executeMove(msg.getBinaryContent());
                 break;
             case DISQUALIFICATION:
                 // Disqualify player -- quit when *we* where disqualified
-                byte disqualified = buffer.get();
+                byte disqualified = msg.getBinaryContent()[0];
                 if (currentGameState.getMe().number == disqualified)
                     currentGameState.setGamePhase(GamePhase.ENDED);
                 getCurrentState().getPlayerFromNumber(disqualified).disqualify();
@@ -157,22 +158,20 @@ public class Game {
     }
 
     /**
-     * Reads the given String and executes the contained move on the current map (in currentGameState).
-     * String must follow the specification of message type 6.
+     * Reads the given binary data and executes the contained move on the current map (in currentGameState).
+     * Data must follow the specification of message type 6.
      *
-     * @param moveData String holding a move
+     * @param moveData byte array holding a move
      */
-    private void executeMove(String moveData) {
-        int x = Integer.parseInt(moveData.substring(0, 4));
-        int y = Integer.parseInt(moveData.substring(4, 8));
+    private void executeMove(byte[] moveData) {
+        var buffer = ByteBuffer.wrap(moveData);
 
-        int bonusRequest = 0;
-        if (moveData.length() > 8) bonusRequest = Integer.parseInt(moveData.substring(8, 10));
+        int x = buffer.getShort();
+        int y = buffer.getShort();
+        int special = buffer.get();
+        var player = currentGameState.getPlayerFromNumber(buffer.get());
 
-        int p = Integer.parseInt(moveData.substring(10, 12));
-        Player movingPlayer = currentGameState.getPlayerFromNumber(p);
-
-        Move move = Move.createNewMove(allMovesGlossary.size(), currentGameState.getMap(), movingPlayer, x, y, bonusRequest);
+        Move move = Move.createNewMove(allMovesGlossary.size(), currentGameState.getMap(), player, x, y, special);
         allMovesGlossary.add(move);
 
         if (move.isLegal()) {
