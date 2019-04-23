@@ -34,13 +34,13 @@ public class Player {
     }
 
     /**
-     * Creates a shallow copy, meaning that (this != copy) but (copy.stones == this.stones)
+     * Creates a shallow copy, meaning that (this != copy)
+     * stones Set is left empty
      * @return a shallow copy
      */
     public Player shallowCopy(){
         Player copy = new Player(this.number,this.overrideStoneCount,this.bombCount);
         copy.disqualified = this.disqualified;
-        copy.stones = this.stones;
         return copy;
     }
     /**

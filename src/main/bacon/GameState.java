@@ -1,5 +1,7 @@
 package bacon;
 
+import java.util.Iterator;
+
 /**
  * Instances of this class contain stateful information about the game.
  * Queries for stateless information are redirected to the Game singleton
@@ -34,7 +36,24 @@ public class GameState {
     }
 
     public GameState getDeepCopy(){
-        return null;
+        Map mapCopy = this.map.semiDeepCopy();
+
+        Player[] playersCopy = new Player[this.getTotalPlayerCount()];
+        for (int i = 0; i < playersCopy.length; i++) {
+            playersCopy[i] = this.players[i].shallowCopy();
+            Iterator<Tile> itr = this.players[i].getStonesIterator();
+            while (itr.hasNext()){
+                Tile stone = itr.next();
+                int xPos = stone.x;
+                int yPos = stone.y;
+                mapCopy.getTileAt(xPos,yPos).setOwner(playersCopy[i]);
+                playersCopy[i].addStone(mapCopy.getTileAt(xPos,yPos));
+            }
+        }
+
+        Player meCopy = playersCopy[this.me.getPlayerNumber()-1];
+
+        return new GameState(playersCopy,mapCopy,this.currentPhase,meCopy);
     }
 
     /**
