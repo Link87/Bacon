@@ -35,10 +35,17 @@ public class GameState {
         this.me = me;
     }
 
+    /**
+     * Creates a meaningfull deepCopy of GameState.
+     * Tiles and theyr owners are linked up here.
+     * @return deepCopy of GameState
+     */
     public GameState getDeepCopy(){
         Map mapCopy = this.map.semiDeepCopy();
 
         Player[] playersCopy = new Player[this.getTotalPlayerCount()];
+        //every Tile in CopyMap with an owner gets the correct owner linked
+        //every Player gets the tiles he owns correctly assigned
         for (int i = 0; i < playersCopy.length; i++) {
             playersCopy[i] = this.players[i].shallowCopy();
             Iterator<Tile> itr = this.players[i].getStonesIterator();
