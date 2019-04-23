@@ -1,5 +1,7 @@
 package bacon;
 
+import java.util.Arrays;
+
 /**
  * A map on which Reversi is played.
  */
@@ -28,6 +30,32 @@ public class Map {
         this.width = tiles.length;
         this.height = tiles[0].length;
 
+    }
+
+    /**
+     * makes a copy of the map where tiles are also copys and transitions point to tiles inside the map instance
+     * the owner pointer (of Tile) however still points to the original player objects
+     * @return a one level deep copy
+     */
+    public Map semiDeepCopy(){
+        Tile[][] copyTiles = Arrays.copyOf(this.tiles,this.tiles.length);
+        for (int y = 0; y < this.height; y++) {
+            for (int x = 0; x < this.width; x++) {
+                //fixing tile transition pointers to point to tiles in copyTiles
+                Tile currentTile = copyTiles[x][y];
+                for (Direction direction : Direction.values()) {
+                    if(currentTile.getTransition(direction) != null){
+                        int xOfTrans = currentTile.getTransition(direction).x;
+                        int yOfTrans = currentTile.getTransition(direction).y;
+                        currentTile.setTransition(copyTiles[xOfTrans][yOfTrans],
+                                direction, currentTile.getArrivalDirection(direction));
+                    }
+                }
+
+            }
+        }
+        Map copy = new Map(copyTiles);
+        return copy;
     }
 
     /**
