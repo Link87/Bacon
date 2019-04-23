@@ -97,6 +97,7 @@ public class Game {
             case MAP_CONTENT:
                 // Receive map from server
                 // parse data and initialize the Game instance with given values
+                readMap(string);
                 break;
             case PLAYER_NUMBER:
                 currentGameState.setMe(getCurrentState().getPlayerFromNumber(msg.getBinaryContent()[0]));
