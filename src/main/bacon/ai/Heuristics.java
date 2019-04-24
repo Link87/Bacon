@@ -3,7 +3,9 @@ package bacon.ai;
 import bacon.*;
 
 import java.util.Iterator;
-import static java.lang.StrictMath.sqrt;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 public class Heuristics {
     private static Heuristics heuristic = new Heuristics();
@@ -64,13 +66,11 @@ public class Heuristics {
      * @return a real number as stability heuristics
      */
     public double stability(GameState state, Player player){
-
-
         Iterator<Tile> stoneIterator = player.getStonesIterator();
-        Tile stone;
+        Tile tile;
 
         while(stoneIterator.hasNext()){
-            stone = stoneIterator.next();
+            tile = stoneIterator.next();
 
         }
         return 0;
@@ -80,18 +80,48 @@ public class Heuristics {
      * Calculates the clustering heuristics of this certain given game state and player
      *
      * @param state GameState to be examined
-     * @param player in turn
+     * @param playerNr number of player in turn
      * @return a real number as clustering heuristics
      */
-    public double clustering(GameState state, Player player){
-        Iterator<Tile> stoneIterator = player.getStonesIterator();
+    public double clustering(GameState state, int playerNr){
+        int playerStoneCount = state.getPlayerFromNumber(playerNr).getStoneCount();
+        int bombRadius = state.getBombRadius();
+        int totalPlayer = state.getTotalPlayerCount();
+
+        double clusteringSum = 0;
+
+        double[] rivalry = new double[totalPlayer];
+        int[] rivalBombCount = new int[totalPlayer];
+        int[] rivalStoneCount = new int[totalPlayer];
+        int[] bombedStoneCount = new int[totalPlayer];
+
+        for(int i = 0; i < totalPlayer; i++){
+            rivalBombCount[i] = state.getPlayerFromNumber(i).getBombCount();
+            rivalStoneCount[i] = state.getPlayerFromNumber(i).getStoneCount();
+        }
+
+        for(int i = 0; i < totalPlayer; i++){
+            if(i == playerNr){
+                rivalry[i] = -1;
+            }
+            else {
+                rivalry[i] = (rivalBombCount[i]*(2*bombRadius+1)^2)/((totalPlayer-1)*(abs(rivalStoneCount[i]-playerStoneCount)+1));
+            }
+        }
+
+        Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
         Tile stone;
 
         while(stoneIterator.hasNext()){
             stone = stoneIterator.next();
+            for(int i = 0; i < totalPlayer; i++){
 
+            }
         }
-        return 0;
+
+
+        double clusteringScaled = clusteringSum/((2*(2*bombRadius+1)-1)^2);
+        return clusteringScaled;
     }
 
     /**
