@@ -90,23 +90,20 @@ public class Heuristics {
         int playerStoneCount = state.getPlayerFromNumber(playerNr).getStoneCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
-        int diameter = 2*bombRadius;
 
-        double clusteringSum = 0;
+        double[] rivalry = new double[totalPlayer]; // rivalry factor between the player and each of his rivals (all other players).
+                                                    // The closer in stone count the stronger the rivalry.
+        int[] rivalBombCount = new int[totalPlayer]; // the numbers of bombs of each rival
+        int[] rivalStoneCount = new int[totalPlayer]; // the total numbers of stones of each rival
 
-        double[] rivalry = new double[totalPlayer];
-        int[] rivalBombCount = new int[totalPlayer];
-        int[] rivalStoneCount = new int[totalPlayer];
-        int[] bombedStoneCount = new int[totalPlayer];
-
-        for(int i = 0; i < totalPlayer; i++){
+        for(int i = 0; i < totalPlayer; i++){ // calculates global variables of the current state
             rivalBombCount[i] = state.getPlayerFromNumber(i).getBombCount();
             rivalStoneCount[i] = state.getPlayerFromNumber(i).getStoneCount();
         }
 
-        for(int i = 0; i < totalPlayer; i++){
+        for(int i = 0; i < totalPlayer; i++){ // calculates the rivalry factor between the player and each of his rivals
             if(i == playerNr){
-                rivalry[i] = -1;
+                rivalry[i] = -1; // rivalry factor with oneself is -1
             }
             else {
                 rivalry[i] = (rivalBombCount[i]*(2*bombRadius+1)^2)/((totalPlayer-1)*(abs(rivalStoneCount[i]-playerStoneCount)+1));
@@ -115,10 +112,16 @@ public class Heuristics {
 
         Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
         Tile stone;
+        int[] bombedStoneCount = new int[totalPlayer]; // the numbers of stones of each rival within the bomb diameter of a player's stone
+        int diameter = 2*bombRadius;
+        double clusteringSum = 0; // heuristic to be returned
 
-
-        while(stoneIterator.hasNext()){
+        while(stoneIterator.hasNext()){ // iterates over all player's stones; adding clustering factor of each stone to clusteringSum
             stone = stoneIterator.next();
+
+
+            // in the follow part of the code we search for all tiles within one bomb diameter (not radius!) of a player's stone
+            // we recycle code from BombMove for this purpose
 
             // set of already examined tiles
             Set<Tile> bombSet = new HashSet<>();
@@ -145,20 +148,23 @@ public class Heuristics {
                 currentTiles = nextTiles;
                 nextTiles = new ArrayList<>((i + 1) * 8);
             }
+            // end of recycled code
 
-            for(Tile t: bombSet){
+
+            for(Tile t: bombSet){   // we examine each tile within the bomb diameter for ownership
+                                    // and assign collateral damage to each rival in case our stone is bombed
                 if(t.getOwner() != null){
                     bombedStoneCount[t.getOwner().getPlayerNumber()-1]++;
                 }
             }
 
-            for(int i = 0; i < totalPlayer; i++){
-                clusteringSum += bombedStoneCount[i]*rivalry[i];
-            }
-        }
+            for(int i = 0; i < totalPlayer; i++){                   // This for-loop sums collateral damage over all rivals
+                clusteringSum += bombedStoneCount[i]*rivalry[i];    // to get the clustering factor of a player's stone,
+            }                                                       // the outer while-loop sums clustering factors over all
+        }                                                           // of player's stones to get the total clustering factor of the game state
 
-        double clusteringScaled = clusteringSum/((2*(2*bombRadius+1)-1)^2);
-        return clusteringScaled;
+        double clusteringScaled = clusteringSum/((2*(2*bombRadius+1)-1)^2); // re-normalizes clustering factor such that
+        return clusteringScaled;                                            // it is independent of bomb radius
     }
 
     /**
