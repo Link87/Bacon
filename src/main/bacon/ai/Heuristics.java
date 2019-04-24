@@ -22,7 +22,7 @@ public class Heuristics {
      * @return whether this game state is in the uncertainty phase
      */
     public boolean uncertaintyPhase(GameState state){
-
+        return true;
     }
 
     /**
@@ -33,7 +33,9 @@ public class Heuristics {
      * @return a real number as mobility heuristics
      */
     public double mobility(GameState state, Player player){
+        double mobility = 0;
 
+        return mobility;
     }
 
     /**
@@ -44,7 +46,7 @@ public class Heuristics {
      * @return a real number as stability heuristics
      */
     public double stability(GameState state, Player player){
-
+        return 0;
     }
 
     /**
@@ -55,7 +57,7 @@ public class Heuristics {
      * @return a real number as clustering heuristics
      */
     public double clustering(GameState state, Player player){
-
+        return 0;
     }
 
     /**
@@ -66,7 +68,7 @@ public class Heuristics {
      * @return a real number as bonus heuristics
      */
     public double bonus(GameState state, Player player){
-
+        return 0; 
     }
 
 }
