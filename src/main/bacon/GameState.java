@@ -36,8 +36,8 @@ public class GameState {
     }
 
     /**
-     * Creates a meaningfull deepCopy of GameState.
-     * Tiles and theyr owners are linked up here.
+     * Creates a meaningful deepCopy of GameState.
+     * Tiles and their owners are linked up here.
      * @return deepCopy of GameState
      */
     public GameState getDeepCopy(){

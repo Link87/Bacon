@@ -3,6 +3,9 @@ package bacon.ai;
 import bacon.Game;
 import bacon.GameState;
 import bacon.Player;
+import bacon.Tile;
+
+import java.util.Iterator;
 
 public class Heuristics {
     private static Heuristics heuristic = new Heuristics();
@@ -46,6 +49,13 @@ public class Heuristics {
      * @return a real number as stability heuristics
      */
     public double stability(GameState state, Player player){
+        Iterator<Tile> stoneIterator = player.getStonesIterator();
+        Tile stone;
+
+        while(stoneIterator.hasNext()){
+            stone = stoneIterator.next();
+
+        }
         return 0;
     }
 
@@ -57,6 +67,13 @@ public class Heuristics {
      * @return a real number as clustering heuristics
      */
     public double clustering(GameState state, Player player){
+        Iterator<Tile> stoneIterator = player.getStonesIterator();
+        Tile stone;
+
+        while(stoneIterator.hasNext()){
+            stone = stoneIterator.next();
+
+        }
         return 0;
     }
 
@@ -68,7 +85,7 @@ public class Heuristics {
      * @return a real number as bonus heuristics
      */
     public double bonus(GameState state, Player player){
-        return 0; 
+        return 0;
     }
 
 }
