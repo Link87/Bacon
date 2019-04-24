@@ -1,5 +1,6 @@
 package bacon;
 
+import bacon.ai.AI;
 import bacon.move.Move;
 import bacon.net.Message;
 import bacon.net.ServerConnection;
@@ -51,7 +52,7 @@ public class Game {
      */
     void startGame(Config cfg) {
 
-        try (var connection = new ServerConnection(cfg.getHost(), cfg.getPort())){
+        try (var connection = new ServerConnection(cfg.getHost(), cfg.getPort())) {
             // send group number to server
             connection.sendMessage(new Message(Message.Type.GROUP_NUMBER, new byte[]{GROUP_NUMBER}));
 
@@ -80,16 +81,22 @@ public class Game {
     private void runGame(ServerConnection connection) {
         while (currentGameState.getGamePhase() != GamePhase.ENDED) {
             var msg = connection.awaitMessage();
-            processMessage(msg);
+
+            if (msg.getType() == Message.Type.MOVE_REQUEST) {
+                var buffer = ByteBuffer.wrap(msg.getBinaryContent());
+                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get());
+                connection.sendMessage(new Message(Message.Type.MOVE_RESPONSE, move.encodeBinary()));
+            } else processMessage(msg);
         }
     }
 
     /**
      * Processes the given message according to the network specification.
+     * Move Requests can not be processed, because an established server connection is required to send a response.
      *
      * @param msg Message to process
      */
-    public void processMessage(Message msg) {
+    void processMessage(Message msg) {
         // Split message into components according to format. Message length is skipped, because Java *yay*
         // get representations of the message data
         var string = new String(msg.getBinaryContent(), StandardCharsets.US_ASCII);
@@ -183,24 +190,6 @@ public class Game {
     }
 
     /**
-     * A helper method that converts a String with hex numbers to a
-     * String containing the corresponding ASCII characters.
-     *
-     * @param hexStr a not null hex String
-     * @return corresponding ASCII String
-     */
-    private static String hexToAscii(String hexStr) {
-        StringBuilder output = new StringBuilder();
-
-        for (int i = 0; i < hexStr.length(); i += 2) {
-            String str = hexStr.substring(i, i + 2);
-            output.append((char) Integer.parseInt(str, 16));
-        }
-
-        return output.toString();
-    }
-
-    /**
      * Returns the radius bombs have in the game.
      * This value is constant throughout the game.
      *
@@ -223,6 +212,5 @@ public class Game {
     /**
      * Private dummy constructor because singleton.
      */
-    private Game() {
-    }
+    private Game() {}
 }

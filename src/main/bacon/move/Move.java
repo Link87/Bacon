@@ -6,6 +6,8 @@ import bacon.Player;
 import bacon.Tile;
 import bacon.GamePhase;
 
+import java.nio.ByteBuffer;
+
 /**
  * An interface which defines the basic functions of each typ of move.
  */
@@ -92,5 +94,20 @@ public abstract class Move {
      * Executes this move.
      */
     public abstract void doMove();
+
+    /**
+     * Returns the move in binary representation.
+     *
+     * @return byte array containing this moves binary representation
+     */
+    public byte[] encodeBinary() {
+        var data = new byte[5];
+        ByteBuffer.wrap(data)
+                .putShort((short) xCoordinate)
+                .putShort((short) yCoordinate)
+                .put((byte) 0);
+
+        return data;
+    }
 
 }
