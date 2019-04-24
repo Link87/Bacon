@@ -84,7 +84,7 @@ public class Game {
 
             if (msg.getType() == Message.Type.MOVE_REQUEST) {
                 var buffer = ByteBuffer.wrap(msg.getBinaryContent());
-                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get());
+                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), this.getCurrentState());
                 connection.sendMessage(new Message(Message.Type.MOVE_RESPONSE, move.encodeBinary()));
             } else processMessage(msg);
         }
