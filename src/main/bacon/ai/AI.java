@@ -4,6 +4,7 @@ import bacon.Game;
 import bacon.GameState;
 import bacon.Map;
 import bacon.move.Move;
+import bacon.move.MoveFactory;
 
 public class AI {
 
@@ -27,8 +28,8 @@ public class AI {
         Map map = currentGameState.getMap();
         for (int x = 0; x < map.width; x++) {
             for (int y = 0; y < map.height; y++) {
-                var move = Move.createNewMove(0, map,
-                        Game.getGame().getCurrentState().getMe(), x, y, 0);
+                var move = MoveFactory.createMove(Game.getGame().getCurrentState(),
+                        Game.getGame().getCurrentState().getMe(), x, y);
                 if (move.isLegal())
                     return move;
             }

@@ -1,5 +1,6 @@
 package bacon.move;
 
+import bacon.GameState;
 import bacon.Map;
 import bacon.Player;
 import bacon.Tile;
@@ -9,8 +10,16 @@ import bacon.Tile;
  */
 public class OverrideMove extends BuildMove {
 
-    public OverrideMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
-        super(moveID, map, player, x, y, bonusRequest);
+    /**
+     * Creates an instance of RegularMove via the constructor in its superclass {@link BuildMove}.
+     *
+     * @param state  the game state on which the move operates
+     * @param player the player of the move
+     * @param x      the x coordinate
+     * @param y      the y coordinate
+     */
+    OverrideMove(GameState state, Player player, int x, int y) {
+        super(state, player, x, y);
     }
 
     /**
@@ -21,8 +30,6 @@ public class OverrideMove extends BuildMove {
     public boolean isLegal() {
         if (this.player.getOverrideStoneCount() == 0)
             return false; // player must have at least 1 override stone to make the move
-        if (this.bonusRequest != 0) return false;
-
         return super.isLegal();
     }
 
@@ -31,7 +38,7 @@ public class OverrideMove extends BuildMove {
      * Executes this move.
      */
     public void doMove() {
-        Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
+        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
 
         super.doMove();
 

@@ -3,8 +3,7 @@ package bacon.move;
 public class DefaultIllegalMove extends Move {
 
     public DefaultIllegalMove() {
-        super(-1,null,null,-1,-1,-1);
-
+        super(null, null, -1, -1);
     }
 
     @Override
@@ -13,7 +12,10 @@ public class DefaultIllegalMove extends Move {
     }
 
     @Override
-    public void doMove() {
+    public void doMove() {}
 
+    @Override
+    public byte[] encodeBinary() {
+        throw new UnsupportedOperationException();
     }
 }

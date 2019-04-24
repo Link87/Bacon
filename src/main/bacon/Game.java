@@ -2,6 +2,7 @@ package bacon;
 
 import bacon.ai.AI;
 import bacon.move.Move;
+import bacon.move.MoveFactory;
 import bacon.net.Message;
 import bacon.net.ServerConnection;
 
@@ -27,14 +28,6 @@ public class Game {
      * all stateful information is contained inside this object
      */
     private GameState currentGameState = new GameState();
-    /**
-     * Stack of actually executed moves,
-     */
-    private ArrayList<Move> moveStack = new ArrayList<>();
-    /**
-     * Stack of all moves received (including illegal ones)
-     */
-    private ArrayList<Move> allMovesGlossary = new ArrayList<>();
 
     public static Game getGame() {
         return INSTANCE;
@@ -172,20 +165,11 @@ public class Game {
      * @param moveData byte array holding a move
      */
     private void executeMove(byte[] moveData) {
-        var buffer = ByteBuffer.wrap(moveData);
-
-        int x = buffer.getShort();
-        int y = buffer.getShort();
-        int special = buffer.get();
-        var player = currentGameState.getPlayerFromNumber(buffer.get());
-
-        Move move = Move.createNewMove(allMovesGlossary.size(), currentGameState.getMap(), player, x, y, special);
-        allMovesGlossary.add(move);
+        Move move = MoveFactory.decodeBinary(moveData, currentGameState);
 
         if (move.isLegal()) {
             System.out.println("Move is legal.");
             move.doMove();
-            moveStack.add(move);
         } else System.out.println("Move is illegal.");
     }
 

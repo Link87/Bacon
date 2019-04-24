@@ -14,18 +14,18 @@ public class BombMoveTest {
     public void isLegal() {
         Game.getGame().readMap(Maps.STARFISH);
         // test if bomb count is handled right
-        new BombMove(0, Game.getGame().getCurrentState().getMap(), Game.getGame().getCurrentState().getPlayerFromNumber(1),
-                0, 0, 0).doMove();
-        assertFalse(new BombMove(0, Game.getGame().getCurrentState().getMap(), Game.getGame().getCurrentState().getPlayerFromNumber(1),
-                0, 0, 0).isLegal());
+        new BombMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(1),
+                0, 0).doMove();
+        assertFalse(new BombMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(1),
+                0, 0).isLegal());
     }
 
     @Test
     public void doMove1() {
         Game.getGame().readMap(Maps.COMP_SQUARE);
         // test if tiles are turned to holes
-        BombMove bomb1 = new BombMove(0, Game.getGame().getCurrentState().getMap(), Game.getGame().getCurrentState().getPlayerFromNumber(1),
-                9, 0, 0);
+        BombMove bomb1 = new BombMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(1),
+                9, 0);
         bomb1.doMove();
         // tiles to the left
         assertEquals(Tile.Property.HOLE, Game.getGame().getCurrentState().getMap().getTileAt(9, 0).getProperty());
@@ -53,8 +53,8 @@ public class BombMoveTest {
     public void doMove2() {
         Game.getGame().readMap(Maps.STARFISH);
         // test if tiles are turned to holes
-        BombMove bomb1 = new BombMove(0, Game.getGame().getCurrentState().getMap(), Game.getGame().getCurrentState().getPlayerFromNumber(1),
-                8, 4, 0);
+        BombMove bomb1 = new BombMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(1),
+                8, 4);
         bomb1.doMove();
         // upwards
         assertEquals(Tile.Property.HOLE, Game.getGame().getCurrentState().getMap().getTileAt(8, 4).getProperty());
