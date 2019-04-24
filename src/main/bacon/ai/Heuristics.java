@@ -3,6 +3,9 @@ package bacon.ai;
 import bacon.*;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
@@ -77,7 +80,7 @@ public class Heuristics {
     }
 
     /**
-     * Calculates the clustering heuristics of this certain given game state and player
+     * Calculates the clustering heuristics of this certain given game state and player.
      *
      * @param state GameState to be examined
      * @param playerNr number of player in turn
@@ -87,6 +90,7 @@ public class Heuristics {
         int playerStoneCount = state.getPlayerFromNumber(playerNr).getStoneCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
+        int diameter = 2*bombRadius;
 
         double clusteringSum = 0;
 
@@ -112,13 +116,46 @@ public class Heuristics {
         Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
         Tile stone;
 
+
         while(stoneIterator.hasNext()){
             stone = stoneIterator.next();
-            for(int i = 0; i < totalPlayer; i++){
 
+            // set of already examined tiles
+            Set<Tile> bombSet = new HashSet<>();
+            // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
+            var currentTiles = new ArrayList<Tile>();
+            // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
+            var nextTiles = new ArrayList<Tile>();
+
+            bombSet.add(stone);
+            currentTiles.add(stone);
+
+            //searches for all neighbours that need to be bombed out
+            for (int i = 0; i < diameter; i++) {
+                for (Tile t: currentTiles) {
+                    for (Direction direction : Direction.values()) {
+                        if (t.getTransition(direction) != null) {
+                            if (!bombSet.contains(t.getTransition(direction))) {
+                                bombSet.add(t.getTransition(direction));
+                                nextTiles.add(t.getTransition(direction));
+                            }
+                        }
+                    }
+                }
+                currentTiles = nextTiles;
+                nextTiles = new ArrayList<>((i + 1) * 8);
+            }
+
+            for(Tile t: bombSet){
+                if(t.getOwner() != null){
+                    bombedStoneCount[t.getOwner().getPlayerNumber()-1]++;
+                }
+            }
+
+            for(int i = 0; i < totalPlayer; i++){
+                clusteringSum += bombedStoneCount[i]*rivalry[i];
             }
         }
-
 
         double clusteringScaled = clusteringSum/((2*(2*bombRadius+1)-1)^2);
         return clusteringScaled;
