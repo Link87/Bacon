@@ -16,11 +16,11 @@ import java.util.HashSet;
  */
 public class LegalMoves {
     private static LegalMoves legalMoves = new LegalMoves();
-    private Set<Tile> regularMoves = new HashSet<>();
-    private Set<Tile> overrideMoves = new HashSet<>();
-    private Set<Tile> bombMoves = new HashSet<>();
+    private static Set<Tile> regularMoves = new HashSet<>();
+    private static Set<Tile> overrideMoves = new HashSet<>();
+    private static Set<Tile> bombMoves = new HashSet<>();
 
-    public LegalMoves() {
+    private LegalMoves() {
     }
 
     /**
@@ -33,7 +33,7 @@ public class LegalMoves {
      * @return legal moves (including RegularMoves, OverrideMoves, BombMoves)
      * @throws IllegalArgumentException if the game has ended
      */
-    public Set<Tile> legalMoves(GameState state, int playerNr, MoveType moveType){
+    public static Set<Tile> legalMoves(GameState state, int playerNr, MoveType moveType){
         switch(state.getGamePhase()){
             case PHASE_ONE:
                 legalBuildMoves(state, playerNr);
@@ -62,7 +62,7 @@ public class LegalMoves {
      * @playerNr number of player in turn
      * @return legal moves (including RegularMoves, OverrideMoves)
      */
-    public void legalBuildMoves(GameState state, int playerNr){
+    public static void legalBuildMoves(GameState state, int playerNr){
         regularMoves.clear();
         overrideMoves.clear();
         Player player = state.getPlayerFromNumber(playerNr);
@@ -115,7 +115,7 @@ public class LegalMoves {
      * @playerNr number of player in turn
      * @return legal BombMoves
      */
-    public void legalBombMoves(GameState state){
+    public static void legalBombMoves(GameState state){
         bombMoves.clear();
         for(int x = 0; x < state.getMap().width; x++) {
             for (int y = 0; y < state.getMap().height; y++) { // Going through the whole map

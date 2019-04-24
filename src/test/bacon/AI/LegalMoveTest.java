@@ -21,13 +21,12 @@ public class LegalMoveTest {
         int[] x = {7,9,9,9,5,5,5,7};
         int[] y = {5,5,6,7,7,8,9,9};
 
-        LegalMoves move = new LegalMoves();
         Set<Tile> legalTiles = new HashSet<>(){};
 
         for(int i = 0; i<8; i++){
             legalTiles.add(map.getTileAt(x[i],y[i]));
         }
-        Set<Tile> evaluatedTiles = move.legalMoves(Game.getGame().getCurrentState(), 1, MoveType.REGULAR);
+        Set<Tile> evaluatedTiles = LegalMoves.legalMoves(Game.getGame().getCurrentState(), 1, MoveType.REGULAR);
 
         for(Tile t: legalTiles){
             assertTrue("Doesn't contain: "+ t.x + "," + t.y ,evaluatedTiles.contains(t));
