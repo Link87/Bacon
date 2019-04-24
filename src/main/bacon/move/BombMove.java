@@ -4,6 +4,7 @@ import bacon.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A class which represents placing a bomb on a tile.
@@ -55,38 +56,33 @@ public class BombMove extends Move {
         Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
 
         // set of already examined tiles
-        var bombSet = new HashSet<Tile>();
+        Set<Tile> bombSet = new HashSet<>();
         // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-        var curRadiusList = new ArrayList<Tile>();
+        var currentTiles = new ArrayList<Tile>();
         // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-        var nextRadiusList = new ArrayList<Tile>();
+        var nextTiles = new ArrayList<Tile>();
 
         bombSet.add(tile);
-        curRadiusList.add(tile);
+        currentTiles.add(tile);
 
         //searches for all neighbours that need to be bombed out
         for (int i = 0; i < radius; i++) {
-            for (int j = 0; j < curRadiusList.size(); j++) {
+            for (Tile t: currentTiles) {
                 for (Direction direction : Direction.values()) {
-                    if(curRadiusList.get(j).getTransition(direction) != null) {
-                        if (!bombSet.contains(curRadiusList.get(j).getTransition(direction))) {
-                            bombSet.add(curRadiusList.get(j).getTransition(direction));
-                            nextRadiusList.add(curRadiusList.get(j).getTransition(direction));
+                    if (t.getTransition(direction) != null) {
+                        if (!bombSet.contains(t.getTransition(direction))) {
+                            bombSet.add(t.getTransition(direction));
+                            nextTiles.add(t.getTransition(direction));
                         }
                     }
                 }
             }
-            curRadiusList.clear();
-            for (int k=0; k<nextRadiusList.size(); k++) {
-                curRadiusList.add(nextRadiusList.get(k));
-            }
-            nextRadiusList.clear();
+            currentTiles = nextTiles;
+            nextTiles = new ArrayList<>((i + 1) * 8);
         }
 
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
-        for (Tile u: bombSet) {
-            u.bombTile();
-        }
+        bombSet.forEach(Tile::bombTile);
 
         // Subtract 1 bomb from player's inventory
         this.player.receiveBomb(-1);
