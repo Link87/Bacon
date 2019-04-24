@@ -42,9 +42,9 @@ public abstract class Move {
 
         if (Game.getGame().getCurrentState().getGamePhase() == GamePhase.PHASE_ONE) {
 
-            if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
+            if (tileProperty == Tile.Property.HOLE) return new DefaultIllegalMove();
 
-            else if (owner == player) throw new IllegalArgumentException("Tile is already occupied by player");
+            else if (owner == player) return new DefaultIllegalMove();
 
             else if (owner == null && tileProperty != Tile.Property.EXPANSION)
                 return new RegularMove(moveID, map, player, x, y, bonusRequest);
@@ -53,7 +53,7 @@ public abstract class Move {
 
         } else if (Game.getGame().getCurrentState().getGamePhase() == GamePhase.PHASE_TWO) {
 
-            if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
+            if (tileProperty == Tile.Property.HOLE) return new DefaultIllegalMove();
 
             else return new BombMove(moveID, map, player, x, y, bonusRequest);
 
