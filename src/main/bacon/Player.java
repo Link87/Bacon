@@ -133,4 +133,17 @@ public class Player {
         this.disqualified = true;
     }
 
+    /**
+     * Returns whether the player is the same as the given object. Returns <code>true</code>, when object is a Player
+     * instance and has the same player number.
+     *
+     * @param obj object to compare with
+     * @return true if player numbers are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Player)
+            return this.number == ((Player) obj).number;
+        else return false;
+    }
 }

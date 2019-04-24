@@ -33,7 +33,7 @@ public class RegularMoveTest {
         }
 
         map.getTileAt(9, 1).setProperty(Tile.Property.INVERSION);
-        Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(8), 9, 1, 0).doMove();
+        MoveFactory.createMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(8), 9, 1).doMove();
 
         for (int i = 0; i < tiles.size(); i++) {
             int num = (owners.get(i).getPlayerNumber() + 1) % (Game.getGame().getTotalPlayerCount() + 1);

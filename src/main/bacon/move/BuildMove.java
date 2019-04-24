@@ -1,9 +1,6 @@
 package bacon.move;
 
-import bacon.Direction;
-import bacon.Map;
-import bacon.Player;
-import bacon.Tile;
+import bacon.*;
 
 import java.util.ArrayList;
 
@@ -12,15 +9,13 @@ public class BuildMove extends Move {
     /**
      * Creates a new move from the given values.
      *
-     * @param moveID       the ID of the move
-     * @param map          the map on which the move is executed
-     * @param player       the player of the move
-     * @param x            the x coordinate
-     * @param y            the y coordinate
-     * @param bonusRequest
+     * @param state  the game state on which the move operates
+     * @param player the player of the move
+     * @param x      the x coordinate
+     * @param y      the y coordinate
      */
-    public BuildMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
-        super(moveID, map, player, x, y, bonusRequest);
+    BuildMove(GameState state, Player player, int x, int y) {
+        super(state, player, x, y);
     }
 
     /**
@@ -32,7 +27,12 @@ public class BuildMove extends Move {
      */
     @Override
     public boolean isLegal() {
-        Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
+        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
+
+        // cannot put a stone on own tile
+        if (player.equals(tile.getOwner())) return false;
+        // cannot put a stone on a hole
+        if (tile.getProperty() == Tile.Property.HOLE) return false;
 
         // farthest reachable tile in each direction
         Tile[] surrounding = new Tile[Direction.values().length];
@@ -45,7 +45,7 @@ public class BuildMove extends Move {
 
         // Going radially outward in 8 straight lines, one step for each while loop cycle, beginning with the same center tile
         // surrounding keeps track of the farthest field we've gone in each direction
-        for (int steps = 1; true;) {
+        for (int steps = 1; true; ) {
             // keeps track of the number of directions where we've hit a hole/blank field and thus stop searching
             // in this direction
             int emptyOrHoleCount = 0;
@@ -57,9 +57,9 @@ public class BuildMove extends Move {
                 if (surrounding[i] != null && surrounding[i].getTransition(direction) != null) { // If the next tile isn't a hole,
                     searchDirections[i] = surrounding[i].getArrivalDirection(direction).opposite();        // update direction
                     surrounding[i] = surrounding[i].getTransition(direction);                   // increment the farthest tile in this direction.
-                    if (surrounding[i].getOwner() == this.player && steps > 1)
+                    if (this.player.equals(surrounding[i].getOwner()) && steps > 1)
                         return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
-                    else if (surrounding[i].getOwner() == this.player && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
+                    else if (this.player.equals(surrounding[i].getOwner()) && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
                         surrounding[i] = null;                                                  // so set this tile to null and increment emptyOrHoleCount
                         emptyOrHoleCount++;
                     } else if (surrounding[i].getOwner() == null && surrounding[i].getProperty() != Tile.Property.EXPANSION) {
@@ -84,7 +84,7 @@ public class BuildMove extends Move {
      */
     @Override
     public void doMove() {
-        Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
+        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
 
         int[] turnOverLines = new int[8];   // turnOverLines keeps track of the number of stones that need to be overturned in each direction
 
@@ -110,10 +110,10 @@ public class BuildMove extends Move {
                     if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
                         // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         break;
-                    else if (last.getOwner() == this.player && path.size() == 1)
+                    else if (this.player.equals(last.getOwner()) && path.size() == 1)
                         // If on the first step we hit our own stone, we can stop searching in this direction
                         break;
-                    else if (last.getOwner() == this.player && path.size() > 1) {
+                    else if (this.player.equals(last.getOwner()) && path.size() > 1) {
                         // If on other steps we hit our own stone, we get to overturn all stones on the way
                         // and then we can stop searching in this direction
                         turnOverLines[direction.ordinal()] = path.size() - 1;

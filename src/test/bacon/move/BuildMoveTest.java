@@ -10,35 +10,35 @@ public class BuildMoveTest {
     @Test
     public void isLegal() {
         Game.getGame().readMap(bacon.Maps.STARFISH);
-        var map = Game.getGame().getCurrentState().getMap();
+        var state = Game.getGame().getCurrentState();
 
-        map.getTileAt(8, 3).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(8));
-        map.getTileAt(3, 8).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(8));
-        map.getTileAt(3, 9).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(8));
-        map.getTileAt(3, 10).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(8));
+        state.getMap().getTileAt(8, 3).setOwner(state.getPlayerFromNumber(8));
+        state.getMap().getTileAt(3, 8).setOwner(state.getPlayerFromNumber(8));
+        state.getMap().getTileAt(3, 9).setOwner(state.getPlayerFromNumber(8));
+        state.getMap().getTileAt(3, 10).setOwner(state.getPlayerFromNumber(8));
 
-        assertTrue(Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(6),3, 11, 0).isLegal());
-        assertFalse(Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(6),3, 12, 0).isLegal());
-        assertTrue(Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(5),4, 3, 0).isLegal());
-        assertFalse(Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(1),10, 10, 0).isLegal());
+        assertTrue(MoveFactory.createMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(6),3, 11).isLegal());
+        assertFalse(MoveFactory.createMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(6),3, 12).isLegal());
+        assertTrue(MoveFactory.createMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(5),4, 3).isLegal());
+        assertFalse(MoveFactory.createMove(Game.getGame().getCurrentState(), Game.getGame().getCurrentState().getPlayerFromNumber(1),10, 10).isLegal());
 
     }
 
     @Test
     public void doMove() {
         Game.getGame().readMap(bacon.Maps.STARFISH);
-        var map = Game.getGame().getCurrentState().getMap();
+        var state = Game.getGame().getCurrentState();
 
-        map.getTileAt(8, 3).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(8));
-        map.getTileAt(3, 8).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(8));
-        map.getTileAt(3, 9).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(8));
-        map.getTileAt(3, 10).setOwner(Game.getGame().getCurrentState().getPlayerFromNumber(8));
+        state.getMap().getTileAt(8, 3).setOwner(state.getPlayerFromNumber(8));
+        state.getMap().getTileAt(3, 8).setOwner(state.getPlayerFromNumber(8));
+        state.getMap().getTileAt(3, 9).setOwner(state.getPlayerFromNumber(8));
+        state.getMap().getTileAt(3, 10).setOwner(state.getPlayerFromNumber(8));
 
-        Move.createNewMove(0, map, Game.getGame().getCurrentState().getPlayerFromNumber(6),3, 11, 0).doMove();
-        assertEquals(6, map.getTileAt(8, 3).getOwner().number);
-        assertEquals(6, map.getTileAt(3, 8).getOwner().number);
-        assertEquals(6, map.getTileAt(3, 9).getOwner().number);
-        assertEquals(6, map.getTileAt(3, 10).getOwner().number);
+        MoveFactory.createMove(state, Game.getGame().getCurrentState().getPlayerFromNumber(6),3, 11).doMove();
+        assertEquals(6, state.getMap().getTileAt(8, 3).getOwner().number);
+        assertEquals(6, state.getMap().getTileAt(3, 8).getOwner().number);
+        assertEquals(6, state.getMap().getTileAt(3, 9).getOwner().number);
+        assertEquals(6, state.getMap().getTileAt(3, 10).getOwner().number);
 
 
     }

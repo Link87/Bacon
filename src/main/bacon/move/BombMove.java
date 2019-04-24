@@ -14,28 +14,25 @@ public class BombMove extends Move {
     /**
      * Creates instance of BombMove via the constructor in its superclass {@link BuildMove}
      *
-     * @param moveID       the ID of the move
-     * @param map          the map on which the move is executed
-     * @param player       the player of the move
-     * @param x            the x coordinate
-     * @param y            the y coordinate
-     * @param bonusRequest
+     * @param state  the game state on which the move operates
+     * @param player the player of the move
+     * @param x      the x coordinate
+     * @param y      the y coordinate
      */
-    public BombMove(int moveID, Map map, Player player, int x, int y, int bonusRequest) {
-        super(moveID, map, player, x, y, bonusRequest);
+    public BombMove(GameState state, Player player, int x, int y) {
+        super(state, player, x, y);
     }
 
 
     /**
      * Checks if this move is legal.
-     * We only need to check whether the player has a bomb and whether bonus request is 0 here since all potential
-     * failure modes have been intercepted in the superclass
+     * Returns false if destination tile is a hole or the player has not enough bombs, otherwise true.
      *
      * @return true if the move is legal, false otherwise
      */
     public boolean isLegal() {
-        if (player.getBombCount() == 0) return false;
-        return this.bonusRequest == 0;
+        if (state.getMap().getTileAt(xPos, yPos).getProperty() == Tile.Property.HOLE) return false;
+        return player.getBombCount() != 0;
     }
 
 
@@ -52,8 +49,8 @@ public class BombMove extends Move {
         // We start at radius 0 and work our way up to radius r. We consider every transition of every tile in the previous
         // radius-layer i-1 and check whether this entry has already appeared. If not, we stack this entry onto m[i]
 
-        int radius = Game.getGame().getBombRadius();
-        Tile tile = map.getTileAt(this.xCoordinate, this.yCoordinate);
+        int radius = state.getBombRadius();
+        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
 
         // set of already examined tiles
         Set<Tile> bombSet = new HashSet<>();
@@ -67,7 +64,7 @@ public class BombMove extends Move {
 
         //searches for all neighbours that need to be bombed out
         for (int i = 0; i < radius; i++) {
-            for (Tile t: currentTiles) {
+            for (Tile t : currentTiles) {
                 for (Direction direction : Direction.values()) {
                     if (t.getTransition(direction) != null) {
                         if (!bombSet.contains(t.getTransition(direction))) {
