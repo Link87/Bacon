@@ -6,6 +6,8 @@ import bacon.Player;
 import bacon.Tile;
 import bacon.GamePhase;
 
+import java.nio.ByteBuffer;
+
 /**
  * An interface which defines the basic functions of each typ of move.
  */
@@ -40,9 +42,9 @@ public abstract class Move {
 
         if (Game.getGame().getCurrentState().getGamePhase() == GamePhase.PHASE_ONE) {
 
-            if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
+            if (tileProperty == Tile.Property.HOLE) return new DefaultIllegalMove();
 
-            else if (owner == player) throw new IllegalArgumentException("Tile is already occupied by player");
+            else if (owner == player) return new DefaultIllegalMove();
 
             else if (owner == null && tileProperty != Tile.Property.EXPANSION)
                 return new RegularMove(moveID, map, player, x, y, bonusRequest);
@@ -51,7 +53,7 @@ public abstract class Move {
 
         } else if (Game.getGame().getCurrentState().getGamePhase() == GamePhase.PHASE_TWO) {
 
-            if (tileProperty == Tile.Property.HOLE) throw new IllegalArgumentException("Tile is a hole");
+            if (tileProperty == Tile.Property.HOLE) return new DefaultIllegalMove();
 
             else return new BombMove(moveID, map, player, x, y, bonusRequest);
 
@@ -92,5 +94,20 @@ public abstract class Move {
      * Executes this move.
      */
     public abstract void doMove();
+
+    /**
+     * Returns the move in binary representation.
+     *
+     * @return byte array containing this moves binary representation
+     */
+    public byte[] encodeBinary() {
+        var data = new byte[5];
+        ByteBuffer.wrap(data)
+                .putShort((short) xCoordinate)
+                .putShort((short) yCoordinate)
+                .put((byte) 0);
+
+        return data;
+    }
 
 }
