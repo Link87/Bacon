@@ -20,7 +20,7 @@ public class LegalMoves {
     private Set<Tile> overrideMoves = new HashSet<>();
     private Set<Tile> bombMoves = new HashSet<>();
 
-    private LegalMoves() {
+    public LegalMoves() {
     }
 
     /**
@@ -125,14 +125,5 @@ public class LegalMoves {
                 }
             }
         }
-    }
-
-    /**
-     * Enum that indicates different types of moves
-     */
-    enum MoveType{
-        REGULAR,
-        OVERRIDE,
-        BOMB
     }
 }
