@@ -19,7 +19,7 @@ public class BombMove extends Move {
      * @param x      the x coordinate
      * @param y      the y coordinate
      */
-    BombMove(GameState state, Player player, int x, int y) {
+    public BombMove(GameState state, Player player, int x, int y) {
         super(state, player, x, y);
     }
 

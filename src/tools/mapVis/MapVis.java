@@ -1,9 +1,6 @@
 package mapVis;
 
-import bacon.move.BombMove;
-import bacon.move.Move;
-import bacon.move.OverrideMove;
-import bacon.move.RegularMove;
+import bacon.move.*;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -248,9 +245,10 @@ public class MapVis extends Application {
         }
         Move move;
         try {
-            move = Move.createNewMove(0, myMap, currentPlayer, loca.x, loca.y, bonusRequest);
+            move = MoveFactory.createMove(game.getCurrentState(), currentPlayer, loca.x, loca.y,
+                    BonusRequest.fromValue(bonusRequest, game.getCurrentState()));
         } catch (Exception e) {
-            move = new BombMove(0, myMap, currentPlayer, loca.x, loca.y, bonusRequest);
+            move = new BombMove(game.getCurrentState(), currentPlayer, loca.x, loca.y);
         }
         if (interactionMode == InteractionModes.GODMODE) {
             switch (moveMode) {
@@ -265,7 +263,7 @@ public class MapVis extends Application {
                 case BOMB:
                     unHover(label);
                     currentPlayer.receiveBomb(1);
-                    move = new BombMove(0, myMap, currentPlayer, loca.x, loca.y, bonusRequest);
+                    move = new BombMove(game.getCurrentState(), currentPlayer, loca.x, loca.y);
                     move.doMove();
                     break;
             }
@@ -326,7 +324,7 @@ public class MapVis extends Application {
         for (int x = 0; x < myMap.width; x++) {
             for (int y = 0; y < myMap.height; y++) {
                 try {
-                    Move rm = Move.createNewMove(0, myMap, game.getCurrentState().getPlayerFromNumber(cp), x, y, 0);
+                    Move rm = MoveFactory.createMove(game.getCurrentState(), game.getCurrentState().getPlayerFromNumber(cp), x, y);
                     if (rm instanceof OverrideMove && rm.isLegal()) {
                         labels[x][y].setStyle("-fx-background-color: green");
                         moves.add(rm);

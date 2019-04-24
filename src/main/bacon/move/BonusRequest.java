@@ -12,7 +12,7 @@ public class BonusRequest {
         NONE,
         BOMB_BONUS,
         OVERRIDE_BONUS,
-        SWITCH_STONES;
+        SWITCH_STONES
     }
 
     public final Type type;
@@ -34,7 +34,7 @@ public class BonusRequest {
      * @param state GameState to use
      * @return a BonusRequest of the right type
      */
-    static BonusRequest fromValue(int value, GameState state) {
+    public static BonusRequest fromValue(int value, GameState state) {
         if (value > 0 && value < state.getTotalPlayerCount()) {
             var request = new BonusRequest(Type.SWITCH_STONES);
             request.other = state.getPlayerFromNumber(value);
