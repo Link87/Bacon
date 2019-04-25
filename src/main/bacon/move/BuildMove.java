@@ -29,8 +29,6 @@ public class BuildMove extends Move {
     public boolean isLegal() {
         Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
 
-        // cannot put a stone on own tile
-        if (player.equals(tile.getOwner())) return false;
         // cannot put a stone on a hole
         if (tile.getProperty() == Tile.Property.HOLE) return false;
 
