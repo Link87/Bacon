@@ -24,6 +24,8 @@ public class Game {
     private int bombRadius;
     private int playerCount;
 
+    private int moveCount=0;
+
     /**
      * all stateful information is contained inside this object
      */
@@ -168,9 +170,10 @@ public class Game {
         Move move = MoveFactory.decodeBinary(moveData, currentGameState);
 
         if (move.isLegal()) {
-            System.out.println("Move is legal.");
+            System.out.println(moveCount +". Move is legal.");
             move.doMove();
-        } else System.out.println("Move is illegal.");
+        } else System.out.println(moveCount + ". Move is illegal.");
+        moveCount++;
     }
 
     /**
