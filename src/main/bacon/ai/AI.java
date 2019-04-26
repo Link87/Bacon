@@ -3,6 +3,8 @@ package bacon.ai;
 import bacon.Game;
 import bacon.GameState;
 import bacon.Map;
+import bacon.Tile;
+import bacon.move.BonusRequest;
 import bacon.move.Move;
 import bacon.move.MoveFactory;
 
@@ -28,8 +30,11 @@ public class AI {
         Map map = currentGameState.getMap();
         for (int x = 0; x < map.width; x++) {
             for (int y = 0; y < map.height; y++) {
+                BonusRequest br = null;
+                if(map.getTileAt(x,y).getProperty()== Tile.Property.CHOICE)  br = BonusRequest.fromValue(1,currentGameState);
+                if(map.getTileAt(x,y).getProperty()== Tile.Property.BONUS) br = BonusRequest.fromValue(21,currentGameState);
                 var move = MoveFactory.createMove(Game.getGame().getCurrentState(),
-                        Game.getGame().getCurrentState().getMe(), x, y);
+                        Game.getGame().getCurrentState().getMe(), x, y, br);
                 if (move.isLegal())
                     return move;
             }
