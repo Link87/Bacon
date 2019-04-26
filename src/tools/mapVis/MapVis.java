@@ -56,6 +56,9 @@ public class MapVis extends Application {
     private Label overrideCount= new Label();
     private Label bombCount = new Label();
 
+    private Label xPos = new Label("xPos");
+    private  Label yPos = new Label("yPos");
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -186,7 +189,7 @@ public class MapVis extends Application {
         hBoxInformation.getChildren().addAll(new Label("Override Stones:"),overrideCount,new Label("Bomb Count:"),bombCount);
 
         //dont forget to add new stuff to the layout
-        vBoxSettings.getChildren().addAll(new Button("Test"));
+        vBoxSettings.getChildren().addAll(xPos,yPos);
 
         border.setCenter(grid);
         border.setRight(vBoxSettings);
@@ -201,6 +204,8 @@ public class MapVis extends Application {
     public void hover(Label label) {
         Coords loca = xyFromLabel(label);
         Tile target = myMap.getTileAt(loca.x, loca.y);
+        xPos.setText(loca.x+"");
+        yPos.setText(loca.y+"");
         //this works - trust me
         String[] colors = {"red","orange","yellow","lime","lightgreen","lightblue","pink","brown"};
 
