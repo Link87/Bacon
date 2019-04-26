@@ -63,11 +63,12 @@ public class RegularMove extends BuildMove {
      */
     public void doMove() {
         Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
+        var property = tile.getProperty();
 
         super.doMove();
 
         // After overturning captured stones, we now have to consider the bonus/special effect of our tile
-        switch (tile.getProperty()) {
+        switch (property) {
             case BONUS:
                 if (this.request.type == BonusRequest.Type.BOMB_BONUS) this.player.receiveBomb(1);
                 else if (this.request.type == BonusRequest.Type.OVERRIDE_BONUS) this.player.receiveOverrideStone(1);

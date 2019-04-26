@@ -3,6 +3,8 @@ package bacon.move;
 import bacon.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BuildMove extends Move {
 
@@ -84,7 +86,7 @@ public class BuildMove extends Move {
     public void doMove() {
         Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
 
-        int[] turnOverLines = new int[8];   // turnOverLines keeps track of the number of stones that need to be overturned in each direction
+        Set<Tile> turnOver = new HashSet<>();
 
         for (Direction direction : Direction.values()) {
             var path = new ArrayList<Tile>();   // path in the given direction
@@ -100,9 +102,9 @@ public class BuildMove extends Move {
                 else {
                     // if not, we add it to path
                     // determine new search direction, is opposite to arrival direction
-                    Direction helper = searchDirection;
+                    Direction oldDirection = searchDirection;
                     searchDirection = last.getArrivalDirection(searchDirection).opposite();
-                    last = last.getTransition(helper);
+                    last = last.getTransition(oldDirection);
                     path.add(last);
 
                     if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
@@ -114,21 +116,18 @@ public class BuildMove extends Move {
                     else if (this.player.equals(last.getOwner()) && path.size() > 1) {
                         // If on other steps we hit our own stone, we get to overturn all stones on the way
                         // and then we can stop searching in this direction
-                        turnOverLines[direction.ordinal()] = path.size() - 1;
+                        turnOver.addAll(path);
                         break;
                     }
                 }
             }
-
-            // When we're done searching one direction, this is the
-            // function that actually overturns the stones (including expansion fields)
-            for (int i = 1; i <= turnOverLines[direction.ordinal()]; i++) {
-                path.get(i).setProperty(Tile.Property.DEFAULT);
-                path.get(i).setOwner(this.player);
-            }
         }
 
-        tile.setOwner(this.player);         // new stone is placed on the map
+        // now actually turn all stones over
+        turnOver.forEach(t -> t.setProperty(Tile.Property.DEFAULT));
+        turnOver.forEach(t -> t.setOwner(this.player));
 
+        // new stone is placed on the map
+        tile.setOwner(this.player);
     }
 }
