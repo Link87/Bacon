@@ -28,7 +28,8 @@ public class MoveFactory {
         if (state.getGamePhase() == GamePhase.PHASE_ONE) {
             if (owner == null && tileProperty != Tile.Property.EXPANSION)
                 return new RegularMove(state, player, x, y, request);
-            else return new OverrideMove(state, player, x, y);
+            if (owner != null || tileProperty == Tile.Property.EXPANSION)
+                return new OverrideMove(state, player, x, y);
 
         } else if (state.getGamePhase() == GamePhase.PHASE_TWO)
             return new BombMove(state, player, x, y);
