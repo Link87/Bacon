@@ -24,7 +24,7 @@ public class Game {
     private int bombRadius;
     private int playerCount;
 
-    private int moveCount=0;
+    private int moveCount=1;
 
     /**
      * all stateful information is contained inside this object
