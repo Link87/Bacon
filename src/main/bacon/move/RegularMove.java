@@ -44,8 +44,7 @@ public class RegularMove extends BuildMove {
                     return false;
                 break;
             case CHOICE:
-                if (this.request == null || this.request.type != BonusRequest.Type.SWITCH_STONES ||
-                        this.request.getOtherPlayer().equals(state.getMe()))
+                if (this.request == null || this.request.type != BonusRequest.Type.SWITCH_STONES)
                     return false;
                 break;
             default:
@@ -96,6 +95,7 @@ public class RegularMove extends BuildMove {
                 for (int x = 0; x < state.getMap().width; x++) {
                     for (int y = 0; y < state.getMap().height; y++) {
                         Tile anyTile = state.getMap().getTileAt(x, y);
+                        if(anyTile.getOwner() == null) continue;
                         if (anyTile.getOwner().equals(this.player))
                             anyTile.setOwner(this.request.getOtherPlayer());
                         else if (anyTile.getOwner().equals(this.request.getOtherPlayer()))
