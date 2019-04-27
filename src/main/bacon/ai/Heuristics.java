@@ -140,7 +140,7 @@ public class Heuristics {
                 indiagStbl.remove(tile);
             }
         }
-        
+
         return horzFinal.size() + vertFinal.size() + diagFinal.size() + indiagFinal.size();
     }
 
@@ -172,7 +172,7 @@ public class Heuristics {
      * @param playerNr number of player in turn
      * @return a real number as clustering heuristics
      */
-    public double clustering(GameState state, int playerNr){
+    public static double clustering(GameState state, int playerNr){
         int playerStoneCount = state.getPlayerFromNumber(playerNr).getStoneCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
@@ -260,11 +260,11 @@ public class Heuristics {
      * @param playerNr number of player in turn
      * @return a real number as bonus heuristics
      */
-    public double bonusBomb(GameState state, int playerNr){
+    public static double bonusBomb(GameState state, int playerNr){
         int bombCount = state.getPlayerFromNumber(playerNr).getBombCount();
         int bombRadius = state.getBombRadius();
 
-        double bonusBomb = 2*(2*bombRadius+1)^2*bombCount;
+        double bonusBomb = 2*(Math.pow(2*bombRadius+1,2))*bombCount;
 
         return bonusBomb;
     }
@@ -276,7 +276,7 @@ public class Heuristics {
      * @param playerNr number of player in turn
      * @return a real number as bonus heuristics
      */
-    public double bonusOverride(GameState state, int playerNr){
+    public static double bonusOverride(GameState state, int playerNr){
         int overrideStoneCount = state.getPlayerFromNumber(playerNr).getOverrideStoneCount();
         double mapHeight = state.getMap().height;
         double mapWidth = state.getMap().width;
