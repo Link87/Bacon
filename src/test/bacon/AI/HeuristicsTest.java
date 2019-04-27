@@ -38,13 +38,14 @@ public class HeuristicsTest {
 
     @Test
     public void stability(){
-
+        Game.getGame().readMap(Maps.EXAMPLE_STABILITY);
+        assertEquals("Stability heuristic error", 35 ,Heuristics.stability(Game.getGame().getCurrentState(), 1), 0.01);
     }
 
     @Test
     public void clustering(){
         Game.getGame().readMap(Maps.EXAMPLE_CLUSTERING);
-        assertEquals("Clustering heuristics error", 11.37 , Heuristics.clustering(Game.getGame().getCurrentState(),1), 0.01);
+        assertEquals("Clustering heuristic error", 11.37 , Heuristics.clustering(Game.getGame().getCurrentState(),1), 0.01);
     }
 
     @Test

@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
@@ -22,6 +24,11 @@ public class Heuristics {
     private static Set<Tile> vertFinal = new HashSet<>();
     private static Set<Tile> diagFinal = new HashSet<>();
     private static Set<Tile> indiagFinal = new HashSet<>();
+
+    private static Set<Tile> tmpHorz = new HashSet<>();
+    private static Set<Tile> tmpVert = new HashSet<>();
+    private static Set<Tile> tmpDiag = new HashSet<>();
+    private static Set<Tile> tmpIndiag = new HashSet<>();
 
     private Heuristics() {
     }
@@ -81,66 +88,76 @@ public class Heuristics {
         while(stoneIterator.hasNext()){
             stone = stoneIterator.next();
 
-            if(stone.getTransition(Direction.LEFT)==null||stone.getTransition(Direction.RIGHT)==null){
+            if(stone.getTransition(Direction.LEFT) == null||stone.getTransition(Direction.RIGHT)==null){
                 horzStbl.add(stone);
             }
 
-            if(stone.getTransition(Direction.UP)==null||stone.getTransition(Direction.DOWN)==null){
+            if(stone.getTransition(Direction.UP) == null||stone.getTransition(Direction.DOWN) == null){
                 vertStbl.add(stone);
             }
 
-            if(stone.getTransition(Direction.UP_RIGHT)==null||stone.getTransition(Direction.DOWN_LEFT)==null){
+            if(stone.getTransition(Direction.UP_RIGHT) == null||stone.getTransition(Direction.DOWN_LEFT) == null){
                 diagStbl.add(stone);
             }
 
-            if(stone.getTransition(Direction.UP_LEFT)==null||stone.getTransition(Direction.DOWN_RIGHT)==null){
+            if(stone.getTransition(Direction.UP_LEFT) == null||stone.getTransition(Direction.DOWN_RIGHT) == null){
                 indiagStbl.add(stone);
             }
         }
 
         while(!horzStbl.isEmpty() || !vertStbl.isEmpty() || !diagStbl.isEmpty() || !indiagStbl.isEmpty()){
             for(Tile tile: horzStbl) {
-                if (tile.getTransition(Direction.LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.LEFT) != null && tile.getTransition(Direction.LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.LEFT);
                 }
-                if (tile.getTransition(Direction.RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.RIGHT) != null && tile.getTransition(Direction.RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.RIGHT);
                 }
                 horzFinal.add(tile);
-                horzStbl.remove(tile);
             }
+            horzStbl.clear();
+            horzStbl.addAll(tmpHorz);
+            tmpHorz.clear();
+
             for(Tile tile: vertStbl) {
-                if (tile.getTransition(Direction.UP).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.UP) != null && tile.getTransition(Direction.UP).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.UP);
                 }
-                if (tile.getTransition(Direction.DOWN).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.DOWN) != null && tile.getTransition(Direction.DOWN).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.DOWN);
                 }
                 vertFinal.add(tile);
-                vertStbl.remove(tile);
             }
+            vertStbl.clear();
+            vertStbl.addAll(tmpVert);
+            tmpVert.clear();
+
             for(Tile tile: diagStbl) {
-                if (tile.getTransition(Direction.UP_RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.UP_RIGHT) != null && tile.getTransition(Direction.UP_RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.UP_RIGHT);
                 }
-                if (tile.getTransition(Direction.DOWN_LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.DOWN_LEFT) != null && tile.getTransition(Direction.DOWN_LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.DOWN_LEFT);
                 }
                 diagFinal.add(tile);
-                diagStbl.remove(tile);
             }
+            diagStbl.clear();
+            diagStbl.addAll(tmpDiag);
+            tmpDiag.clear();
+
             for(Tile tile: indiagStbl) {
-                if (tile.getTransition(Direction.UP_LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.UP_LEFT) != null && tile.getTransition(Direction.UP_LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.UP_LEFT);
                 }
-                if (tile.getTransition(Direction.DOWN_RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.DOWN_RIGHT) != null && tile.getTransition(Direction.DOWN_RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.DOWN_RIGHT);
                 }
                 indiagFinal.add(tile);
-                indiagStbl.remove(tile);
             }
+            indiagStbl.clear();
+            indiagStbl.addAll(tmpIndiag);
+            tmpIndiag.clear();
         }
-
         return horzFinal.size() + vertFinal.size() + diagFinal.size() + indiagFinal.size();
     }
 
@@ -148,19 +165,27 @@ public class Heuristics {
         switch (tile.getArrivalDirection(direction)) {
             case DOWN:
             case UP:
-                vertStbl.add(tile.getTransition(direction));
+                if(!vertFinal.contains(tile.getTransition(direction))) {
+                    tmpVert.add(tile.getTransition(direction));
+                }
                 break;
             case LEFT:
             case RIGHT:
-                horzStbl.add(tile.getTransition(direction));
+                if(!horzFinal.contains(tile.getTransition(direction))){
+                    tmpHorz.add(tile.getTransition(direction));
+                }
                 break;
             case DOWN_LEFT:
             case UP_RIGHT:
-                diagStbl.add(tile.getTransition(direction));
+                if(!diagFinal.contains(tile.getTransition(direction))){
+                    tmpDiag.add(tile.getTransition(direction));
+                }
                 break;
             case UP_LEFT:
             case DOWN_RIGHT:
-                indiagStbl.add(tile.getTransition(direction));
+                if(!indiagFinal.contains(tile.getTransition(direction))) {
+                    tmpIndiag.add(tile.getTransition(direction));
+                }
                 break;
         }
     }
