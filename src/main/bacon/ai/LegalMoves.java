@@ -46,6 +46,7 @@ public class LegalMoves {
                 break;
             case PHASE_TWO:
                 if(moveType == MoveType.BOMB){
+                    legalBombMoves(state);
                     return bombMoves;
                 }
         }
@@ -88,14 +89,22 @@ public class LegalMoves {
                         searchDirection = last.getArrivalDirection(searchDirection).opposite();
                         last = last.getTransition(helper);
 
+
                         if (last.getOwner() == player) { // we can stop searching if we find a tile occupied by the same player
-                            break;
-                        } else if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION) {
+                            if (player.getOverrideStoneCount() > 0 && steps > 0) { //checks if the move actually captures any tile
+                                overrideMoves.add(last);                           // and if the player is allowed to override stones
+                            }
+                            else{
+                                break;
+                            }
+                        }
+                        else if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION) {
                             if (steps > 0) {            // checks if the move actually captures any tile
                                 regularMoves.add(last);
                             }
                             break;
-                        } else {
+                        }
+                        else {
                             if (player.getOverrideStoneCount() > 0 && steps > 0) { //checks if the move actually captures any tile
                                 overrideMoves.add(last);                           // and if the player is allowed to override stones
                             }

@@ -13,9 +13,15 @@ import static java.lang.Math.sqrt;
 public class Heuristics {
     private static Heuristics heuristic = new Heuristics();
 
-    public static Heuristics getHeuristic() {
-        return heuristic;
-    }
+    private static Set<Tile> horzStbl = new HashSet<>();
+    private static Set<Tile> vertStbl = new HashSet<>();
+    private static Set<Tile> diagStbl = new HashSet<>();
+    private static Set<Tile> indiagStbl = new HashSet<>();
+
+    private static Set<Tile> horzFinal = new HashSet<>();
+    private static Set<Tile> vertFinal = new HashSet<>();
+    private static Set<Tile> diagFinal = new HashSet<>();
+    private static Set<Tile> indiagFinal = new HashSet<>();
 
     private Heuristics() {
     }
@@ -28,7 +34,7 @@ public class Heuristics {
      * @return whether this game state is in the uncertainty phase
      */
     //TODO Optimize this methods by including inversion/choice tile coordinates as stateless attribute of Game
-    public boolean uncertaintyPhase(GameState state){
+    public static boolean uncertaintyPhase(GameState state){
         for(int x = 0; x < state.getMap().width; x++){
             for(int y = 0; y < state.getMap().height; y++){
                 if(state.getMap().getTileAt(x,y).getProperty() == Tile.Property.CHOICE ||
@@ -47,7 +53,7 @@ public class Heuristics {
      * @param playerNr Number of player in turn
      * @return a real number as mobility heuristics
      */
-    public double mobility(GameState state, int playerNr){
+    public static double mobility(GameState state, int playerNr){
         double mobility;
 
         if(state.getGamePhase() != GamePhase.PHASE_ONE){
@@ -65,18 +71,98 @@ public class Heuristics {
      * Calculates the stability heuristics of this certain given game state and player
      *
      * @param state GameState to be examined
-     * @param player in turn
+     * @param playerNr number of the player in turn
      * @return a real number as stability heuristics
      */
-    public double stability(GameState state, Player player){
-        Iterator<Tile> stoneIterator = player.getStonesIterator();
-        Tile tile;
+    public static double stability(GameState state, int playerNr){
+        Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
+        Tile stone;
 
         while(stoneIterator.hasNext()){
-            tile = stoneIterator.next();
+            stone = stoneIterator.next();
 
+            if(stone.getTransition(Direction.LEFT)==null||stone.getTransition(Direction.RIGHT)==null){
+                horzStbl.add(stone);
+            }
+
+            if(stone.getTransition(Direction.UP)==null||stone.getTransition(Direction.DOWN)==null){
+                vertStbl.add(stone);
+            }
+
+            if(stone.getTransition(Direction.UP_RIGHT)==null||stone.getTransition(Direction.DOWN_LEFT)==null){
+                diagStbl.add(stone);
+            }
+
+            if(stone.getTransition(Direction.UP_LEFT)==null||stone.getTransition(Direction.DOWN_RIGHT)==null){
+                indiagStbl.add(stone);
+            }
         }
-        return 0;
+
+        while(!horzStbl.isEmpty() || !vertStbl.isEmpty() || !diagStbl.isEmpty() || !indiagStbl.isEmpty()){
+            for(Tile tile: horzStbl) {
+                if (tile.getTransition(Direction.LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                    stabilityFinder(tile,Direction.LEFT);
+                }
+                if (tile.getTransition(Direction.RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                    stabilityFinder(tile,Direction.RIGHT);
+                }
+                horzFinal.add(tile);
+                horzStbl.remove(tile);
+            }
+            for(Tile tile: vertStbl) {
+                if (tile.getTransition(Direction.UP).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                    stabilityFinder(tile,Direction.UP);
+                }
+                if (tile.getTransition(Direction.DOWN).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                    stabilityFinder(tile,Direction.DOWN);
+                }
+                vertFinal.add(tile);
+                vertStbl.remove(tile);
+            }
+            for(Tile tile: diagStbl) {
+                if (tile.getTransition(Direction.UP_RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                    stabilityFinder(tile,Direction.UP_RIGHT);
+                }
+                if (tile.getTransition(Direction.DOWN_LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                    stabilityFinder(tile,Direction.DOWN_LEFT);
+                }
+                diagFinal.add(tile);
+                diagStbl.remove(tile);
+            }
+            for(Tile tile: indiagStbl) {
+                if (tile.getTransition(Direction.UP_LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                    stabilityFinder(tile,Direction.UP_LEFT);
+                }
+                if (tile.getTransition(Direction.DOWN_RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                    stabilityFinder(tile,Direction.DOWN_RIGHT);
+                }
+                indiagFinal.add(tile);
+                indiagStbl.remove(tile);
+            }
+        }
+        
+        return horzFinal.size() + vertFinal.size() + diagFinal.size() + indiagFinal.size();
+    }
+
+    private static void stabilityFinder(Tile tile, Direction direction){
+        switch (tile.getArrivalDirection(direction)) {
+            case DOWN:
+            case UP:
+                vertStbl.add(tile.getTransition(direction));
+                break;
+            case LEFT:
+            case RIGHT:
+                horzStbl.add(tile.getTransition(direction));
+                break;
+            case DOWN_LEFT:
+            case UP_RIGHT:
+                diagStbl.add(tile.getTransition(direction));
+                break;
+            case UP_LEFT:
+            case DOWN_RIGHT:
+                indiagStbl.add(tile.getTransition(direction));
+                break;
+        }
     }
 
     /**
