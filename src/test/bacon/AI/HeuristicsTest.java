@@ -43,7 +43,8 @@ public class HeuristicsTest {
 
     @Test
     public void clustering(){
-
+        Game.getGame().readMap(Maps.EXAMPLE_CLUSTERING);
+        assertEquals("Clustering heuristics error", 11.37 , Heuristics.clustering(Game.getGame().getCurrentState(),1), 0.01);
     }
 
     @Test
@@ -51,8 +52,8 @@ public class HeuristicsTest {
         Game.getGame().readMap(Maps.EXAMPLE);
 
         //Bombs
-        assertEquals(200, (int) Heuristics.bonusBomb(Game.getGame().getCurrentState(), 1) );
+        assertEquals("Bomb bonus heuristic error", 200, (int) Heuristics.bonusBomb(Game.getGame().getCurrentState(), 1) );
         //Override stones
-        assertEquals(180, Heuristics.bonusOverride(Game.getGame().getCurrentState(), 1), 0.1);
+        assertEquals("Override bonus heuristic error",180, Heuristics.bonusOverride(Game.getGame().getCurrentState(), 1), 0.1);
     }
 }

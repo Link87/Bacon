@@ -172,6 +172,8 @@ public class Heuristics {
      * @param playerNr number of player in turn
      * @return a real number as clustering heuristics
      */
+
+    //TODO: Scale clustering heuristic depending on number of free tiles
     public static double clustering(GameState state, int playerNr){
         int playerStoneCount = state.getPlayerFromNumber(playerNr).getStoneCount();
         int bombRadius = state.getBombRadius();
@@ -183,16 +185,16 @@ public class Heuristics {
         int[] rivalStoneCount = new int[totalPlayer]; // the total numbers of stones of each rival
 
         for(int i = 0; i < totalPlayer; i++){ // calculates global variables of the current state
-            rivalBombCount[i] = state.getPlayerFromNumber(i).getBombCount();
-            rivalStoneCount[i] = state.getPlayerFromNumber(i).getStoneCount();
+            rivalBombCount[i] = state.getPlayerFromNumber(i+1).getBombCount();
+            rivalStoneCount[i] = state.getPlayerFromNumber(i+1).getStoneCount();
         }
 
         for(int i = 0; i < totalPlayer; i++){ // calculates the rivalry factor between the player and each of his rivals
-            if(i == playerNr){
+            if(i+1 == playerNr){
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             }
             else {
-                rivalry[i] = (rivalBombCount[i]*(2*bombRadius+1)^2)/((totalPlayer-1)*(abs(rivalStoneCount[i]-playerStoneCount)+1));
+                rivalry[i] = (rivalBombCount[i]*(Math.pow(2*bombRadius+1,2)))/((totalPlayer-1)*(abs(rivalStoneCount[i]-playerStoneCount)+1));
             }
         }
 
@@ -243,13 +245,15 @@ public class Heuristics {
                     bombedStoneCount[t.getOwner().getPlayerNumber()-1]++;
                 }
             }
+            bombedStoneCount[playerNr-1]--;              //this line removes the target itself from collateral damage
 
             for(int i = 0; i < totalPlayer; i++){                   // This for-loop sums collateral damage over all rivals
                 clusteringSum += bombedStoneCount[i]*rivalry[i];    // to get the clustering factor of a player's stone,
+                bombedStoneCount[i]=0;
             }                                                       // the outer while-loop sums clustering factors over all
         }                                                           // of player's stones to get the total clustering factor of the game state
 
-        double clusteringScaled = clusteringSum/((2*(2*bombRadius+1)-1)^2); // re-normalizes clustering factor such that
+        double clusteringScaled = clusteringSum/(Math.pow(2*(2*bombRadius+1)-1,2)); // re-normalizes clustering factor such that
         return clusteringScaled;                                            // it is independent of bomb radius
     }
 
