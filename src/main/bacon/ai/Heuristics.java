@@ -1,13 +1,14 @@
 package bacon.ai;
 
-import bacon.*;
+import bacon.Direction;
+import bacon.GamePhase;
+import bacon.GameState;
+import bacon.Tile;
 
-import java.util.Iterator;
-import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.Iterator;
+import java.util.Set;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
@@ -41,12 +42,12 @@ public class Heuristics {
      * @param state GameState to be examined
      * @return whether this game state is in the uncertainty phase
      */
-    //TODO Optimize this methods by including inversion/choice tile coordinates as stateless attribute of Game
-    public static boolean uncertaintyPhase(GameState state){
-        for(int x = 0; x < state.getMap().width; x++){
-            for(int y = 0; y < state.getMap().height; y++){
-                if(state.getMap().getTileAt(x,y).getProperty() == Tile.Property.CHOICE ||
-                   state.getMap().getTileAt(x,y).getProperty() == Tile.Property.INVERSION){
+    public static boolean isUncertaintyPhase(GameState state) {
+        // TODO Optimize this methods by including inversion/choice tile coordinates as stateful attribute of Game
+        for (int x = 0; x < state.getMap().width; x++) {
+            for (int y = 0; y < state.getMap().height; y++) {
+                if (state.getMap().getTileAt(x, y).getProperty() == Tile.Property.CHOICE ||
+                        state.getMap().getTileAt(x, y).getProperty() == Tile.Property.INVERSION) {
                     return true;
                 }
             }
@@ -57,20 +58,20 @@ public class Heuristics {
     /**
      * Calculates the mobility heuristics of this certain given game state and player
      *
-     * @param state GameState to be examined
+     * @param state    GameState to be examined
      * @param playerNr Number of player in turn
      * @return a real number as mobility heuristics
      */
-    public static double mobility(GameState state, int playerNr){
-        double mobility;
+    public static int mobility(GameState state, int playerNr) {
+        int mobility;
 
-        if(state.getGamePhase() != GamePhase.PHASE_ONE){
+        if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
         }
 
-        mobility = LegalMoves.legalMoves(state, playerNr, MoveType.REGULAR).size();
+        mobility = LegalMoves.getLegalMoveTiles(state, playerNr, MoveType.REGULAR).size();
         //TODO: Weight regular move mobility against override move mobility
-        mobility += LegalMoves.legalMoves(state, playerNr, MoveType.OVERRIDE).size();
+        mobility += LegalMoves.getLegalMoveTiles(state, playerNr, MoveType.OVERRIDE).size();
 
         return mobility;
     }
@@ -78,76 +79,76 @@ public class Heuristics {
     /**
      * Calculates the stability heuristics of this certain given game state and player.
      *
-     * @param state GameState to be examined
+     * @param state    GameState to be examined
      * @param playerNr number of the player in turn
      * @return a real number as stability heuristics
      */
-    public static double stability(GameState state, int playerNr){
+    public static double stability(GameState state, int playerNr) {
         Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
         Tile stone;
 
-        while(stoneIterator.hasNext()){     //Iterates over all player's stones and categorizes them according to stability directions
+        while (stoneIterator.hasNext()) {     //Iterates over all player's stones and categorizes them according to stability directions
             stone = stoneIterator.next();
 
-            if(stone.getTransition(Direction.LEFT) == null || stone.getTransition(Direction.RIGHT)==null){
+            if (stone.getTransition(Direction.LEFT) == null || stone.getTransition(Direction.RIGHT) == null) {
                 horzStbl.add(stone);
             }
 
-            if(stone.getTransition(Direction.UP) == null || stone.getTransition(Direction.DOWN) == null){
+            if (stone.getTransition(Direction.UP) == null || stone.getTransition(Direction.DOWN) == null) {
                 vertStbl.add(stone);
             }
 
-            if(stone.getTransition(Direction.UP_RIGHT) == null || stone.getTransition(Direction.DOWN_LEFT) == null){
+            if (stone.getTransition(Direction.UP_RIGHT) == null || stone.getTransition(Direction.DOWN_LEFT) == null) {
                 diagStbl.add(stone);
             }
 
-            if(stone.getTransition(Direction.UP_LEFT) == null || stone.getTransition(Direction.DOWN_RIGHT) == null){
+            if (stone.getTransition(Direction.UP_LEFT) == null || stone.getTransition(Direction.DOWN_RIGHT) == null) {
                 indiagStbl.add(stone);
             }
         }
 
         // Gradually extends stability from stable stones to neighbouring stones
-        while(!horzStbl.isEmpty() || !vertStbl.isEmpty() || !diagStbl.isEmpty() || !indiagStbl.isEmpty()){
-            for(Tile tile: horzStbl) { // Extending horizontally stable stones
+        while (!horzStbl.isEmpty() || !vertStbl.isEmpty() || !diagStbl.isEmpty() || !indiagStbl.isEmpty()) {
+            for (Tile tile : horzStbl) { // Extending horizontally stable stones
                 // In case there is a neighbour in this stability direction, find the arrival direction and add neighbour to temporary memory
                 if (tile.getTransition(Direction.LEFT) != null && tile.getTransition(Direction.LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
-                    stabilityFinder(tile,Direction.LEFT);
+                    stabilityFinder(tile, Direction.LEFT);
                 }
                 if (tile.getTransition(Direction.RIGHT) != null && tile.getTransition(Direction.RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
-                    stabilityFinder(tile,Direction.RIGHT);
+                    stabilityFinder(tile, Direction.RIGHT);
                 }
                 horzFinal.add(tile); // Adds stone to final stability set and never consider this stability direction of this stone again
             }
 
-            for(Tile tile: vertStbl) {  // Extending vertically stable stones
+            for (Tile tile : vertStbl) {  // Extending vertically stable stones
                 // In case there is a neighbour in this stability direction, find the arrival direction and add neighbour to temporary memory
                 if (tile.getTransition(Direction.UP) != null && tile.getTransition(Direction.UP).getOwner() == state.getPlayerFromNumber(playerNr)) {
-                    stabilityFinder(tile,Direction.UP);
+                    stabilityFinder(tile, Direction.UP);
                 }
                 if (tile.getTransition(Direction.DOWN) != null && tile.getTransition(Direction.DOWN).getOwner() == state.getPlayerFromNumber(playerNr)) {
-                    stabilityFinder(tile,Direction.DOWN);
+                    stabilityFinder(tile, Direction.DOWN);
                 }
                 vertFinal.add(tile); // Adds stone to final stability set and never consider this stability direction of this stone again
             }
 
-            for(Tile tile: diagStbl) {  // Extending diagonally stable stones
+            for (Tile tile : diagStbl) {  // Extending diagonally stable stones
                 // In case there is a neighbour in this stability direction, find the arrival direction and add neighbour to temporary memory
                 if (tile.getTransition(Direction.UP_RIGHT) != null && tile.getTransition(Direction.UP_RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
-                    stabilityFinder(tile,Direction.UP_RIGHT);
+                    stabilityFinder(tile, Direction.UP_RIGHT);
                 }
                 if (tile.getTransition(Direction.DOWN_LEFT) != null && tile.getTransition(Direction.DOWN_LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
-                    stabilityFinder(tile,Direction.DOWN_LEFT);
+                    stabilityFinder(tile, Direction.DOWN_LEFT);
                 }
                 diagFinal.add(tile);    // Adds stone to final stability set and never consider this stability direction of this stone again
             }
 
-            for(Tile tile: indiagStbl) {    // Extending indiagonally stable stones
+            for (Tile tile : indiagStbl) {    // Extending indiagonally stable stones
                 // In case there is a neighbour in this stability direction, find the arrival direction and add neighbour to temporary memory
                 if (tile.getTransition(Direction.UP_LEFT) != null && tile.getTransition(Direction.UP_LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
-                    stabilityFinder(tile,Direction.UP_LEFT);
+                    stabilityFinder(tile, Direction.UP_LEFT);
                 }
                 if (tile.getTransition(Direction.DOWN_RIGHT) != null && tile.getTransition(Direction.DOWN_RIGHT).getOwner() == state.getPlayerFromNumber(playerNr)) {
-                    stabilityFinder(tile,Direction.DOWN_RIGHT);
+                    stabilityFinder(tile, Direction.DOWN_RIGHT);
                 }
                 indiagFinal.add(tile);  // Adds stone to final stability set and never consider this stability direction of this stone again
             }
@@ -178,32 +179,32 @@ public class Heuristics {
      * Part of the stability heuristic
      * Finds arrival direction and adds the tile to the according stability direction
      *
-     * @param tile to be examined
+     * @param tile      to be examined
      * @param direction of the original stable stone
      */
-    private static void stabilityFinder(Tile tile, Direction direction){
+    private static void stabilityFinder(Tile tile, Direction direction) {
         switch (tile.getArrivalDirection(direction)) {
             case DOWN:
             case UP:
-                if(!vertFinal.contains(tile.getTransition(direction))) {    // If the neighbouring tile in this direction has not be examined yet
+                if (!vertFinal.contains(tile.getTransition(direction))) {    // If the neighbouring tile in this direction has not be examined yet
                     tmpVert.add(tile.getTransition(direction));             // Adds neighbouring tile to the according stability direction
                 }
                 break;
             case LEFT:
             case RIGHT:
-                if(!horzFinal.contains(tile.getTransition(direction))){     // If the neighbouring tile in this direction has not be examined yet
+                if (!horzFinal.contains(tile.getTransition(direction))) {     // If the neighbouring tile in this direction has not be examined yet
                     tmpHorz.add(tile.getTransition(direction));             // Adds neighbouring tile to the according stability direction
                 }
                 break;
             case DOWN_LEFT:
             case UP_RIGHT:
-                if(!diagFinal.contains(tile.getTransition(direction))){     // If the neighbouring tile in this direction has not be examined yet
+                if (!diagFinal.contains(tile.getTransition(direction))) {     // If the neighbouring tile in this direction has not be examined yet
                     tmpDiag.add(tile.getTransition(direction));             // Adds neighbouring tile to the according stability direction
                 }
                 break;
             case UP_LEFT:
             case DOWN_RIGHT:
-                if(!indiagFinal.contains(tile.getTransition(direction))) {      // If the neighbouring tile in this direction has not be examined yet
+                if (!indiagFinal.contains(tile.getTransition(direction))) {      // If the neighbouring tile in this direction has not be examined yet
                     tmpIndiag.add(tile.getTransition(direction));               // Adds neighbouring tile to the according stability direction
                 }
                 break;
@@ -213,43 +214,42 @@ public class Heuristics {
     /**
      * Calculates the clustering heuristics of this certain given game state and player.
      *
-     * @param state GameState to be examined
+     * @param state    GameState to be examined
      * @param playerNr number of player in turn
      * @return a real number as clustering heuristics
      */
 
     //TODO: Scale clustering heuristic depending on number of free tiles
-    public static double clustering(GameState state, int playerNr){
+    public static double clustering(GameState state, int playerNr) {
         int playerStoneCount = state.getPlayerFromNumber(playerNr).getStoneCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
 
         double[] rivalry = new double[totalPlayer]; // rivalry factor between the player and each of his rivals (all other players).
-                                                    // The closer in stone count the stronger the rivalry.
+        // The closer in stone count the stronger the rivalry.
         int[] rivalBombCount = new int[totalPlayer]; // the numbers of bombs of each rival
         int[] rivalStoneCount = new int[totalPlayer]; // the total numbers of stones of each rival
 
-        for(int i = 0; i < totalPlayer; i++){ // calculates global variables of the current state
-            rivalBombCount[i] = state.getPlayerFromNumber(i+1).getBombCount();
-            rivalStoneCount[i] = state.getPlayerFromNumber(i+1).getStoneCount();
+        for (int i = 0; i < totalPlayer; i++) { // calculates global variables of the current state
+            rivalBombCount[i] = state.getPlayerFromNumber(i + 1).getBombCount();
+            rivalStoneCount[i] = state.getPlayerFromNumber(i + 1).getStoneCount();
         }
 
-        for(int i = 0; i < totalPlayer; i++){ // calculates the rivalry factor between the player and each of his rivals
-            if(i+1 == playerNr){
+        for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
+            if (i + 1 == playerNr) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
-            }
-            else {
-                rivalry[i] = (rivalBombCount[i]*(Math.pow(2*bombRadius+1,2)))/((totalPlayer-1)*(abs(rivalStoneCount[i]-playerStoneCount)+1));
+            } else {
+                rivalry[i] = (rivalBombCount[i] * (Math.pow(2 * bombRadius + 1, 2))) / ((totalPlayer - 1) * (abs(rivalStoneCount[i] - playerStoneCount) + 1));
             }
         }
 
         Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
         Tile stone;
         int[] bombedStoneCount = new int[totalPlayer]; // the numbers of stones of each rival within the bomb diameter of a player's stone
-        int diameter = 2*bombRadius;
+        int diameter = 2 * bombRadius;
         double clusteringSum = 0; // heuristic to be returned
 
-        while(stoneIterator.hasNext()){ // iterates over all player's stones; adding clustering factor of each stone to clusteringSum
+        while (stoneIterator.hasNext()) { // iterates over all player's stones; adding clustering factor of each stone to clusteringSum
             stone = stoneIterator.next();
 
 
@@ -268,7 +268,7 @@ public class Heuristics {
 
             //searches for all neighbours that need to be bombed out
             for (int i = 0; i < diameter; i++) {
-                for (Tile t: currentTiles) {
+                for (Tile t : currentTiles) {
                     for (Direction direction : Direction.values()) {
                         if (t.getTransition(direction) != null) {
                             if (!bombSet.contains(t.getTransition(direction))) {
@@ -284,55 +284,51 @@ public class Heuristics {
             // end of recycled code
 
 
-            for(Tile t: bombSet){   // we examine each tile within the bomb diameter for ownership
-                                    // and assign collateral damage to each rival in case our stone is bombed
-                if(t.getOwner() != null){
-                    bombedStoneCount[t.getOwner().getPlayerNumber()-1]++;
+            for (Tile t : bombSet) {   // we examine each tile within the bomb diameter for ownership
+                // and assign collateral damage to each rival in case our stone is bombed
+                if (t.getOwner() != null) {
+                    bombedStoneCount[t.getOwner().getPlayerNumber() - 1]++;
                 }
             }
-            bombedStoneCount[playerNr-1]--;              //this line removes the target itself from collateral damage
+            bombedStoneCount[playerNr - 1]--;              //this line removes the target itself from collateral damage
 
-            for(int i = 0; i < totalPlayer; i++){                   // This for-loop sums collateral damage over all rivals
-                clusteringSum += bombedStoneCount[i]*rivalry[i];    // to get the clustering factor of a player's stone,
-                bombedStoneCount[i]=0;
+            for (int i = 0; i < totalPlayer; i++) {                   // This for-loop sums collateral damage over all rivals
+                clusteringSum += bombedStoneCount[i] * rivalry[i];    // to get the clustering factor of a player's stone,
+                bombedStoneCount[i] = 0;
             }                                                       // the outer while-loop sums clustering factors over all
         }                                                           // of player's stones to get the total clustering factor of the game state
 
-        double clusteringScaled = clusteringSum/(Math.pow(2*(2*bombRadius+1)-1,2)); // re-normalizes clustering factor such that
+        double clusteringScaled = clusteringSum / (Math.pow(2 * (2 * bombRadius + 1) - 1, 2)); // re-normalizes clustering factor such that
         return clusteringScaled;                                            // it is independent of bomb radius
     }
 
     /**
-     * Calculates the bomb bonus heuristics of this certain given game state and player
+     * Calculates the bomb bonus heuristics of this certain given game state and player.
      *
-     * @param state GameState to be examined
+     * @param state    GameState to be examined
      * @param playerNr number of player in turn
      * @return a real number as bonus heuristics
      */
-    public static double bonusBomb(GameState state, int playerNr){
+    public static double bonusBomb(GameState state, int playerNr) {
         int bombCount = state.getPlayerFromNumber(playerNr).getBombCount();
         int bombRadius = state.getBombRadius();
 
-        double bonusBomb = 2*(Math.pow(2*bombRadius+1,2))*bombCount;
-
-        return bonusBomb;
+        return 2 * (Math.pow(2 * bombRadius + 1, 2)) * bombCount;
     }
 
     /**
-     * Calculates the override bonus heuristics of this certain given game state and player
+     * Calculates the override bonus heuristics of this certain given game state and player.
      *
-     * @param state GameState to be examined
+     * @param state    GameState to be examined
      * @param playerNr number of player in turn
      * @return a real number as bonus heuristics
      */
-    public static double bonusOverride(GameState state, int playerNr){
+    public static double bonusOverride(GameState state, int playerNr) {
         int overrideStoneCount = state.getPlayerFromNumber(playerNr).getOverrideStoneCount();
         double mapHeight = state.getMap().height;
         double mapWidth = state.getMap().width;
 
-        double bonusOverride = 2*sqrt(mapHeight*mapWidth)*overrideStoneCount;
-
-        return bonusOverride;
+        return 2 * sqrt(mapHeight * mapWidth) * overrideStoneCount;
     }
 
 }

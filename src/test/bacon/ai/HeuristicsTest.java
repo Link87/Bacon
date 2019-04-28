@@ -1,11 +1,7 @@
-package bacon.AI;
+package bacon.ai;
 
 import bacon.Game;
 import bacon.Maps;
-import bacon.Tile;
-import bacon.ai.Heuristics;
-import bacon.ai.LegalMoves;
-import bacon.ai.MoveType;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -15,10 +11,10 @@ public class HeuristicsTest {
     @Test
     public void uncertaintyPhase(){
         Game.getGame().readMap(Maps.EXAMPLE);
-        assertTrue("Uncertainty Phase false negative",Heuristics.uncertaintyPhase(Game.getGame().getCurrentState()));
+        assertTrue("Uncertainty Phase false negative",Heuristics.isUncertaintyPhase(Game.getGame().getCurrentState()));
 
         Game.getGame().readMap(Maps.EXAMPLE_CERTAIN);
-        assertFalse("Uncertainty Phase false positive", Heuristics.uncertaintyPhase(Game.getGame().getCurrentState()));
+        assertFalse("Uncertainty Phase false positive", Heuristics.isUncertaintyPhase(Game.getGame().getCurrentState()));
     }
 
     @Test
