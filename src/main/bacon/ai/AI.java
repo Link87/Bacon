@@ -38,7 +38,7 @@ public class AI {
             moveTiles = LegalMoves.getLegalMoveTiles(currentGameState, currentGameState.getMe().getPlayerNumber(), MoveType.OVERRIDE);
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
             double evalValue;
-            double curBestVal = Double.MIN_VALUE;
+            double curBestVal = - Double.MAX_VALUE;
             for (Tile tile : moveTiles) {
                 if (tile.getProperty() == Tile.Property.CHOICE) {
                     for (int numbr = 1; numbr <= currentGameState.getTotalPlayerCount(); numbr++) {
