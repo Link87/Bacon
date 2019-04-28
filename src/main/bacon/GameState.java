@@ -19,16 +19,17 @@ public class GameState {
     /**
      * constructor for when no information is known
      */
-    public GameState(){}
+    public GameState() {}
 
     /**
-     * shallow copy constructor for deepCopy method
-     * @param players
-     * @param map
-     * @param currentPhase
-     * @param me
+     * Shallow copy constructor for deepCopy method.
+     *
+     * @param players      Array of Player that participate in the game
+     * @param map          map on which the game is played
+     * @param currentPhase the current GamePhase
+     * @param me           the Player that uses the AI, has to be contained in the players array
      */
-    public  GameState(Player[] players,Map map, GamePhase currentPhase, Player me){
+    private GameState(Player[] players, Map map, GamePhase currentPhase, Player me) {
         this.players = players;
         this.map = map;
         this.currentPhase = currentPhase;
@@ -38,9 +39,10 @@ public class GameState {
     /**
      * Creates a meaningful deepCopy of GameState.
      * Tiles and their owners are linked up here.
+     *
      * @return deepCopy of GameState
      */
-    public GameState getDeepCopy(){
+    public GameState getDeepCopy() {
         Map mapCopy = this.map.semiDeepCopy();
 
         Player[] playersCopy = new Player[this.getTotalPlayerCount()];
@@ -49,18 +51,16 @@ public class GameState {
         for (int i = 0; i < playersCopy.length; i++) {
             playersCopy[i] = this.players[i].shallowCopy();
             Iterator<Tile> itr = this.players[i].getStonesIterator();
-            while (itr.hasNext()){
+            while (itr.hasNext()) {
                 Tile stone = itr.next();
-                int xPos = stone.x;
-                int yPos = stone.y;
-                mapCopy.getTileAt(xPos,yPos).setOwner(playersCopy[i]);
-                playersCopy[i].addStone(mapCopy.getTileAt(xPos,yPos));
+                mapCopy.getTileAt(stone.x, stone.y).setOwner(playersCopy[i]);
+                playersCopy[i].addStone(mapCopy.getTileAt(stone.x, stone.y));
             }
         }
 
-        Player meCopy = playersCopy[this.me.getPlayerNumber()-1];
+        Player meCopy = playersCopy[this.me.getPlayerNumber() - 1];
 
-        return new GameState(playersCopy,mapCopy,this.currentPhase,meCopy);
+        return new GameState(playersCopy, mapCopy, this.currentPhase, meCopy);
     }
 
     /**

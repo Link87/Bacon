@@ -24,42 +24,46 @@ public class Map {
     private Map(Tile[][] tiles) {
         this.tiles = tiles;
 
-        if (tiles.length == 0 || tiles[0].length == 0)
-            throw new IllegalArgumentException("Dimensions of tiles have to be positive");
+        assert tiles.length > 0 && tiles[0].length > 0 : "Dimensions of tiles have to be positive";
 
         this.width = tiles.length;
         this.height = tiles[0].length;
-
     }
 
     /**
-     * makes a copy of the map where tiles are also copys and transitions point to tiles inside the map instance
-     * the owner pointer (of Tile) however still points to the original player objects
+     * Makes a copy of the map where tiles are also copies and transitions point to tiles inside the map instance.
+     * The owner pointer (of Tile) however still points to the original player objects.
+     *
      * @return a one level deep copy
      */
-    public Map semiDeepCopy(){
+    public Map semiDeepCopy() {
         Tile[][] copyTiles = new Tile[this.width][this.width];
 
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
-                Tile original = this.getTileAt(x,y);
-                copyTiles[x][y] = new Tile(original.getOwner(),original.getProperty(),original.x,original.y);
-                //setting tile transition pointers to point to tiles in copyTiles
+                Tile original = this.getTileAt(x, y);
+                copyTiles[x][y] = new Tile(original.getOwner(), original.getProperty(), original.x, original.y);
+            }
+        }
+
+        for (int y = 0; y < this.height; y++) {
+            for (int x = 0; x < this.width; x++) {
+                Tile original = this.getTileAt(x, y);
+
                 Tile currentTile = copyTiles[x][y];
                 for (Direction direction : Direction.values()) {
-                    if(original.getTransition(direction) != null){
+                    if (original.getTransition(direction) != null) {
                         int xOfTrans = original.getTransition(direction).x;
                         int yOfTrans = original.getTransition(direction).y;
                         currentTile.setTransition(copyTiles[xOfTrans][yOfTrans],
                                 direction, original.getArrivalDirection(direction));
                     }
                 }
-
             }
         }
 
-        Map copy = new Map(copyTiles);
-        return copy;
+        //setting tile transition pointers to point to tiles in copyTiles
+        return new Map(copyTiles);
     }
 
     /**

@@ -36,13 +36,15 @@ public class Player {
     /**
      * Creates a shallow copy, meaning that (this != copy)
      * stones Set is left empty
+     *
      * @return a shallow copy
      */
-    public Player shallowCopy(){
-        Player copy = new Player(this.number,this.overrideStoneCount,this.bombCount);
+    public Player shallowCopy() {
+        Player copy = new Player(this.number, this.overrideStoneCount, this.bombCount);
         copy.disqualified = this.disqualified;
         return copy;
     }
+
     /**
      * Returns the number of the player.
      *
@@ -57,7 +59,9 @@ public class Player {
      *
      * @return the number of tiles of the player
      */
-    public int getStoneCount(){ return this.stones.size(); }
+    public int getStoneCount() {
+        return this.stones.size();
+    }
 
     /**
      * Returns whether the player is disqualified.
