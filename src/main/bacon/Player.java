@@ -53,6 +53,13 @@ public class Player {
     }
 
     /**
+     * Returns the number of tiles the player currently owns
+     *
+     * @return the number of tiles of the player
+     */
+    public int getStoneCount(){ return this.stones.size(); }
+
+    /**
      * Returns whether the player is disqualified.
      *
      * @return true if the player is disqualified
