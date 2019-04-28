@@ -36,13 +36,28 @@
 
     <target name="build" depends="clean,jar"/>
 
-    <target name="run">
-        <java jar="${jar.dir}/${outputJar.name}" fork="true"/>
+    <target name="run" depends="run-provideserver, run-provideport">
+        <property name="args" value=""/>
+        <property name="argserver" value=""/>
+        <property name="argport" value=""/>
+        <java jar="${jar.dir}/${outputJar.name}" fork="true">
+            <arg line="${args}"/>
+            <arg line="${argserver}"/>
+            <arg line="${argport}"/>
+        </java>
+    </target>
+
+    <target name="run-provideserver" if="server">
+        <property name="argserver" value="--server ${server}"/>
+    </target>
+
+    <target name="run-provideport" if="port">
+        <property name="argport" value="--port ${port}"/>
     </target>
 
     <!-- JavaDoc -->
     <target name="doc">
-        <javadoc sourcepath="${src.dir}" packagenames="bacon" destdir="doc"/>
+        <javadoc sourcepath="${src.dir}" packagenames="bacon, bacon.*" destdir="doc" access="private"/>
     </target>
 
     <!-- JUnit 4 -->

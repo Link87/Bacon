@@ -1,10 +1,6 @@
-# Bacon
+# Bacon 🥓🥓🥓🥓🥓
 
-**Reversi AI of Group 6**
-
-## Overview
-
-This AI is written in Java 11 using Ant.
+*The Reversi AI of Group 6*
 
 ## Usage
 
@@ -16,19 +12,15 @@ To build the project, run
 ant build
 ```
 
-This creates a `.jar` file in `bin/jar`. Then run
+This creates the `bacon.jar` file in `bin/jar`. You can execute the Jar file directly by using
 
 ```bash
-ant run
+ant run -Dserver=<server> -Dport=<port>
 ```
 
-to run the project.
+or use `java -jar` and pass the server and port by using `-s/--server` and `-p/--port`.
 
-```bash
-ant doc
-```
-
-generates the JavaDoc in the `doc` directory.
+to run the project. You can also pass arbitrary arguments in Ant with `-Dargs='<your argument>'`.
 
 ## Tests
 
@@ -39,3 +31,11 @@ ant test
 ```
 
 to run all unit tests.
+
+## Documentation
+
+```bash
+ant doc
+```
+
+generates the private-level JavaDoc in the `doc` directory.
