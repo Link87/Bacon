@@ -105,7 +105,8 @@ public class Heuristics {
             }
         }
 
-        while(!horzStbl.isEmpty() || !vertStbl.isEmpty() || !diagStbl.isEmpty() || !indiagStbl.isEmpty()){
+        while(!horzStbl.isEmpty() || !vertStbl.isEmpty() || !diagStbl.isEmpty() || !indiagStbl.isEmpty() ||
+                !tmpHorz.isEmpty() || !tmpVert.isEmpty() || !tmpDiag.isEmpty() || !tmpIndiag.isEmpty()){
             for(Tile tile: horzStbl) {
                 if (tile.getTransition(Direction.LEFT) != null && tile.getTransition(Direction.LEFT).getOwner() == state.getPlayerFromNumber(playerNr)) {
                     stabilityFinder(tile,Direction.LEFT);
@@ -158,6 +159,7 @@ public class Heuristics {
             indiagStbl.addAll(tmpIndiag);
             tmpIndiag.clear();
         }
+
         return horzFinal.size() + vertFinal.size() + diagFinal.size() + indiagFinal.size();
     }
 

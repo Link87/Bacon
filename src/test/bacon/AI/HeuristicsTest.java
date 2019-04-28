@@ -39,7 +39,7 @@ public class HeuristicsTest {
     @Test
     public void stability(){
         Game.getGame().readMap(Maps.EXAMPLE_STABILITY);
-        assertEquals("Stability heuristic error", 35 ,Heuristics.stability(Game.getGame().getCurrentState(), 1), 0.01);
+        assertEquals("Stability heuristic error", 41 ,Heuristics.stability(Game.getGame().getCurrentState(), 1), 0.01);
     }
 
     @Test
