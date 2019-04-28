@@ -10,6 +10,7 @@ public class Map {
     public final int height;
 
     private int occupiedTiles;
+    private int totalTiles;
 
     /**
      * The tiles this map consists of. This is guaranteed to be non-empty.
@@ -22,7 +23,7 @@ public class Map {
      *
      * @param tiles The tiles of the new map
      */
-    private Map(Tile[][] tiles, int initOccupied) {
+    private Map(Tile[][] tiles, int initOccupied, int totalTiles) {
         this.tiles = tiles;
 
         assert tiles.length > 0 && tiles[0].length > 0 : "Dimensions of tiles have to be positive";
@@ -31,6 +32,7 @@ public class Map {
         this.height = tiles[0].length;
 
         this.occupiedTiles = initOccupied;
+        this.totalTiles = totalTiles;
     }
 
     /**
@@ -66,7 +68,7 @@ public class Map {
         }
 
         //setting tile transition pointers to point to tiles in copyTiles
-        return new Map(copyTiles, this.occupiedTiles);
+        return new Map(copyTiles, this.occupiedTiles, this.totalTiles);
     }
 
     /**
@@ -92,11 +94,12 @@ public class Map {
      * @param width  width of the map
      * @param height height of the map
      * @param lines  String Array that contains map and transition data split into lines
-     * @return {@link #Map(Tile[][], int)} with tiles
+     * @return {@link #Map(Tile[][], int,int)} with tiles
      */
     public static Map readFromString(final int width, final int height, String[] lines) {
         Tile[][] tiles = new Tile[width][height];
         int occupiedCount = 0;
+        int totalCount = 0;
 
         // putting tile information into the array
         for (int h = 0; h < height; h++) {
@@ -104,6 +107,7 @@ public class Map {
             for (int w = 0; w < width; w++) {
                 char symbol = tile[w].charAt(0);
 
+                totalCount++;
                 if (symbol == '0') {
                     //Tile is empty
                     tiles[w][h] = new Tile(null, Tile.Property.DEFAULT, w, h);
@@ -120,6 +124,7 @@ public class Map {
                 } else {
                     //Tile is a hole
                     tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
+                    totalCount--;
                 }
 
             }
@@ -163,7 +168,7 @@ public class Map {
             }
         }
 
-        Map map = new Map(tiles, occupiedCount);
+        Map map = new Map(tiles, occupiedCount, totalCount);
 
         //adding additional transitions from map specification
         for (int l = height; l < lines.length; l++) {
@@ -188,6 +193,10 @@ public class Map {
      */
     public Tile getTileAt(int x, int y) {
         return tiles[x][y];
+    }
+
+    public int getTotalTiles() {
+        return totalTiles;
     }
 
     /**

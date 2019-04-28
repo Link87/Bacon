@@ -110,7 +110,7 @@ public class GameState {
      *
      * @return the total non-hole tile count
      */
-    public int getTotalTileCount() { return 1; }
+    public int getTotalTileCount() { return this.map.getTotalTiles(); }
 
     /**
      * Returns the amount of occupied tiles on the map, including expansion tiles.
@@ -118,7 +118,7 @@ public class GameState {
      *
      * @return the occupied tile count
      */
-    public int getOccupiedTileCount() { return 0; }
+    public int getOccupiedTileCount() { return this.map.getOccupiedTiles(); }
 
     /**
      * Returns the map this game is played on.
