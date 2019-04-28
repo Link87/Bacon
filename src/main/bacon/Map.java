@@ -1,6 +1,5 @@
 package bacon;
 
-import java.util.Arrays;
 
 /**
  * A map on which Reversi is played.
@@ -191,10 +190,18 @@ public class Map {
         return tiles[x][y];
     }
 
+    /**
+     * Gets amount of occupied tiles
+     * @return number of occupied tiles
+     */
     public int getOccupiedTiles() {
         return occupiedTiles;
     }
 
+    /**
+     * increase/decrease occupiedTileCount
+     * @param d amount to add to occupiedTileCount
+     */
     public void addOccupiedTiles(int d) {
         this.occupiedTiles = this.occupiedTiles + d;
     }
