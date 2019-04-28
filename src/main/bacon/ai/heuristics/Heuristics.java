@@ -144,8 +144,13 @@ public class Heuristics {
             }                                                       // the outer while-loop sums clustering factors over all
         }                                                           // of player's stones to get the total clustering factor of the game state
 
-        double clusteringScaled = clusteringSum / (pow(2 * (2 * bombRadius + 1) - 1, 2)); // re-normalizes clustering factor such that
-        return clusteringScaled;                                            // it is independent of bomb radius
+        double clusteringScaled = clusteringSum / (pow(2 * (2 * bombRadius + 1) - 1, 2)); // re-normalizes clustering factor such that it is independent of bomb radius
+
+        int totalTileCount = state.getTotalTileCount();                 // weights clustering heuristic according to game stage:
+        int occupiedTileCount = state.getOccupiedTileCount();           // the later in the game, the higher the occupation ratio,
+        double occupationRatio = occupiedTileCount / totalTileCount;    // the more important clustering heuristics becomes
+        double clusteringWeighted = clusteringScaled * occupationRatio;
+        return clusteringWeighted;
     }
 
     /**
@@ -159,7 +164,7 @@ public class Heuristics {
         int bombCount = state.getPlayerFromNumber(playerNr).getBombCount();
         int bombRadius = state.getBombRadius();
 
-        return 2 * (pow(2 * bombRadius + 1, 2)) * bombCount;
+        return 2 * (pow(2 * bombRadius + 1, 2)) * (pow(bombCount, 0.7));
     }
 
     /**
@@ -174,7 +179,7 @@ public class Heuristics {
         double mapHeight = state.getMap().height;
         double mapWidth = state.getMap().width;
 
-        return 2 * sqrt(mapHeight * mapWidth) * overrideStoneCount;
+        return 2 * sqrt(mapHeight * mapWidth) * (pow(overrideStoneCount, 0.7));
     }
 
     /**
