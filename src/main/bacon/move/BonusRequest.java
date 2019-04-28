@@ -18,7 +18,7 @@ public class BonusRequest {
     public final Type type;
     private Player other;
 
-    BonusRequest(Type type) {
+    public BonusRequest(Type type) {
         this(type, null);
     }
 
