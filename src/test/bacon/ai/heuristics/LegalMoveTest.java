@@ -1,6 +1,7 @@
-package bacon.ai;
+package bacon.ai.heuristics;
 
 import bacon.*;
+import bacon.ai.MoveType;
 import org.junit.Test;
 
 import java.util.HashSet;

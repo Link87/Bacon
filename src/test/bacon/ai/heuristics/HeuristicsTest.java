@@ -1,4 +1,4 @@
-package bacon.ai;
+package bacon.ai.heuristics;
 
 import bacon.Game;
 import bacon.Maps;
@@ -11,7 +11,7 @@ public class HeuristicsTest {
     @Test
     public void uncertaintyPhase(){
         Game.getGame().readMap(Maps.EXAMPLE);
-        assertTrue("Uncertainty Phase false negative",Heuristics.isUncertaintyPhase(Game.getGame().getCurrentState()));
+        assertTrue("Uncertainty Phase false negative", Heuristics.isUncertaintyPhase(Game.getGame().getCurrentState()));
 
         Game.getGame().readMap(Maps.EXAMPLE_CERTAIN);
         assertFalse("Uncertainty Phase false positive", Heuristics.isUncertaintyPhase(Game.getGame().getCurrentState()));
@@ -29,13 +29,7 @@ public class HeuristicsTest {
             System.out.println("("+ t.x + "," + t.y + ")");
         }*/
 
-        assertEquals("Mobility Heuristic Error", 16 , (int) Heuristics.mobility(Game.getGame().getCurrentState(),1));
-    }
-
-    @Test
-    public void stability(){
-        Game.getGame().readMap(Maps.EXAMPLE_STABILITY);
-        assertEquals("Stability heuristic error", 41 ,Heuristics.stability(Game.getGame().getCurrentState(), 1), 0.01);
+        assertEquals("Mobility Heuristic Error", 16 , Heuristics.mobility(Game.getGame().getCurrentState(),1));
     }
 
     @Test

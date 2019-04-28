@@ -1,22 +1,22 @@
-package bacon.ai;
+package bacon.ai.heuristics;
 
 import bacon.Direction;
 import bacon.GameState;
 import bacon.Player;
 import bacon.Tile;
+import bacon.ai.MoveType;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A singleton that determines an ArrayList of all possible legal move from a certain game state
- * for a certain player in any game phase
+ * Determines an ArrayList of all possible legal move from a certain game state
+ * for a certain player in any game phase.
  */
 public class LegalMoves {
 
-    private LegalMoves() {
-    }
+    private LegalMoves() {}
 
     /**
      * Returns all legal moves possible from a certain given board state and player.
@@ -52,6 +52,7 @@ public class LegalMoves {
      *
      * @param state    Game State to be examined
      * @param playerNr number of player in turn
+     * @return legal regular or override stones
      */
     private static Set<Tile> getLegalBuildMoves(GameState state, int playerNr, MoveType type) {
         Set<Tile> legalTiles = new HashSet<>();
@@ -103,10 +104,11 @@ public class LegalMoves {
     }
 
     /**
-     * all legal moves possible from a certain given board state and player in the second phase
+     * Returns all legal moves possible from a certain given board state and player in the second phase.
      * CAUTION: PLAYER ARGUMENT MUST REFER TO A PLAYER OF THE GIVEN STATE
      *
      * @param state Game State to be examined
+     * @return legal bomb moves in the given board state
      */
     private static Set<Tile> getLegalBombMoves(GameState state) {
         Set<Tile> legalTiles = new HashSet<>();
