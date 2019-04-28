@@ -10,6 +10,8 @@ public class Map {
     public final int width;
     public final int height;
 
+    public int occupiedTiles;
+
     /**
      * The tiles this map consists of. This is guaranteed to be non-empty.
      */
@@ -21,13 +23,15 @@ public class Map {
      *
      * @param tiles The tiles of the new map
      */
-    private Map(Tile[][] tiles) {
+    private Map(Tile[][] tiles,int initOccupied) {
         this.tiles = tiles;
 
         assert tiles.length > 0 && tiles[0].length > 0 : "Dimensions of tiles have to be positive";
 
         this.width = tiles.length;
         this.height = tiles[0].length;
+
+        this.occupiedTiles=initOccupied;
     }
 
     /**
@@ -63,7 +67,7 @@ public class Map {
         }
 
         //setting tile transition pointers to point to tiles in copyTiles
-        return new Map(copyTiles);
+        return new Map(copyTiles,this.occupiedTiles);
     }
 
     /**
@@ -89,10 +93,11 @@ public class Map {
      * @param width  width of the map
      * @param height height of the map
      * @param lines  String Array that contains map and transition data split into lines
-     * @return {@link #Map(Tile[][])} with tiles
+     * @return {@link #Map(Tile[][],int)} with tiles
      */
     public static Map readFromString(final int width, final int height, String[] lines) {
         Tile[][] tiles = new Tile[width][height];
+        int occupiedCount = 0;
 
         // putting tile information into the array
         for (int h = 0; h < height; h++) {
@@ -107,10 +112,12 @@ public class Map {
                     //Tile has a Stone (an owner)
                     tiles[w][h] = new Tile(Game.getGame().getCurrentState().getPlayerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
                     Game.getGame().getCurrentState().getPlayerFromNumber(Character.getNumericValue(symbol)).addStone(tiles[w][h]);
+                    occupiedCount++;
                 } else if (symbol != 8722) {
                     //8722=='-' but Java behaved unexpected with (symbol != '-')
                     //Tile is not a hole --> Tile has Property
                     tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
+                    if(symbol=='x') occupiedCount++;
                 } else {
                     //Tile is a hole
                     tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
@@ -157,7 +164,7 @@ public class Map {
             }
         }
 
-        Map map = new Map(tiles);
+        Map map = new Map(tiles,occupiedCount);
 
         //adding additional transitions from map specification
         for (int l = height; l < lines.length; l++) {
