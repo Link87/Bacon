@@ -106,6 +106,7 @@ public class RegularMove extends BuildMove {
         }
 
         tile.setProperty(Tile.Property.DEFAULT); // After playing our move, the tile becomes default (no bonus anymore)
+        state.getMap().addOccupiedTiles(1);
     }
 
     @Override

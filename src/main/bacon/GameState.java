@@ -103,6 +103,23 @@ public class GameState {
         return Game.getGame().getTotalPlayerCount();
     }
 
+    //TODO: Implement getTotalTileCount() and getOccupiedTileCount() to make clustering heuristic weighted
+    /**
+     * Returns the total amount of non-hole tiles on the map. This value is constant throughout the game.
+     * HAS NOT BEEN IMPLEMENTED YET!!!
+     *
+     * @return the total non-hole tile count
+     */
+    public int getTotalTileCount() { return this.map.getTotalTiles(); }
+
+    /**
+     * Returns the amount of occupied tiles on the map, including expansion tiles.
+     * HAS NOT BEEN IMPLEMENTED YET!!!
+     *
+     * @return the occupied tile count
+     */
+    public int getOccupiedTileCount() { return this.map.getOccupiedTiles(); }
+
     /**
      * Returns the map this game is played on.
      *

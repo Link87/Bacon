@@ -28,7 +28,7 @@ public class LegalMoves {
      * @return legal moves (including RegularMoves, OverrideMoves, BombMoves)
      * @throws IllegalArgumentException if the game has ended or an illegal move type is provided
      */
-    static Set<Tile> getLegalMoveTiles(GameState state, int playerNr, MoveType moveType) {
+    public static Set<Tile> getLegalMoveTiles(GameState state, int playerNr, MoveType moveType) {
         switch (state.getGamePhase()) {
             case PHASE_ONE:
                 if (moveType == MoveType.REGULAR || moveType == MoveType.OVERRIDE) {
