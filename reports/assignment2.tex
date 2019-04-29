@@ -1,0 +1,183 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[a4paper]{geometry}
+
+\usepackage[utf8]{inputenc}            % Use utf8 input encoding
+%\usepackage[latin1]{inputenc}         % Use iso 8859-1 encoding
+\usepackage[T1]{fontenc}               % T1 fonts (support for accents/diacritics)
+\usepackage{lmodern}                   % font with proper T1 support and good glyph quality
+
+\usepackage{listings}                  % for (code) listings
+\lstset{language=Java}
+\usepackage{amsmath}                   % AMS math typesetting
+\usepackage{titlesec}
+
+\usepackage{hyperref}                  % better references for PDF
+
+\usepackage{graphicx}               % for graphics
+\usepackage{float}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\titleformat{\section}{\LARGE\bfseries}% hide redundant number
+{}{0pt}{}
+
+\graphicspath{{pictures/assignment2/}}
+
+\begin{document}
+    
+    \begin{center}
+        \rule{\textwidth}{0.1pt}\\[1cm]
+        
+        \Large Softwarepraktikum SS 2019\\\bf Assignment 2
+    \end{center}
+    
+    
+    \begin{center}
+        
+        \rule{\textwidth}{0.1pt}\\[0.5cm]
+        
+        {\Large Group - 6\\[5mm]}
+        
+        \begin{tabular}{lll}
+            
+            Roman Vuskov & 376809 & roman.vuskov@rwth-aachen.de \\
+            
+            Songran Shi & 357791 & songran.shi@rwth-aachen.de \\
+            
+            Marlene Damm & 379945 & marlene.damm@rwth-aachen.de \\
+            
+            Marvin Gazibarić & 378154 & marvin.gazibaric@rwth-aachen.de \\
+            
+        \end{tabular}\\[0.5cm]
+        
+        \rule{\textwidth}{0.1pt}\\[1cm]
+        
+    \end{center}
+    
+    % Uncomment next two lines for table of contents
+    \newpage
+    %\tableofcontents
+    \section{Task 1}
+    
+    \subsection{Network Connection}
+    
+    The network connection between our client and the central game server is handled using Java.Net sockets. When provided with a host name and a port, our program directly connects to the server at program startup.
+    
+    The \texttt{ServerConnection} class represents an established connection to the server. Internally it wraps around a \texttt{java.net.Socket} instance that is created in the constructor and closed upon calling \texttt{close()}.
+    
+    Apart from that, the Api of \texttt{ServerConnection} consists of two functions:
+    \begin{itemize}
+        \item \texttt{awaitMessage()} blocks the execution, until a message is fully received and then returns that message.
+        \item \texttt{sendMessage(Message msg)} sends the given message to the server.
+    \end{itemize}
+    
+    Messages are wrapped into instances of the \texttt{Message} class. It holds the message type, and the data in binary representation. This is a more robust implementation in comparison to handling everything externally and just providing the whole message as binary data.
+    
+    The message type is represented by the \texttt{Message.Type} enum that contains a variant for every existing message type. It also handles the conversion between the binary values and the enum variants. This provides a very convenient way of abstraction over the individual binary values, so that we don't have to remember them or look them up.
+    
+    We also don't want to care about handling 16 and 32 bit values ourselves, as this requires error-prone bit shifting operations. Luckily, Java provides \texttt{DataInputStream} and \texttt{DataOutputStream}, which wrap around other input and output streams and provide an abstraction layer over the immediate binary data. That way, we can directly read and write \texttt{int} values, i.e. the 32-bit message size value from and into the socket.
+    
+    Also there is the \texttt{ByteBuffer} class from the \texttt{java.nio} package, that provides similar functionality, but instead wraps around \texttt{byte} arrays. We are using this to decode the message content.
+    
+    \subsection{Message Handling}
+    
+    Our Reversi client is now able to parse and handle every type of message. On move request messages (type four), the \texttt{requestMove()} method of the new singleton \texttt{AI} class is called, which returns the next move we are going to make. Currently, the sum of all heuristic functions is used to determine the best move to make out of all legal moves. This approach has inherent problems and open questions like ``how much mobility points is one stability point worth?''. It is only used in this early stage of development and will be replaced by a more suitable solution. 
+    
+    \section{Task 2}
+    The asymptotic complexity analysis in the following sections should be taken with a grain of salt since the game board consists of at most 2500 tiles, making constants not entirely negligible. Actual performance testing must still be conducted to acquire more accurate complexity measures.    
+    \subsection{Legal Moves}
+    We implemented a more efficient method for determining the set of legal moves from any given game state during the Building Phase. Before this, search for legal moves is realized by sweeping through all tiles on the map and inspecting move validity using our \lstinline{isLegal}-method from Assignment 1 Task 3. The old method is especially inefficient in the beginning stage of the game when there are few stones on the board.\\ Instead, the new method \lstinline{getLegalMoveTiles} exploits a particular property of Reversi rules: any legal move during the Building Phase requires at least one opponent stone to be captured in between two of the player's stones. We can thus use the player's stones already placed on the board as end points of such capture moves and search radially outward. This operates very similar to \lstinline{isLegal} (which starts out from the new tile instead) but inspects far fewer tiles.\\
+    For the bombing phase any tile that is not a hole can be targeted. Our method simply checks each tile for this property and returns all non-hole tiles. 
+    
+    \subsection{Mobility, Bonus and Uncertainty Phase}
+    These three heuristics were trivial to implement and require negligible computational resources. 
+    \subsubsection{Mobility}
+    As defined in the previous report, mobility is simply a measure of the number of legal moves available to the player in a given game state. Since we have already implemented \lstinline{getLegalMoveTiles}, we can simply evaluate the size of the set of legal moves. 
+    
+    \subsubsection{Bonus}
+    Both override bonus and bomb bonus heuristic can be quickly calculated using global state parameters. Currently, the valuation of a bomb vs. an override stone only depends on stateless variables, i.e. it stays the same over the entire game. It thus causes an AI to always choose the same bonus request for any captured bonus tile which might be sub-optimal. Further analysis of state-dependency is therefore required for future versions of this heuristic. 
+    \subsubsection{Uncertainty Phase}
+    For this heuristics we inspect each tile of the map for any choice/ inversion tiles left. This implementation could be improved by tracking the number of choice/inversion tiles as a game state attribute. However, we decided to postpone this change due to other issues with this heuristic: In test runs it turned out that on some maps, certain tiles are unreachable or rarely captured over the entire game in practice. Since our prescription prohibits the use of other heuristics until all choice and inversion tiles are removed, some alterations must be implemented for a proper game AI. 
+    
+    \subsection{Clustering}
+    \subsubsection{Implementation}
+    The pseudo-code (\ref{Clustering Heuristic}) below demonstrates our implementation of the clustering heuristic, which follows the prescription in the previous report exactly:
+    \begin{algorithm}[H]
+        \caption{Clustering Heuristic}\label{Clustering Heuristic}
+        \begin{algorithmic}
+            \Require GameState, PlayerNr
+            \Function{Clustering}{$ $}
+            \For{\textbf{each} Player}
+            \If{Player is my Player}
+            \State rivalry[Player] $\gets -1$
+            \Else
+            \State rivalry[Player] $\gets \frac{m_j \cdot (2r+1)^2}{(p-1) \cdot (|N_j - N_1| + 1)}$
+            \EndIf
+            \EndFor
+            \Statex
+            \For{\textbf{each} Player's stone}
+            \For{\textbf{each} stone in bomb diameter}
+            \State BombedStoneCount[stoneOwner]$++$
+            \EndFor
+            
+            \For{\textbf{each} Player}
+            \State clusteringSum += BombedStoneCount[Player] $\cdot$ rivalry[Player] 
+            \EndFor
+            \EndFor
+            \Statex
+            \State \textbf{return} clusteringSum $\slash ((2 \cdot (2 \cdot \text{bombRadius} + 1) - 1)^2$
+            \EndFunction
+        \end{algorithmic}
+    \end{algorithm}
+    \subsubsection{Complexity Analysis}
+    The computation of rivalry factors is trivial in time complexity. For the clustering factor of each stone, all tiles within one bomb diameter must be considered. For the total clustering factor, the clustering factor of each stone must be considered. The total time complexity of this heuristics is therefore in $\mathcal{O}(n \cdot r^2)$ where $n$ is the number of the player's stones on the board and $r$ is the bomb radius (excluding edge cases where bomb area grows exponentially with bomb radius).       
+    \subsection{Stability}
+    \subsubsection{Implementation}
+    We implemented the stability heuristics according to prescription in the previous report, with the exception of step 4, i.e. stability resulting from completely filled rows/columns is not included. Two possible implementations of step 4 have been considered: 
+    \begin{itemize}
+        \item Tracking approach 
+        \begin{itemize}
+            \item Determine all rows, columns and diagonals from map geometry before the start of the game.
+            \item Track fill level of each as global game state attribute during the game.
+            \item For the stability value of a certain stone inside the stability heuristic method, check the fill level of the row/column/diagonal the stone belongs to. 
+        \end{itemize}
+        \item Search approach
+        \begin{itemize}
+            \item For each of the player's stone, search radially outward for empty tiles.
+            \item If no empty tile is found before arriving at a hole or the original tile (path could be a circle), the row/column/diagonal must have been completely full and the stone is stable. 
+        \end{itemize}
+    \end{itemize}
+    The tracking approach is rather difficult to implement due to custom transitions making weird geometries possible. The search approach on the other hand is computationally expensive ($\mathcal{O}(n \cdot d \cdot l))$, where $n$ is the number of the player's stones on the board, $d$ is the number of directions and $l$ is the average length of straight paths). For this reason we postponed the implementation of this particular step. The rest of the rating function still provides a reasonable heuristic: 
+    \begin{algorithm}[H]
+        \caption{Stability Heuristic}\label{Stable Heuristic}
+        \begin{algorithmic}
+            \Require GameState, PlayerNr
+            \Function{Stability}{$ $}
+            \For{\textbf{each} Player's stone}
+            \For{\textbf{each} direction}
+            \If{Player's stone's neighbour in direction is hole}
+            \State Stable[direction] $\gets$ Player's stone
+            \EndIf
+            \EndFor
+            \EndFor
+            \\
+            \While{Stable[] contains unpropagated stones}
+            \For{\textbf{each} direction}
+            \For{\textbf{each} stone in Stable[direction]}
+            \If{stone's neighbour's owner in direction == Player}
+            \State Stable[direction of arrival] $\gets$ stone's neighbour
+            \EndIf
+            stone\textunderscore propagated $\gets$ TRUE 
+            \\
+            \EndFor
+            \EndFor
+            \EndWhile
+            \textbf{return} sum of sizes of Stable[]
+            \EndFunction
+        \end{algorithmic}
+    \end{algorithm}
+    \subsubsection{Complexity Analysis}
+    A stone can propagate each stability direction for at most one step, i.e. each stone will be evaluated at most twice: once during initial stability assignment (step 1 in the previous report) and once during stability propagation (step 2 - 3). Therefore, this heuristic belongs in the complexity class $\mathcal{O}(n \cdot d)$ where $n$ is the number of the player's stones on the board and $d$ is the number of stability directions to be examined. 
+\end{document}

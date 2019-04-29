@@ -1,3 +1,60 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[a4paper]{geometry}
+
+\usepackage[utf8]{inputenc}            % Use utf8 input encoding
+%\usepackage[latin1]{inputenc}         % Use iso 8859-1 encoding
+\usepackage[T1]{fontenc}               % T1 fonts (support for accents/diacritics)
+\usepackage{lmodern}                   % font with proper T1 support and good glyph quality
+
+\usepackage{listings}                  % for (code) listings
+\lstset{language=Java}
+\usepackage{amsmath}                   % AMS math typesetting
+\usepackage{titlesec}
+
+\usepackage{hyperref}                  % better references for PDF
+
+\usepackage{graphicx}               % for graphics
+\usepackage{float}
+
+\titleformat{\section}{\LARGE\bfseries}% hide redundant number
+            {}{0pt}{}
+            
+\begin{document}
+
+\begin{center}
+	\rule{\textwidth}{0.1pt}\\[1cm]
+	
+	\Large Softwarepraktikum SS 2019\\\bf Assignment 1
+\end{center}
+
+
+\begin{center}
+
+	\rule{\textwidth}{0.1pt}\\[0.5cm]
+
+	{\Large Group - 6\\[5mm]}
+
+	\begin{tabular}{lll}
+
+		Roman Vuskov & 376809 & roman.vuskov@rwth-aachen.de \\
+
+		Songran Shi & 357791 & songran.shi@rwth-aachen.de \\
+
+		Marlene Damm & 379945 & marlene.damm@rwth-aachen.de \\
+		
+		Marvin Gazibarić & 378154 & marvin.gazibaric@rwth-aachen.de \\
+
+	\end{tabular}\\[0.5cm]
+
+	\rule{\textwidth}{0.1pt}\\[1cm]
+
+\end{center}
+
+% Uncomment next two lines for table of contents
+%\newpage
+%\tableofcontents
+
 \section{Task 1}
 Three playing fields have been created and uploaded to the $maps$ directory of the repository.
 
@@ -11,8 +68,6 @@ This is an $8$ player map utilizing transitions to create a $20\times20$ core, w
     \caption{A representation of the playing field "compressedSquare" adjusted for transitions. The corners of the ASCII representation found in the repository are shown to actually be a connected square placed (through coloured transitions)  in the center of the cross shaped part.}
     \label{fig:compressedSquare}
 \end{figure}
-
-
 
 \subsection{starfish.txt}
 This is an 8 player $33\times33$-map which has a lot of bonus fields which can be captured in the beginning phase of the game. So the players can gain an advantage respectively at the start. \\
@@ -29,7 +84,7 @@ One corner of each of the 4x4-fields it also connected to the hole in the middle
 
 
 \subsection{SierpinskiCarpet.txt}
-An 8 player $27\times27$-map that visually resembles a Sierpinski carpet fractal, a mathematical object. The map is subdivided into 9 $9\times9$ medium squares, which in turn are subdivided into 9 $3\times3$ small squares. The center of each square has some special property that differs them from the rest of the square. The central medium square mostly consists of holes, interspersed with many bonus and choice tiles. The peripheral medium squares contain in their center either starting positions for players or easily accessible choice tiles. The rest of the map is scattered with access points to the central bonus tiles. These bonus tiles provide a powerful incentive for players to control the center of the map as soon as possible, leading to early interactions between players that are otherwise far apart. The access points in the periphery thus become strategically important locations in the process.
+An 8 player $27\times27$-map that visually resembles the Sierpinski carpet fractal, a mathematical object. The map is subdivided into 9 $9\times9$ medium squares, which in turn are subdivided into 9 $3\times3$ small squares. The center of each square has some special property that differs them from the rest of the square. The central medium square mostly consists of holes, interspersed with many bonus and choice tiles. The peripheral medium squares contain in their center either starting positions for players or easily accessible choice tiles. The rest of the map is scattered with access points to the central bonus tiles. These bonus tiles provide a powerful incentive for players to control the center of the map as soon as possible, leading to early interactions between players that are otherwise far apart. The access points in the periphery thus become strategically important locations in the process.
 
 
 
@@ -93,9 +148,9 @@ An important property of our multiplayer game variant that applies to most of th
 \subsubsection{Inverse and Choice Tiles}
 Before we can move on to discuss specific heuristics, we must consider the inverse and choice tiles first - these game mechanics alter the game in such fundamental ways as to make other evaluation functions completely useless until they have been removed. As long as there are still inversion and/or choice fields left on the map, there will be great uncertainty about the very ownership of the stones. In fact, although this stage is technically part of the build phase, strategy-wise it is better to think of it as its own phase - let's call it the "Uncertainty Phase".
 
-Consider, for instance, a map with 8 players and 2 inversion tiles where we are player 1. It appears very likely that all 4 inversion tiles will be captured at some point during the game since it seems rather impossible to defend them from all other players (especially with override stones in the game), and there isn't a strong incentive to do so anyway. One might suggest, then, that we ought to play moves that "benefit" player 7 the most since that's who's stones we'll be taking over eventually, but this is a rather futile effort since we have little influence on player 7's position. Who himself is trying to  player 5's position instead of his own according to the normal heuristics, of course.
+Consider, for instance, a map with 8 players and 2 inversion tiles where we are player 1. It appears very likely that both inversion tiles will be captured at some point during the game since it seems rather impossible to defend them from all other players (especially with override stones in the game), and there isn't a strong incentive to do so anyway. One might suggest, then, that we ought to play moves that "benefit" player 7 the most since that's who's stones we'll be taking over eventually, but this is a rather futile effort since we have little influence on player 7's position. Who himself is trying to improve player 5's position instead of his own according to the normal heuristics, of course.
 
-A similar situation ensues in the case of choice fields: It is futile to optimize other evaluation functions since that would only make one more susceptible to player swaps. It's even pointless to go for choice fields ourselves but the last one since we'll still be vulnerable to swaps afterwards, and there most likely won't be worthwhile targets as no one is incentivized to play well and take the lead.
+A similar situation ensues in the case of choice fields: It is futile to optimize other evaluation functions since that would only make one more susceptible to player swaps. It's even pointless to go for choice fields but the last one ourselves since we'll still be vulnerable to swaps afterwards, and there most likely won't be worthwhile targets as no one is incentivized to play well and take the lead.
 
 It seems the only objective in this uncertainty phase of the game is to capture as many bonus tiles as possible since they're not subject to swaps.
 
@@ -105,11 +160,11 @@ A naive heuristic one might consider initially is to simply count the number of 
 
  
 \subsubsection{Mobility}
-We define mobility $m$ as the number of immediate legal moves available to the player in turn. As with most board games, keeping one's options open and not forced into Zugzwang is essential. 
+We define mobility $m$ as the number of immediate legal moves available to the player in turn. As with most board games, keeping one's options open and not being forced into Zugzwang is essential. 
 
  
 \subsubsection{Stability}
-According to the rules of Reversi, a stone can only be overturned (in regular moves) if an opponent catches it between two of his own stones on a straight line. There are only 4 directions for straight lines on a Reversi map: horizontal, vertical and the two diagonals. If a tile borders a hole in one of these 4 directions, any stone placed on this tile will be immune to capture in that direction - we say the stone has a stability of 1. According to this measure, stones on edge tiles have a stability of (at least) 3, and on corner tiles of the map even 4 - they're completely stable. Furthermore, bordering a stable stone of the same color will also make a stone stable in that direction. Lastly, if a straight line is completely filled with stones from end to end, all stones on the line are also stable in the direction of the line since no more new stones can be placed here.
+According to the rules of Reversi, a stone can only be overturned (in regular moves) if an opponent catches it between two of his own stones on a straight path. There are only 4 directions for straight paths on a Reversi map: horizontal, vertical and the two diagonals. If a tile borders a hole in one of these 4 directions, any stone placed on this tile will be immune to capture in that direction - we say the stone has a stability of 1. According to this measure, stones on edge tiles have a stability of (at least) 3, and on corner tiles of the map even 4 - they're completely stable. Furthermore, bordering a stable stone of the same color will also make a stone stable in that direction. Lastly, if a straight path is completely filled with stones from end to end, all stones on the path are also stable in the direction of the line since no more new stones can be placed here.
 
 \begin{figure}[H]
     \centering
@@ -124,28 +179,25 @@ Having high stability on one's stones is desirable as it increases the player's 
 \item Assign each owned stone stability directions according to directions of neighboring holes
 \item Add stability directions to stones that are adjacent to stable stones of the same color
 \item Repeat step 2 until no further change occurs
-\item Add stability directions to stones that lie on a completely filled horizontal, vertical or diagonal straight line
+\item Add stability directions to stones that lie on a completely filled horizontal, vertical or diagonal straight path
 \item Count stability directions of each stone (0-4)
 \item Sum up all stability values to obtain $s$
 \end{enumerate}
 
 
 \subsubsection{Bonus Tiles}
-Override stones and bombs are powerful assets that should be deployed strategically. Their valuation are dependent on meta-variables such as map size and bomb radius. A simple heuristic for the value of acquiring 1 additional bomb would be to calculate its area of effect ($\approx (2r+1)^2$) and multiplying the result by 4 since all stones will be completely stable by then. For bonus override stone, it seems reasonable to only use them after the map has been filled by regular moves in order to maximize efficiency. The number of overturned stones is then proportional to $\sqrt{hw}$ where $h, w$ are map height and width - the larger the map, the longer straight line can go. However, both of these heuristics seem to somewhat overestimate: Our bombs will inevitably destroy some of our own stones, and stones captured with override stones can be captured again by other player's override stones. We therefore suggest discounting both bonuses by a factor of 2, leading to following heuristics: 
+Override stones and bombs are powerful assets that should be deployed strategically. Their valuation are dependent on meta-variables such as map size and bomb radius. A simple heuristic for the value of acquiring 1 additional bomb would be to calculate its area of effect ($\approx (2r+1)^2$) and multiplying the result by 4 since all stones will be completely stable by then. For bonus override stone, it seems reasonable to only use them after the map has been filled by regular moves in order to maximize efficiency. The number of overturned stones is then, on average, proportional to $\sqrt{hw}$ where $h, w$ are map height and width - the larger the map, the longer straight paths can go. However, both of these heuristics seem to be somewhat of an overestimation: Our bombs will inevitably destroy some of our own stones, and stones captured with override stones can be captured again by other players' override stones. We therefore suggest discounting both bonuses by a factor of 2, leading to following heuristics: 
 \[ b_{bomb} = 2(2r+1)^2 \cdot n_{bomb} \quad \quad \quad \quad \quad b_{override} = 2 \sqrt{hw} \cdot n_{override}\]
 where $n_{bomb}$ and $n_{override}$ are the number of bombs and override stones in our possession, respectively.
  
 \subsubsection{Late Stage}
-In the late stage of the Building Phase, with the dwindling number of free tiles (~branching factor) and growing stability of placed stones, the game tree becomes increasingly easy to evaluate. A new heuristic rises to relevance at this point: Clustering, or rather the lack thereof. As stone ownership becomes more and more stable, it becomes viable to consider what effects potential moves have on the second phase of the game. Clearly, clusters of stones provide an easy target for bombs and thus should be avoided. 
+In the late stage of the Building Phase, with the dwindling number of free tiles ($\approx$ branching factor) and growing stability of placed stones, the game tree becomes increasingly easy to evaluate. A new heuristic rises to relevance at this point: Clustering, or rather the lack thereof. As stone ownership becomes more and more stable, it becomes viable to consider what effects potential moves have on the second phase of the game. Clearly, clusters of stones provide an easy target for bombs and thus should be avoided. 
 
-Moreover, it now makes sense to differentiate opponents: whereas some opponents are ranked too far above for us to catch up, some opponents are ranked too far below to threaten our rank. Yet it's those that are close in rank to us where the rivalry is the most intense. Of course, the extent of "close" is determined the number of bombs available and their radius - with sufficiently powerful bombs or sufficiently narrow leads everyone might still be in reach. It seems desirable for each of our stone to have as few of our \textbf{\textit{own}} stones and as many of our \textbf{\textit{close-rival's}} stones as possible, to deter attacks on us during the bomb phase. We therefore suggest the following heuristic: \\
+Moreover, it now makes sense to differentiate opponents: whereas some opponents are ranked too far above for us to catch up with, some other opponents are ranked too far below to threaten our rank. Yet it's those that are close in rank to us where the rivalry is most intense. Of course, the extent of "close" is determined by the number of bombs available and their radius - with sufficiently powerful bombs or sufficiently narrow leads everyone might still be in reach. It seems desirable for each of our stone to have as few of our \textbf{\textit{own}} stones and as many of our \textbf{\textit{close-rival's}} stones in its vicinity as possible, to deter attacks on us during the bomb phase. We therefore suggest the following heuristic:
 \[ l = \sum\limits_{i \in I} c_i \]
-where $I$ is the index set of our stones. 
-\\
-$c_i$ is the "clustering factor" of a particular stone $i$ of ours and is defined by: \\
+where $I$ is the index set of our stones and $c_i$ is the "clustering factor" of a particular stone $i$ of ours which is defined by: 
 \[c_i = \frac{\sum\limits_{j=1}^p n_j \cdot r_j}{(2(2r+1)-1)^2}\]
-where $p$ is the number of players, $n_j$ is the number of player $j$'s stones within one bomb diameter $(2r+1)^2$ of our stone $i$. \\
-
+where $p$ is the number of players and $n_j$ is the number of player $j$'s stones within one bomb diameter $2r+1$ of our stone $i$. 
 
 \begin{figure}[H]
     \centering
@@ -154,36 +206,37 @@ where $p$ is the number of players, $n_j$ is the number of player $j$'s stones w
     \label{fig:Bombing Diameter}
 \end{figure}
 
-Without loss of generality, let our player number be $1$. \\
-$r_j$ is the "rivalry factor" between us and player $j$. We should thus set $r_1$ to $-1$ as we'd like to avoid having our \textbf{\textit{other}} tiles end up as collateral damage of the bombing of our tile $i$. The rest of the $r_j$'s are calculated as: \\
+Without loss of generality, let our player number be $1$.
+
+$r_j$ is the "rivalry factor" between us and player $j$. We should thus set $r_1$ to $-1$ as we'd like to avoid having our \textbf{\textit{other}} tiles end up as collateral damage of the bombing of our tile $i$. The rest of the $r_j$'s are calculated as:
 \[r_j = \frac{m_j \cdot (2r+1)^2}{(p-1) \cdot (|N_j - N_1| + 1)} \]
-where $m_j$ is the number of bombs available to player $j$; $N_j$ and $N_1$ are the total number of stones of player $j$ and us, respectively. \\
+where $m_j$ is the number of bombs available to player $j$; $N_j$ and $N_1$ are the total number of stones owned by player $j$ and us, respectively.
+
 $r_j$ is essentially a measure of how large a fraction of his resources player $j$ has to expend in order to overtake us in ranking. The $+1$ term prevents singularity at $0$, and the $(p-1)$ term normalizes the expression since all else being equal, one would spend $\frac{1}{p-1}$ of their bomb assets on combating each player.
 
 
 \subsubsection{Building Phase Evaluation function}
-Taking everything together, we get the following heuristic functions: \\
-\\
-Uncertainty Phase: \\
+Taking everything into account, we arrive at the following heuristic functions:\\
+Uncertainty Phase:
 \[h_{uncertain} = b_{bomb} + b_{override} \]
-\\
-Rest of Building Phase: \\
+Rest of Building Phase:
 \[ h_{Build} = m + s + b_{bomb} + b_{override} + 4 \cdot (1-\frac{f}{t}) \cdot l \]
-where $f$ is the number of free tiles left and $t$ is the total number of (non-hole) tiles on the map. \\
-$(1-\frac{f}{t})$ is a scaling function that regulates the importance of l depending on the stage of the game we're in: In early game most tiles are free and $(1-\frac{f}{t}) \approx 0$, diminishing the importance of the heuristic $l$, whereas in late game $l$ becomes relevant with $(1-\frac{f}{t}) \approx 1$. \\
+where $f$ is the number of free tiles left and $t$ is the total number of (non-hole) tiles on the map.
+\\
+$(1-\frac{f}{t})$ is a scaling function that regulates the importance of l depending on the stage of the game we're in: In early game most tiles are free and $(1-\frac{f}{t}) \approx 0$, diminishing the importance of the heuristic $l$, whereas in late game $l$ becomes relevant with $(1-\frac{f}{t}) \approx 1$.
+
 The factor 4 is due to our other heuristics assigning value 4 to completely stable stones.
 
 
-
-
 \subsection{Bombing phase}
-Since we have already been considering the bombing phase in the late stage evaluations of the building phase, we only need to make slight modifications to the expressions derived above to yield a reasonable heuristic for the bombing phase itself: \\
-\[{r_j}^{\prime} = \frac{m_1 \cdot (2r+1)^2}{(p-1) \cdot (|N_j - N_1| + 1)} \]
-${r_j}^{\prime}$ is almost the same as $r_j$, except we're taking the initiative this time: instead of using the other player's bomb count $m_j$, we're using our own $m_1$. \\
+As no more stones can be placed in the bombing phase, all heuristics except for clustering become irrelevant here. Since we have already been considering the bombing phase in the late stage evaluations of the building phase, we only need to make slight modifications to the clustering heuristic derived above to yield a reasonable move-heuristic for the bombing phase itself:
+
+\[ h_{Bombing} = \frac{\sum\limits_{j=1}^p n_j \cdot {r_j}^{\prime}}{(2r+1)^2} \]
+
+where $r_j$ is still defined by:
+
+\[ r_j = \frac{m_j \cdot (2r+1)^2}{(p-1) \cdot (|N_j - N_1| + 1)} \]
 \\
-Thus we get: \\
-\[c_k = \frac{\sum\limits_{j=1}^p n_j \cdot {r_j}^{\prime}}{(2r+1)^2}\]
-\\
-And then the entire heuristic for the bombing phase: \\
-\[ h_{Bombing} = \sum\limits_{k \in K} c_k \]
-where, instead of representing our stones, $K$ is the set of possible moves in our turn.
+This is a heuristic that evaluates a move directly without determining the resulting board state. Our preference for this approach stems from the fact that the branching factor is huge in this phase of the game (any non-hole tile can be bombed), yet impact of moves is quite localized and independent from each other; resulting board states provide hardly more information than the moves themselves.
+
+\end{document}
