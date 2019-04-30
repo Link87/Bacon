@@ -105,6 +105,7 @@ public class BuildMove extends Move {
                     Direction oldDirection = searchDirection;
                     searchDirection = last.getArrivalDirection(searchDirection).opposite();
                     last = last.getTransition(oldDirection);
+                    if(last==state.getMap().getTileAt(xPos,yPos)) break;
                     path.add(last);
 
                     if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
