@@ -108,6 +108,17 @@ public class AI {
             }
             curBestMove = MoveFactory.createMove(currentGameState, currentGameState.getMe(), curBestTile.x, curBestTile.y);
         }
+
+        //TODO remove after issue #13 is closed (this is a band aid)
+        if(curBestMove == null){
+            for (int y = 0; y < currentGameState.getMap().height; y++) {
+                for (int x = 0; x < currentGameState.getMap().width; x++) {
+                    if(currentGameState.getMap().getTileAt(x,y).getProperty()== Tile.Property.EXPANSION)
+                        return MoveFactory.createMove(currentGameState, currentGameState.getMe(), x, y);
+                }
+            }
+        }
+
         return curBestMove;
     }
 }
