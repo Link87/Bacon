@@ -42,7 +42,7 @@ public class Map {
      * @return a one level deep copy
      */
     public Map semiDeepCopy() {
-        Tile[][] copyTiles = new Tile[this.height][this.width];
+        Tile[][] copyTiles = new Tile[this.width][this.height];
 
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
