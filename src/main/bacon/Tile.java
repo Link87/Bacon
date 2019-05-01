@@ -1,5 +1,8 @@
 package bacon;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+
 /**
  * A tile on the map. A Tile may have a special {@link Property}.
  * <p>
@@ -12,9 +15,10 @@ public class Tile {
      * Neighbouring tiles in each direction. May also contains extraneous transitions.
      * The direction is defined by the array index, as defined in {@link Direction}.
      * <p>
-     * If no transition is possible in a given direction, the array element is set to  <code>null</code>.
+     * If no transition is possible in a given direction, the WeakReferences point to <code>null</code>.
+     * The WeakReference objects itself are never null.
      */
-    private final Tile[] transitions;
+    private final ArrayList<WeakReference<Tile>> transitions;
 
     /**
      * Direction in which the according transition arrives at the other tile.
@@ -24,7 +28,7 @@ public class Tile {
      */
     private final Direction[] arrivals;
 
-    private Player owner;
+    private WeakReference<Player> owner;
     private Property property;
 
     public final int x;
@@ -39,16 +43,17 @@ public class Tile {
      * @param y        vertical coordinate of this Tile
      */
     public Tile(Player owner, Property property, int x, int y) {
-        this.owner = owner;
+        this.owner = new WeakReference<>(owner);
+        this.property = property;
 
-        if (this.owner != null && property != Property.DEFAULT)
-            throw new IllegalArgumentException("Only default state can define initial owner");
-        else this.property = property;
+        assert this.owner.get() == null || property == Property.DEFAULT : "Only default state can define initial owner";
 
         this.x = x;
         this.y = y;
 
-        this.transitions = new Tile[Direction.values().length];
+        this.transitions = new ArrayList<>(Direction.values().length);
+        for (int i = 0; i < Direction.values().length; i++)
+            this.transitions.add(new WeakReference<>(null));
         this.arrivals = new Direction[Direction.values().length];
     }
 
@@ -59,13 +64,13 @@ public class Tile {
      * @param owner new owner of this Tile. <code>null</code> resets ownership
      */
     public void setOwner(Player owner) {
-        if (this.owner != null) {
-            this.owner.removeStone(this);
+        if (this.owner.get() != null) {
+            this.owner.get().removeStone(this);
         }
-        this.owner = owner;
+        this.owner = new WeakReference<>(owner);
 
-        if (this.owner != null) {
-            this.owner.addStone(this);
+        if (this.owner.get() != null) {
+            this.owner.get().addStone(this);
         }
     }
 
@@ -86,8 +91,8 @@ public class Tile {
      * @param direction Direction in which the transition is applied
      * @param arrival   Direction in which the transition arrives at the other tile
      */
-    public void setTransition(Tile other, Direction direction, Direction arrival) {
-        this.transitions[direction.ordinal()] = other;
+    void setTransition(Tile other, Direction direction, Direction arrival) {
+        this.transitions.set(direction.ordinal(), new WeakReference<>(other));
         this.arrivals[direction.ordinal()] = arrival;
     }
 
@@ -124,7 +129,7 @@ public class Tile {
      * @return the Tile the transition points to or <code>null</code> if no transition is present
      */
     public Tile getTransition(Direction direction) {
-        return this.transitions[direction.ordinal()];
+        return this.transitions.get(direction.ordinal()).get();
     }
 
     /**
@@ -143,7 +148,7 @@ public class Tile {
      * @return the owner of this Tile
      */
     public Player getOwner() {
-        return this.owner;
+        return this.owner.get();
     }
 
     /**

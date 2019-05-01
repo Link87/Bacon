@@ -81,6 +81,9 @@ public class Game {
                 var buffer = ByteBuffer.wrap(msg.getBinaryContent());
                 var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), this.getCurrentState());
                 connection.sendMessage(new Message(Message.Type.MOVE_RESPONSE, move.encodeBinary()));
+                // Manual gc is usually bad practice, but we have lots of spare time after here
+                // TODO maybe skip GC when we directly have a second turn
+                System.gc();
             } else processMessage(msg);
         }
     }
