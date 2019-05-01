@@ -35,7 +35,7 @@ public class BonusRequest {
      * @return a BonusRequest of the right type
      */
     public static BonusRequest fromValue(int value, GameState state) {
-        if (value > 0 && value < state.getTotalPlayerCount()) {
+        if (value > 0 && value <= state.getTotalPlayerCount()) {
             var request = new BonusRequest(Type.SWITCH_STONES);
             request.other = state.getPlayerFromNumber(value);
             return request;
