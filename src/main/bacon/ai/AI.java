@@ -36,7 +36,9 @@ public class AI {
         Move curBestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
             moveTiles = LegalMoves.getLegalMoveTiles(currentGameState, currentGameState.getMe().getPlayerNumber(), MoveType.REGULAR);
-            moveTiles.addAll(LegalMoves.getLegalMoveTiles(currentGameState, currentGameState.getMe().getPlayerNumber(), MoveType.OVERRIDE));
+            if (moveTiles.isEmpty()) {
+                moveTiles = LegalMoves.getLegalMoveTiles(currentGameState, currentGameState.getMe().getPlayerNumber(), MoveType.OVERRIDE);
+            }
             double evalValue;
             double curBestVal = -Double.MAX_VALUE;
             for (Tile tile : moveTiles) {
