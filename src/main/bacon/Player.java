@@ -1,8 +1,7 @@
 package bacon;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 /**
  * A Player class which contains player data and performs player actions.
@@ -30,7 +29,9 @@ public class Player {
         this.overrideStoneCount = overrideStoneCount;
         this.bombCount = bombCount;
         this.disqualified = false;
-        this.stones = new HashSet<>();
+        // Create a set that only hold weak references to its contents
+        // This may break the invariants of all set methods, if not handled carefully!
+        this.stones = Collections.newSetFromMap(new WeakHashMap<>());
     }
 
     /**
