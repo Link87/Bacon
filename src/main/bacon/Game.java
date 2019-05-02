@@ -11,12 +11,16 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A Game class which contains the stateless information about the current game
  * and provides access to the currentGameState
  */
 public class Game {
+
+    private static final Logger LOGGER = Logger.getGlobal();
 
     private static final int GROUP_NUMBER = 6;
     private static final Game INSTANCE = new Game();
@@ -63,7 +67,7 @@ public class Game {
 
             runGame(connection);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.log(Level.SEVERE, ioe.toString());
             System.exit(1);
         }
     }
@@ -173,9 +177,9 @@ public class Game {
         Move move = MoveFactory.decodeBinary(moveData, currentGameState);
 
         if (move.isLegal()) {
-            System.out.println(moveCount + ". Move is legal.");
+            LOGGER.log(Level.FINE, "Move #{0}: Move is legal. Executing.", moveCount);
             move.doMove();
-        } else System.out.println(moveCount + ". Move is illegal.");
+        } else LOGGER.log(Level.SEVERE, "Move #{0}: Can't execute move: is illegal!", moveCount);
         moveCount++;
     }
 

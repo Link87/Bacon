@@ -1,5 +1,7 @@
 package bacon.net;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,6 +12,8 @@ import java.net.Socket;
  * A connection to the game server.
  */
 public class ServerConnection implements Closeable {
+
+    private static final Logger LOGGER = Logger.getGlobal();
 
     private Socket socket;
 
@@ -39,7 +43,7 @@ public class ServerConnection implements Closeable {
 
             return new Message(type, data);
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.log(Level.SEVERE, ioe.toString());
             return null;
         }
     }
@@ -56,7 +60,7 @@ public class ServerConnection implements Closeable {
             output.writeInt(msg.getBinaryContent().length);
             output.write(msg.getBinaryContent());
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.log(Level.SEVERE, ioe.toString());
         }
     }
 
@@ -67,7 +71,7 @@ public class ServerConnection implements Closeable {
         try {
             socket.close();
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.log(Level.SEVERE, ioe.toString());
         }
     }
 
