@@ -71,7 +71,7 @@
     </target>
 
     <target name="test" depends="test-compile">
-        <junit printsummary="on" fork="true">
+        <junit printsummary="on" fork="true" haltonfailure="on">
             <classpath>
                 <path refid="classpath.test"/>
                 <pathelement location="${test.build.dir}"/>
