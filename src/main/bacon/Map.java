@@ -120,11 +120,15 @@ public class Map {
                     //8722=='-' but Java behaved unexpected with (symbol != '-')
                     //Tile is not a hole --> Tile has Property
                     tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
+                    if (Tile.Property.fromChar(symbol)== Tile.Property.HOLE){
+                        totalCount--;
+                    }
                     if (symbol == 'x') occupiedCount++;
                 } else {
                     //Tile is a hole
-                    tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
                     totalCount--;
+                    tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
+
                 }
 
             }
