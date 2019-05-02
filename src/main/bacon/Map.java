@@ -116,19 +116,15 @@ public class Map {
                     tiles[w][h] = new Tile(Game.getGame().getCurrentState().getPlayerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
                     Game.getGame().getCurrentState().getPlayerFromNumber(Character.getNumericValue(symbol)).addStone(tiles[w][h]);
                     occupiedCount++;
-                } else if (symbol != 8722) {
-                    //8722=='-' but Java behaved unexpected with (symbol != '-')
+                } else if (symbol != '-') {
                     //Tile is not a hole --> Tile has Property
                     tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
-                    if (Tile.Property.fromChar(symbol)== Tile.Property.HOLE){
-                        totalCount--;
-                    }
+
                     if (symbol == 'x') occupiedCount++;
                 } else {
                     //Tile is a hole
-                    totalCount--;
                     tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
-
+                    totalCount--;
                 }
 
             }
