@@ -52,6 +52,8 @@ public class Game {
     void startGame(Config cfg) {
 
         try (var connection = new ServerConnection(cfg.getHost(), cfg.getPort())) {
+            LOGGER.log(Level.INFO, "Established connection to server. Sending group number.");
+
             // send group number to server
             connection.sendMessage(new Message(Message.Type.GROUP_NUMBER, new byte[]{GROUP_NUMBER}));
 
@@ -106,10 +108,13 @@ public class Game {
             case MAP_CONTENT:
                 // Receive map from server
                 // parse data and initialize the Game instance with given values
+                LOGGER.log(Level.INFO, "Received map data from server:\n" + string);
                 readMap(string);
                 break;
             case PLAYER_NUMBER:
-                currentGameState.setMe(getCurrentState().getPlayerFromNumber(msg.getBinaryContent()[0]));
+                byte me = msg.getBinaryContent()[0];
+                LOGGER.log(Level.INFO, "We are player number {0}.", me);
+                currentGameState.setMe(getCurrentState().getPlayerFromNumber(me));
                 break;
             case MOVE_ANNOUNCE:
                 // Server announces move of a player
@@ -118,19 +123,23 @@ public class Game {
             case DISQUALIFICATION:
                 // Disqualify player -- quit when *we* where disqualified
                 byte disqualified = msg.getBinaryContent()[0];
+                LOGGER.log(Level.INFO, "Player {0} is disqualified.", disqualified);
                 if (currentGameState.getMe().number == disqualified)
                     currentGameState.setGamePhase(GamePhase.ENDED);
                 getCurrentState().getPlayerFromNumber(disqualified).disqualify();
                 break;
             case FIRST_PHASE_END:
                 // Phase one of the game ends
+                LOGGER.log(Level.INFO, "First game phase ends.");
                 currentGameState.setGamePhase(GamePhase.PHASE_TWO);
                 break;
             case GAME_END:
                 // Phase two of the game ends
+                LOGGER.log(Level.INFO, "Game ends.");
                 currentGameState.setGamePhase(GamePhase.ENDED);
                 break;
             default:
+                LOGGER.log(Level.SEVERE, "Received an invalid message type: {0}!", msg.getType());
                 throw new IllegalArgumentException("Invalid Message Type: " + msg.getType());
         }
     }
@@ -177,9 +186,12 @@ public class Game {
         Move move = MoveFactory.decodeBinary(moveData, currentGameState);
 
         if (move.isLegal()) {
-            LOGGER.log(Level.FINE, "Move #{0}: Move is legal. Executing.", moveCount);
+            LOGGER.log(Level.FINE, "Move #{0}: Received legal move by player {1} on ({2}, {3}).",
+                    new Object[]{ moveCount, move.getPlayer().number, move.getX(), move.getY() });
             move.doMove();
-        } else LOGGER.log(Level.SEVERE, "Move #{0}: Can't execute move: is illegal!", moveCount);
+        } else LOGGER.log(Level.SEVERE, "Move #{0}: Can't execute move by player {1} on ({2}, {3}): is illegal!",
+                new Object[]{ moveCount, move.getPlayer().number, move.getX(), move.getY() });
+
         moveCount++;
     }
 

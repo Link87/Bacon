@@ -43,6 +43,33 @@ public abstract class Move {
     public abstract void doMove();
 
     /**
+     * Returns the x coordinate of this move.
+     *
+     * @return the x coordinate of this move
+     */
+    public int getX() {
+        return xPos;
+    }
+
+    /**
+     * Returns the y coordinate of this move.
+     *
+     * @return the y coordinate of this move
+     */
+    public int getY() {
+        return yPos;
+    }
+
+    /**
+     * Returns the player of this move.
+     *
+     * @return the player of this move
+     */
+    public Player getPlayer() {
+        return player;
+    }
+
+    /**
      * Returns the move in binary representation.
      *
      * @return byte array containing this moves binary representation
