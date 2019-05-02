@@ -125,7 +125,17 @@ public class StabilityHeuristic {
         }
 
         // Returns the sum of all the stones' stability values
-        return horzFinal.size() + vertFinal.size() + diagFinal.size() + indiagFinal.size();
+        double value = horzFinal.size() + vertFinal.size() + diagFinal.size() + indiagFinal.size();
+        horzFinal.clear();
+        vertFinal.clear();
+        diagFinal.clear();
+        indiagFinal.clear();
+
+        tmpHorz.clear();
+        tmpVert.clear();
+        tmpDiag.clear();
+        tmpIndiag.clear();
+        return value;
     }
 
     /**
