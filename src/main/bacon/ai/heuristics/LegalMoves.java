@@ -70,8 +70,8 @@ public class LegalMoves {
                 Tile last = tile;
 
                 while (true) {
-                    if (last.getTransition(searchDirection) == null)
-                        // If the next tile is a hole we can stop searching in this direction
+                    if (last.getTransition(searchDirection) == null || last.getTransition(searchDirection) == tile)
+                        // If the next tile is a hole (or tile we came from) we can stop searching in this direction
                         break;
                     else {
                         // determine new search direction, is opposite to arrival direction
