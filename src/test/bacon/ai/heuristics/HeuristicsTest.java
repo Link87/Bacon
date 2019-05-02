@@ -35,7 +35,7 @@ public class HeuristicsTest {
     @Test
     public void clustering(){
         Game.getGame().readMap(Maps.EXAMPLE_CLUSTERING);
-        assertEquals("Clustering heuristic error", 0.0 , Heuristics.clustering(Game.getGame().getCurrentState(),1), 0.01);
+        assertEquals("Clustering heuristic error", 0.758 , Heuristics.clustering(Game.getGame().getCurrentState(),1), 0.01);
     }
 
     @Test

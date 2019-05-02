@@ -146,8 +146,8 @@ public class Heuristics {
 
         double clusteringScaled = clusteringSum / (pow(2 * (2 * bombRadius + 1) - 1, 2)); // re-normalizes clustering factor such that it is independent of bomb radius
 
-        int totalTileCount = state.getTotalTileCount();                 // weights clustering heuristic according to game stage:
-        int occupiedTileCount = state.getOccupiedTileCount();           // the later in the game, the higher the occupation ratio,
+        double totalTileCount = state.getTotalTileCount();                 // weights clustering heuristic according to game stage:
+        double occupiedTileCount = state.getOccupiedTileCount();           // the later in the game, the higher the occupation ratio,
         double occupationRatio = occupiedTileCount / totalTileCount;    // the more important clustering heuristics becomes
         double clusteringWeighted = clusteringScaled * occupationRatio;
         return clusteringWeighted;
