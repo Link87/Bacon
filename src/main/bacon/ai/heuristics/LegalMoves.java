@@ -4,7 +4,7 @@ import bacon.Direction;
 import bacon.GameState;
 import bacon.Player;
 import bacon.Tile;
-import bacon.ai.MoveType;
+import bacon.move.Move;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,15 +28,15 @@ public class LegalMoves {
      * @return legal moves (including RegularMoves, OverrideMoves, BombMoves)
      * @throws IllegalArgumentException if the game has ended or an illegal move type is provided
      */
-    public static Set<Tile> getLegalMoveTiles(GameState state, int playerNr, MoveType moveType) {
+    public static Set<Tile> getLegalMoveTiles(GameState state, int playerNr, Move.Type moveType) {
         switch (state.getGamePhase()) {
             case PHASE_ONE:
-                if (moveType == MoveType.REGULAR || moveType == MoveType.OVERRIDE) {
+                if (moveType == Move.Type.REGULAR || moveType == Move.Type.OVERRIDE) {
                     return getLegalBuildMoves(state, playerNr, moveType);
                 }
                 break;
             case PHASE_TWO:
-                if (moveType == MoveType.BOMB) {
+                if (moveType == Move.Type.BOMB) {
                     return getLegalBombMoves(state);
                 }
         }
@@ -54,7 +54,7 @@ public class LegalMoves {
      * @param playerNr number of player in turn
      * @return legal regular or override stones
      */
-    private static Set<Tile> getLegalBuildMoves(GameState state, int playerNr, MoveType type) {
+    private static Set<Tile> getLegalBuildMoves(GameState state, int playerNr, Move.Type type) {
         Set<Tile> legalTiles = new HashSet<>();
 
         Player player = state.getPlayerFromNumber(playerNr);
@@ -80,17 +80,17 @@ public class LegalMoves {
                         last = last.getTransition(helper);
 
                         if (last.getOwner() == player) { // we can stop searching if we find a tile occupied by the same player
-                            if (player.getOverrideStoneCount() > 0 && steps > 0 && type == MoveType.OVERRIDE) { //checks if the move actually captures any tile
+                            if (player.getOverrideStoneCount() > 0 && steps > 0 && type == Move.Type.OVERRIDE) { //checks if the move actually captures any tile
                                 legalTiles.add(last);                           // and if the player is allowed to override stones
                             }
                             break;
                         } else if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION) {
-                            if (steps > 0 && type == MoveType.REGULAR) {            // checks if the move actually captures any tile
+                            if (steps > 0 && type == Move.Type.REGULAR) {            // checks if the move actually captures any tile
                                 legalTiles.add(last);
                             }
                             break;
                         } else {
-                            if (player.getOverrideStoneCount() > 0 && steps > 0 && type == MoveType.OVERRIDE) { //checks if the move actually captures any tile
+                            if (player.getOverrideStoneCount() > 0 && steps > 0 && type == Move.Type.OVERRIDE) { //checks if the move actually captures any tile
                                 legalTiles.add(last);                           // and if the player is allowed to override stones
                             }
                         }

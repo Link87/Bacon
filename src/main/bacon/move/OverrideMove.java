@@ -1,7 +1,6 @@
 package bacon.move;
 
 import bacon.GameState;
-import bacon.Map;
 import bacon.Player;
 import bacon.Tile;
 
@@ -20,6 +19,7 @@ public class OverrideMove extends BuildMove {
      */
     OverrideMove(GameState state, Player player, int x, int y) {
         super(state, player, x, y);
+        this.type = Type.OVERRIDE;
     }
 
     /**

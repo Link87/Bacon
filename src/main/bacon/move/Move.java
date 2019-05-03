@@ -13,6 +13,7 @@ public abstract class Move {
     Player player;
     int xPos;
     int yPos;
+    Type type;
 
     /**
      * Creates a new move from the given values.
@@ -69,6 +70,10 @@ public abstract class Move {
         return player;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     /**
      * Returns the move in binary representation.
      *
@@ -82,6 +87,15 @@ public abstract class Move {
                 .put((byte) 0);
 
         return data;
+    }
+
+    /**
+     * An enum for the different types of moves.
+     */
+    public enum Type {
+        REGULAR,
+        OVERRIDE,
+        BOMB,
     }
 
 }

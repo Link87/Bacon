@@ -22,6 +22,7 @@ public class RegularMove extends BuildMove {
      */
     RegularMove(GameState state, Player player, int x, int y, BonusRequest request) {
         super(state, player, x, y);
+        this.type = Type.REGULAR;
         this.request = request;
         if (request == null)
             this.request = new BonusRequest(BonusRequest.Type.NONE);

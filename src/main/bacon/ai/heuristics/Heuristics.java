@@ -4,7 +4,7 @@ import bacon.Direction;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.Tile;
-import bacon.ai.MoveType;
+import bacon.move.Move;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -53,9 +53,9 @@ public class Heuristics {
             throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
         }
 
-        mobility = LegalMoves.getLegalMoveTiles(state, playerNr, MoveType.REGULAR).size();
+        mobility = LegalMoves.getLegalMoveTiles(state, playerNr, Move.Type.REGULAR).size();
         //TODO: Weight regular move mobility against override move mobility
-        mobility += LegalMoves.getLegalMoveTiles(state, playerNr, MoveType.OVERRIDE).size();
+        mobility += LegalMoves.getLegalMoveTiles(state, playerNr, Move.Type.OVERRIDE).size();
 
         return mobility;
     }

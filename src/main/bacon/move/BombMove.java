@@ -21,6 +21,7 @@ public class BombMove extends Move {
      */
     public BombMove(GameState state, Player player, int x, int y) {
         super(state, player, x, y);
+        this.type = Type.BOMB;
     }
 
 
