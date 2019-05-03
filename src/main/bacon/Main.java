@@ -44,7 +44,7 @@ public class Main {
                 " MM.   ,M9 8M   MM YM.    , YA.   ,A9 MM    MM  ,,   A'     VML    MM  \n" +
                 " P^YbmdP'  `Moo9^Yo.YMbmd'   `Ybmd9'.JMML  JMML.db .AMA.   .AMMA..JMML.\n" +
                 "                                                                       \n" +
-                "welcome to our secrets...\n" +
+                " welcome to our secrets...\n" +
                 "                                                                       \n");
 
         Game.getGame().startGame(config);
