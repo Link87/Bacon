@@ -84,14 +84,13 @@ public class BuildMove extends Move {
      */
     @Override
     public void doMove() {
-        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
+        Tile originTile = state.getMap().getTileAt(this.xPos, this.yPos);
 
         Set<Tile> turnOver = new HashSet<>();
 
         for (Direction direction : Direction.values()) {
             var path = new ArrayList<Tile>();   // path in the given direction
-            path.add(tile);
-            Tile last = tile;                   // last tile of the path
+            Tile last = originTile;                   // last tile of the path
             var searchDirection = direction;    // the direction we're searching in
 
 
@@ -105,20 +104,21 @@ public class BuildMove extends Move {
                     Direction oldDirection = searchDirection;
                     searchDirection = last.getArrivalDirection(searchDirection).opposite();
                     last = last.getTransition(oldDirection);
-                    if(last==state.getMap().getTileAt(xPos,yPos)) break;
-                    path.add(last);
+                    if(last == originTile) break;
 
                     if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
                         // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         break;
-                    else if (this.player.equals(last.getOwner()) && path.size() == 1)
+                    else if (this.player.equals(last.getOwner()) && path.size() == 0)
                         // If on the first step we hit our own stone, we can stop searching in this direction
                         break;
-                    else if (this.player.equals(last.getOwner()) && path.size() > 1) {
+                    else if (this.player.equals(last.getOwner()) && path.size() > 0) {
                         // If on other steps we hit our own stone, we get to overturn all stones on the way
                         // and then we can stop searching in this direction
                         turnOver.addAll(path);
                         break;
+                    } else{
+                        path.add(last);
                     }
                 }
             }
@@ -129,6 +129,6 @@ public class BuildMove extends Move {
         turnOver.forEach(t -> t.setOwner(this.player));
 
         // new stone is placed on the map
-        tile.setOwner(this.player);
+        originTile.setOwner(this.player);
     }
 }
