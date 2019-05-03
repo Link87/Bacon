@@ -33,6 +33,20 @@ public class Main {
             System.exit(1);
         }
 
+        System.out.println("\n" +
+                "                                                                       \n" +
+                " ,,                                                                    \n" +
+                "*MM                                                      db      `7MMF'\n" +
+                " MM                                                     ;MM:       MM  \n" +
+                " MM,dMMb.   ,6\"Yb.  ,p6\"bo   ,pW\"Wq.`7MMpMMMb.         ,V^MM.      MM  \n" +
+                " MM    `Mb 8)   MM 6M'  OO  6W'   `Wb MM    MM        ,M  `MM      MM  \n" +
+                " MM     M8  ,pm9MM 8M       8M     M8 MM    MM        AbmmmqMA     MM  \n" +
+                " MM.   ,M9 8M   MM YM.    , YA.   ,A9 MM    MM  ,,   A'     VML    MM  \n" +
+                " P^YbmdP'  `Moo9^Yo.YMbmd'   `Ybmd9'.JMML  JMML.db .AMA.   .AMMA..JMML.\n" +
+                "                                                                       \n" +
+                "welcome to our secrets...\n" +
+                "                                                                       \n");
+
         Game.getGame().startGame(config);
 
     }
