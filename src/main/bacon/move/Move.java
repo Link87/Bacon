@@ -89,6 +89,8 @@ public abstract class Move {
         return data;
     }
 
+    public abstract void undoMove();
+
     /**
      * An enum for the different types of moves.
      */

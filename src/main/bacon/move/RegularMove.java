@@ -76,7 +76,7 @@ public class RegularMove extends BuildMove {
                         if (anyTile.getOwner() != null) {
                             int oldNumber = anyTile.getOwner().getPlayerNumber();
                             int newNumber = oldNumber - 1;
-                            if (newNumber < 0) {
+                            if (newNumber < 1) {
                                 newNumber = playerCount;
                             }
                             anyTile.setOwner(state.getPlayerFromNumber(newNumber));

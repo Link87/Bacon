@@ -85,4 +85,9 @@ public class BombMove extends Move {
         // Subtract 1 bomb from player's inventory
         this.player.receiveBomb(-1);
     }
+
+    @Override
+    public void undoMove() {
+
+    }
 }
