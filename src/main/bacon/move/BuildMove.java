@@ -8,6 +8,8 @@ import java.util.Set;
 
 public class BuildMove extends Move {
 
+    protected ChangeData[] changeData;
+
     /**
      * Creates a new move from the given values.
      *
@@ -78,6 +80,20 @@ public class BuildMove extends Move {
     }
 
     /**
+     * undoes a Move
+     * should only be caled after the move has been "done"
+     */
+    public void undoMove(){
+
+        assert changeData != null: "Move has to be done before undo!";
+
+        for (int i = 0; i < changeData.length; i++) {
+            changeData[i].tile.setOwner(changeData[i].ogPlayer);
+            changeData[i].tile.setProperty(changeData[i].wasProp);
+        }
+    }
+
+    /**
      * Executes this move.
      * Does nothing if isLegal() method determines the move to be illegal.
      * Otherwise uses depth-first search to find the number of stones that need to be overturned in each direction.
@@ -123,6 +139,18 @@ public class BuildMove extends Move {
                 }
             }
         }
+
+        //save previous owner information
+        changeData = new ChangeData[turnOver.size()+1];
+        int index = 0;
+        for (Tile tile : turnOver) {
+            boolean isExpansion = (tile.getProperty() == Tile.Property.EXPANSION);
+            changeData[index] = new ChangeData(tile, tile.getOwner(), tile.getProperty());
+            index++;
+        }
+
+        boolean isExpansion = (originTile.getProperty() == Tile.Property.EXPANSION);
+        changeData[index]= new ChangeData(originTile,originTile.getOwner(),originTile.getProperty());
 
         // now actually turn all stones over
         turnOver.forEach(t -> t.setProperty(Tile.Property.DEFAULT));
