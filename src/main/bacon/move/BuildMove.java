@@ -8,6 +8,8 @@ import java.util.Set;
 
 public class BuildMove extends Move {
 
+    protected ChangeData[] changeData;
+
     /**
      * Creates a new move from the given values.
      *
@@ -78,20 +80,33 @@ public class BuildMove extends Move {
     }
 
     /**
+     * undoes a Move
+     * should only be caled after the move has been "done"
+     */
+    public void undoMove(){
+
+        assert changeData != null: "Move has to be done before undo!";
+
+        for (int i = 0; i < changeData.length; i++) {
+            changeData[i].tile.setOwner(changeData[i].ogPlayer);
+            changeData[i].tile.setProperty(changeData[i].wasProp);
+        }
+    }
+
+    /**
      * Executes this move.
      * Does nothing if isLegal() method determines the move to be illegal.
      * Otherwise uses depth-first search to find the number of stones that need to be overturned in each direction.
      */
     @Override
     public void doMove() {
-        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
+        Tile originTile = state.getMap().getTileAt(this.xPos, this.yPos);
 
         Set<Tile> turnOver = new HashSet<>();
 
         for (Direction direction : Direction.values()) {
             var path = new ArrayList<Tile>();   // path in the given direction
-            path.add(tile);
-            Tile last = tile;                   // last tile of the path
+            Tile last = originTile;                   // last tile of the path
             var searchDirection = direction;    // the direction we're searching in
 
 
@@ -105,30 +120,43 @@ public class BuildMove extends Move {
                     Direction oldDirection = searchDirection;
                     searchDirection = last.getArrivalDirection(searchDirection).opposite();
                     last = last.getTransition(oldDirection);
-                    if(last==state.getMap().getTileAt(xPos,yPos)) break;
-                    path.add(last);
+                    if(last == originTile) break;
 
                     if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
                         // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         break;
-                    else if (this.player.equals(last.getOwner()) && path.size() == 1)
+                    else if (this.player.equals(last.getOwner()) && path.size() == 0)
                         // If on the first step we hit our own stone, we can stop searching in this direction
                         break;
-                    else if (this.player.equals(last.getOwner()) && path.size() > 1) {
+                    else if (this.player.equals(last.getOwner()) && path.size() > 0) {
                         // If on other steps we hit our own stone, we get to overturn all stones on the way
                         // and then we can stop searching in this direction
                         turnOver.addAll(path);
                         break;
+                    } else{
+                        path.add(last);
                     }
                 }
             }
         }
+
+        //save previous owner information
+        changeData = new ChangeData[turnOver.size()+1];
+        int index = 0;
+        for (Tile tile : turnOver) {
+            boolean isExpansion = (tile.getProperty() == Tile.Property.EXPANSION);
+            changeData[index] = new ChangeData(tile, tile.getOwner(), tile.getProperty());
+            index++;
+        }
+
+        boolean isExpansion = (originTile.getProperty() == Tile.Property.EXPANSION);
+        changeData[index]= new ChangeData(originTile,originTile.getOwner(),originTile.getProperty());
 
         // now actually turn all stones over
         turnOver.forEach(t -> t.setProperty(Tile.Property.DEFAULT));
         turnOver.forEach(t -> t.setOwner(this.player));
 
         // new stone is placed on the map
-        tile.setOwner(this.player);
+        originTile.setOwner(this.player);
     }
 }

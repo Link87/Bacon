@@ -35,6 +35,14 @@ public class OverrideMove extends BuildMove {
         return super.isLegal();
     }
 
+    /**
+     * Undoes this move.
+     */
+    @Override
+    public void undoMove() {
+        super.undoMove();
+        this.player.receiveOverrideStone(1);
+    }
 
     /**
      * Executes this move.

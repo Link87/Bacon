@@ -56,6 +56,51 @@ public class RegularMove extends BuildMove {
         return super.isLegal();
     }
 
+    /**
+     * Undoes this move.
+     */
+    public void undoMove(){
+        //last entry in changeData is always the Tile the move was made on
+        switch (changeData[changeData.length-1].wasProp){
+            case BONUS:
+                if (this.request.type == BonusRequest.Type.BOMB_BONUS) this.player.receiveBomb(-1);
+                else if (this.request.type == BonusRequest.Type.OVERRIDE_BONUS) this.player.receiveOverrideStone(-1);
+                break;
+
+            // TODO: Current approach checks every tile on the map. Increase efficiency by using TileOwnerID swap between players instead
+            case INVERSION:
+                int playerCount = state.getTotalPlayerCount();
+                for (int x = 0; x < state.getMap().width; x++) {
+                    for (int y = 0; y < state.getMap().height; y++) {
+                        Tile anyTile = state.getMap().getTileAt(x, y);
+                        if (anyTile.getOwner() != null) {
+                            int oldNumber = anyTile.getOwner().getPlayerNumber();
+                            int newNumber = oldNumber - 1;
+                            if (newNumber < 1) {
+                                newNumber = playerCount;
+                            }
+                            anyTile.setOwner(state.getPlayerFromNumber(newNumber));
+                        }
+                    }
+                }
+                break;
+
+            case CHOICE:
+                for (int x = 0; x < state.getMap().width; x++) {
+                    for (int y = 0; y < state.getMap().height; y++) {
+                        Tile anyTile = state.getMap().getTileAt(x, y);
+                        if(anyTile.getOwner() == null) continue;
+                        if (anyTile.getOwner().equals(this.player))
+                            anyTile.setOwner(this.request.getOtherPlayer());
+                        else if (anyTile.getOwner().equals(this.request.getOtherPlayer()))
+                            anyTile.setOwner(this.player);
+                    }
+                }
+        }
+
+        super.undoMove();
+        state.getMap().addOccupiedTiles(-1);
+    }
 
     /**
      * Executes this move.
