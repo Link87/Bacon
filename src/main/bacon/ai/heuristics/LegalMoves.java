@@ -16,7 +16,8 @@ import java.util.Set;
  */
 public class LegalMoves {
 
-    private LegalMoves() {}
+    private LegalMoves() {
+    }
 
     /**
      * Returns all legal moves possible from a certain given board state and player.
@@ -89,9 +90,13 @@ public class LegalMoves {
                                 legalTiles.add(last);
                             }
                             break;
+                        } else if (last.getProperty() == Tile.Property.EXPANSION) { // in case of expansion stone no tile need to be captured and the search continues afterwards
+                            if (player.getOverrideStoneCount() > 0 && type == Move.Type.OVERRIDE) {
+                                legalTiles.add(last);
+                            }
                         } else {
                             if (player.getOverrideStoneCount() > 0 && steps > 0 && type == Move.Type.OVERRIDE) { //checks if the move actually captures any tile
-                                legalTiles.add(last);                           // and if the player is allowed to override stones
+                                legalTiles.add(last);                           // and if the player is allowed to override stones; the search continues afterwards
                             }
                         }
                     }

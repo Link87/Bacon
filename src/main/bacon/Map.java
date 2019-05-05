@@ -1,6 +1,8 @@
 package bacon;
 
 
+import java.util.Set;
+
 /**
  * A map on which Reversi is played.
  */
@@ -11,6 +13,11 @@ public class Map {
 
     private int occupiedTiles;
     private int totalTiles;
+
+    /**
+     * The tiles that has expansion stone on them
+     */
+    private static Set<Tile> expansionTiles;
 
     /**
      * The tiles this map consists of. This is guaranteed to be non-empty.
@@ -94,7 +101,7 @@ public class Map {
      * @param width  width of the map
      * @param height height of the map
      * @param lines  String Array that contains map and transition data split into lines
-     * @return {@link #Map(Tile[][], int,int)} with tiles
+     * @return {@link #Map(Tile[][], int, int)} with tiles
      */
     public static Map readFromString(final int width, final int height, String[] lines) {
         Tile[][] tiles = new Tile[width][height];
@@ -120,7 +127,10 @@ public class Map {
                     //Tile is not a hole --> Tile has Property
                     tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
 
-                    if (symbol == 'x') occupiedCount++;
+                    if (symbol == 'x') {
+                        occupiedCount++;
+                        expansionTiles.add(tiles[w][h]);
+                    }
                 } else {
                     //Tile is a hole
                     tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
@@ -201,6 +211,7 @@ public class Map {
 
     /**
      * Gets amount of occupied tiles
+     *
      * @return number of occupied tiles
      */
     public int getOccupiedTiles() {
@@ -209,10 +220,36 @@ public class Map {
 
     /**
      * increase/decrease occupiedTileCount
+     *
      * @param d amount to add to occupiedTileCount
      */
     public void addOccupiedTiles(int d) {
         this.occupiedTiles = this.occupiedTiles + d;
+    }
+
+    /**
+     * Adds expansion stone back onto the tile in case of undo move
+     *
+     * @param tile that the expansion stone should be placed on
+     */
+    public void addExpansionStone(Tile tile) {
+        expansionTiles.add(tile);
+    }
+
+    /**
+     * Removes expansion stone from the tile
+     * @param tile that has an expansion stone
+     */
+    public void removeExpansionStone(Tile tile) {
+        expansionTiles.remove(tile);
+    }
+
+    /**
+     * Returns current expansion tiles on the map
+     * @return current expansion tiles on the map
+     */
+    public Set<Tile> getExpansionTiles(){
+        return expansionTiles;
     }
 }
 

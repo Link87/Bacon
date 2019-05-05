@@ -1,5 +1,6 @@
 package bacon.move;
 
+import bacon.Game;
 import bacon.GameState;
 import bacon.Player;
 import bacon.Tile;
@@ -30,7 +31,7 @@ public class OverrideMove extends BuildMove {
     public boolean isLegal() {
         if (this.player.getOverrideStoneCount() == 0)
             return false; // player must have at least 1 override stone to make the move
-        if (state.getMap().getTileAt(this.xPos, this.yPos).getProperty()== Tile.Property.EXPANSION)
+        if (state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.EXPANSION)
             return true;
         return super.isLegal();
     }
@@ -52,7 +53,11 @@ public class OverrideMove extends BuildMove {
 
         super.doMove();
 
-        tile.setProperty(Tile.Property.DEFAULT);    // the tile we placed our override stone on could be an expansion field
+        if (tile.getProperty() == Tile.Property.EXPANSION) {
+            Game.getGame().getCurrentState().getMap().removeExpansionStone(tile); // removes this tile from expansion stone tracker in Map
+            tile.setProperty(Tile.Property.DEFAULT);    // the tile we placed our override stone on could be an expansion field
+        }
+
         this.player.receiveOverrideStone(-1);    // Subtract 1 override stone from player's inventory
     }
 
