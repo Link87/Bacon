@@ -242,6 +242,7 @@ public class Map {
 
     /**
      * Removes expansion stone from the tile
+     *
      * @param tile that has an expansion stone
      */
     public void removeExpansionStone(Tile tile) {
@@ -250,9 +251,10 @@ public class Map {
 
     /**
      * Returns current expansion tiles on the map
+     *
      * @return current expansion tiles on the map
      */
-    public Set<Tile> getExpansionTiles(){
+    public Set<Tile> getExpansionTiles() {
         return expansionTiles;
     }
 }

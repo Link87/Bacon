@@ -24,11 +24,11 @@ public class HeuristicsTest {
         Game.getGame().readMap(Maps.EXAMPLE_MOBILITY);
 
         System.out.println("Regular Moves");
-        for(Tile t: LegalMoves.getLegalMoveTiles(Game.getGame().getCurrentState(), 1, Move.Type.REGULAR)) {
+        for(Tile t: LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 1)) {
             System.out.println("(" + t.x + "," + t.y + ")");
         }
         System.out.println("Override Moves");
-        for(Tile t: LegalMoves.getLegalMoveTiles(Game.getGame().getCurrentState(), 1, Move.Type.OVERRIDE)){
+        for(Tile t: LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 1)){
             System.out.println("("+ t.x + "," + t.y + ")");
         }
 
