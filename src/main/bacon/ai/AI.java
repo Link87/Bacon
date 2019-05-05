@@ -134,7 +134,7 @@ public class AI {
             }
             curBestMove = MoveFactory.createMove(currentGameState, currentGameState.getMe(), curBestTile.x, curBestTile.y);
         }
-        
+
         LOGGER.log(Level.INFO, "Found {0} move(s).", stateCount);
 
         long totalTimeNanos = System.nanoTime() - timestamp;

@@ -1,6 +1,7 @@
 package bacon;
 
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -30,7 +31,7 @@ public class Map {
      *
      * @param tiles The tiles of the new map
      */
-    private Map(Tile[][] tiles, int initOccupied, int totalTiles) {
+    private Map(Tile[][] tiles, int initOccupied, int totalTiles, Set<Tile> expansionTiles) {
         this.tiles = tiles;
 
         assert tiles.length > 0 && tiles[0].length > 0 : "Dimensions of tiles have to be positive";
@@ -40,6 +41,8 @@ public class Map {
 
         this.occupiedTiles = initOccupied;
         this.totalTiles = totalTiles;
+
+        this.expansionTiles = expansionTiles;
     }
 
     /**
@@ -75,7 +78,7 @@ public class Map {
         }
 
         //setting tile transition pointers to point to tiles in copyTiles
-        return new Map(copyTiles, this.occupiedTiles, this.totalTiles);
+        return new Map(copyTiles, this.occupiedTiles, this.totalTiles, this.expansionTiles);
     }
 
     /**
@@ -101,12 +104,13 @@ public class Map {
      * @param width  width of the map
      * @param height height of the map
      * @param lines  String Array that contains map and transition data split into lines
-     * @return {@link #Map(Tile[][], int, int)} with tiles
+     * @return {@link #Map(Tile[][], int, int, Set<Tile>)} with tiles
      */
     public static Map readFromString(final int width, final int height, String[] lines) {
         Tile[][] tiles = new Tile[width][height];
         int occupiedCount = 0;
         int totalCount = 0;
+        Set<Tile> expansionTiles = new HashSet<>();
 
         // putting tile information into the array
         for (int h = 0; h < height; h++) {
@@ -178,7 +182,7 @@ public class Map {
             }
         }
 
-        Map map = new Map(tiles, occupiedCount, totalCount);
+        Map map = new Map(tiles, occupiedCount, totalCount, expansionTiles);
 
         //adding additional transitions from map specification
         for (int l = height; l < lines.length; l++) {

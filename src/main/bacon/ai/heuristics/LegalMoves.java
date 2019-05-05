@@ -1,9 +1,6 @@
 package bacon.ai.heuristics;
 
-import bacon.Direction;
-import bacon.GameState;
-import bacon.Player;
-import bacon.Tile;
+import bacon.*;
 import bacon.move.Move;
 
 import java.util.HashSet;
@@ -90,10 +87,6 @@ public class LegalMoves {
                                 legalTiles.add(last);
                             }
                             break;
-                        } else if (last.getProperty() == Tile.Property.EXPANSION) { // in case of expansion stone no tile need to be captured and the search continues afterwards
-                            if (player.getOverrideStoneCount() > 0 && type == Move.Type.OVERRIDE) {
-                                legalTiles.add(last);
-                            }
                         } else {
                             if (player.getOverrideStoneCount() > 0 && steps > 0 && type == Move.Type.OVERRIDE) { //checks if the move actually captures any tile
                                 legalTiles.add(last);                           // and if the player is allowed to override stones; the search continues afterwards
@@ -102,6 +95,11 @@ public class LegalMoves {
                     }
                     steps++;
                 }
+            }
+        }
+        if (type == Move.Type.OVERRIDE) {
+            for (Tile t : Game.getGame().getCurrentState().getMap().getExpansionTiles()) {
+                legalTiles.add(t);
             }
         }
 

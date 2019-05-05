@@ -2,6 +2,8 @@ package bacon.ai.heuristics;
 
 import bacon.Game;
 import bacon.Maps;
+import bacon.Tile;
+import bacon.move.Move;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -21,15 +23,16 @@ public class HeuristicsTest {
     public void mobility() {
         Game.getGame().readMap(Maps.EXAMPLE_MOBILITY);
 
-        /*for(Tile t: LegalMoves.legalMoves(Game.getGame().getCurrentState(), 1, MoveType.REGULAR)){
+        System.out.println("Regular Moves");
+        for(Tile t: LegalMoves.getLegalMoveTiles(Game.getGame().getCurrentState(), 1, Move.Type.REGULAR)) {
+            System.out.println("(" + t.x + "," + t.y + ")");
+        }
+        System.out.println("Override Moves");
+        for(Tile t: LegalMoves.getLegalMoveTiles(Game.getGame().getCurrentState(), 1, Move.Type.OVERRIDE)){
             System.out.println("("+ t.x + "," + t.y + ")");
         }
 
-        for(Tile t: LegalMoves.legalMoves(Game.getGame().getCurrentState(), 1, MoveType.OVERRIDE)){
-            System.out.println("("+ t.x + "," + t.y + ")");
-        }*/
-
-        assertEquals("Mobility Heuristic Error", 16, Heuristics.mobility(Game.getGame().getCurrentState(), 1));
+        assertEquals("Mobility Heuristic Error", 19, Heuristics.mobility(Game.getGame().getCurrentState(), 1));
     }
 
     //TODO Fix implement in map getTotalTile count and update the expected clustering value
