@@ -46,60 +46,14 @@ public class AI {
             moveTiles = LegalMoves.getLegalMoveTiles(currentGameState, currentGameState.getMe().getPlayerNumber(), Move.Type.REGULAR);
             if (moveTiles.isEmpty()) {
                 moveTiles = LegalMoves.getLegalMoveTiles(currentGameState, currentGameState.getMe().getPlayerNumber(), Move.Type.OVERRIDE);
-            }
-            double evalValue;
-            double curBestVal = -Double.MAX_VALUE;
-            for (Tile tile : moveTiles) {
-                long stateTimestamp = System.nanoTime();
-                stateCount++;
-
-                if (tile.getProperty() == Tile.Property.CHOICE) {
-                    for (int numbr = 1; numbr <= currentGameState.getTotalPlayerCount(); numbr++) {
-                        Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, BonusRequest.fromValue(numbr, currentGameState));
-                        moveToEval.doMove();
-                        int meNumbr = currentGameState.getMe().getPlayerNumber();
-                        evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
-//                                + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
-                                + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr);
-                        if (evalValue > curBestVal) {
-                            curBestVal = evalValue;
-                            curBestMove = moveToEval;
-                        }
-                        moveToEval.undoMove();
-                    }
-                } else if (tile.getProperty() == Tile.Property.BONUS) {
-                    Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
-                    moveToEval.doMove();
-                    int meNumbr = currentGameState.getMe().getPlayerNumber();
-                    evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
-//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
-                            + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr)
-                            + bonusScalar * Heuristics.bonusBomb(currentGameState, meNumbr);
-                    if (evalValue > curBestVal) {
-                        curBestVal = evalValue;
-                        curBestMove = moveToEval;
-                    }
-                    moveToEval.undoMove();
-
-                    moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
-                    moveToEval.doMove();
-                    meNumbr = currentGameState.getMe().getPlayerNumber();
-                    evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
-//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
-                            + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr)
-                            + bonusScalar * Heuristics.bonusOverride(currentGameState, meNumbr);
-                    if (evalValue > curBestVal) {
-                        curBestVal = evalValue;
-                        curBestMove = moveToEval;
-                    }
-                    moveToEval.undoMove();
-                } else {
+                double evalValue;
+                double curBestVal = -Double.MAX_VALUE;
+                for (Tile tile : moveTiles) {
+                    stateCount++;
                     Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y);
                     moveToEval.doMove();
                     int meNumbr = currentGameState.getMe().getPlayerNumber();
-                    evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
-//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
-                            + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr);
+                    evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr);
                     if (evalValue > curBestVal) {
                         curBestVal = evalValue;
                         curBestMove = moveToEval;
@@ -107,9 +61,71 @@ public class AI {
                     moveToEval.undoMove();
                 }
 
-                int stateDuration = (int) (System.nanoTime() - stateTimestamp);
-                if (stateDuration < minTime) minTime = stateDuration;
-                if (stateDuration > maxTime) maxTime = stateDuration;
+            } else {
+                double evalValue;
+                double curBestVal = -Double.MAX_VALUE;
+                for (Tile tile : moveTiles) {
+                    long stateTimestamp = System.nanoTime();
+                    stateCount++;
+
+                    if (tile.getProperty() == Tile.Property.CHOICE) {
+                        for (int numbr = 1; numbr <= currentGameState.getTotalPlayerCount(); numbr++) {
+                            Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, BonusRequest.fromValue(numbr, currentGameState));
+                            moveToEval.doMove();
+                            int meNumbr = currentGameState.getMe().getPlayerNumber();
+                            evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
+//                                + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
+                                    + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr);
+                            if (evalValue > curBestVal) {
+                                curBestVal = evalValue;
+                                curBestMove = moveToEval;
+                            }
+                            moveToEval.undoMove();
+                        }
+                    } else if (tile.getProperty() == Tile.Property.BONUS) {
+                        Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+                        moveToEval.doMove();
+                        int meNumbr = currentGameState.getMe().getPlayerNumber();
+                        evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
+//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
+                                + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr)
+                                + bonusScalar * Heuristics.bonusBomb(currentGameState, meNumbr);
+                        if (evalValue > curBestVal) {
+                            curBestVal = evalValue;
+                            curBestMove = moveToEval;
+                        }
+                        moveToEval.undoMove();
+
+                        moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
+                        moveToEval.doMove();
+                        meNumbr = currentGameState.getMe().getPlayerNumber();
+                        evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
+//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
+                                + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr)
+                                + bonusScalar * Heuristics.bonusOverride(currentGameState, meNumbr);
+                        if (evalValue > curBestVal) {
+                            curBestVal = evalValue;
+                            curBestMove = moveToEval;
+                        }
+                        moveToEval.undoMove();
+                    } else {
+                        Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y);
+                        moveToEval.doMove();
+                        int meNumbr = currentGameState.getMe().getPlayerNumber();
+                        evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
+//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
+                                + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr);
+                        if (evalValue > curBestVal) {
+                            curBestVal = evalValue;
+                            curBestMove = moveToEval;
+                        }
+                        moveToEval.undoMove();
+                    }
+
+                    int stateDuration = (int) (System.nanoTime() - stateTimestamp);
+                    if (stateDuration < minTime) minTime = stateDuration;
+                    if (stateDuration > maxTime) maxTime = stateDuration;
+                }
             }
 
 
@@ -136,10 +152,10 @@ public class AI {
         }
 
         //TODO remove after issue #13 is closed (this is a band aid)
-        if(curBestMove == null){
+        if (curBestMove == null) {
             for (int y = 0; y < currentGameState.getMap().height; y++) {
                 for (int x = 0; x < currentGameState.getMap().width; x++) {
-                    if(currentGameState.getMap().getTileAt(x,y).getProperty()== Tile.Property.EXPANSION)
+                    if (currentGameState.getMap().getTileAt(x, y).getProperty() == Tile.Property.EXPANSION)
                         return MoveFactory.createMove(currentGameState, currentGameState.getMe(), x, y);
                 }
             }
@@ -150,7 +166,7 @@ public class AI {
         long totalTimeNanos = System.nanoTime() - timestamp;
         LOGGER.log(Level.INFO, "Computing best move took {0} ms.", totalTimeNanos / 1000000.0);
         LOGGER.log(Level.INFO, "Computing times per move: avg {0} us, min {1} us, max {2} us.",
-                new Object[]{ totalTimeNanos / (1000 * stateCount), minTime / 1000, maxTime / 1000 });
+                new Object[]{totalTimeNanos / (1000 * stateCount), minTime / 1000, maxTime / 1000});
         return curBestMove;
     }
 }
