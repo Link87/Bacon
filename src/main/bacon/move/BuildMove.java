@@ -92,7 +92,7 @@ public class BuildMove extends Move {
             changeData[i].tile.setProperty(changeData[i].wasProp);
         }
 
-
+        changeData = null;
     }
 
     /**
