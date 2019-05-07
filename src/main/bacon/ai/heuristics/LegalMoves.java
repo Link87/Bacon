@@ -95,7 +95,8 @@ public class LegalMoves {
                             }
                         }
                     }
-                    steps++;
+
+                    if (last != last.getTransition(searchDirection)) steps++; // increment step counter only if last isn't self-neighboring
                 }
             }
         }
