@@ -45,10 +45,10 @@ public class BuildMove extends Move {
             searchDirections[i] = Direction.values()[i];
         }
 
-        // Going radially outward in 8 straight lines, one step for each while loop cycle, beginning with the same center tile
+        // Going radially outward in 8 straight lines, one step for each outer for-loop cycle, beginning with the same center tile
         // surrounding keeps track of the farthest field we've gone in each direction
         for (int steps = 1; true; ) {
-            // keeps track of the number of directions where we've hit a hole/blank field and thus stop searching
+            // keeps track of the number of directions where we've hit a hole/blank field/origin tile and thus stop searching
             // in this direction
             int emptyOrHoleCount = 0;
 
@@ -56,8 +56,8 @@ public class BuildMove extends Move {
             for (int i = 0; i < surrounding.length; i++) {
                 var direction = searchDirections[i];
 
-                if (surrounding[i] != null && surrounding[i].getTransition(direction) != null) { // If the next tile isn't a hole,
-                    searchDirections[i] = surrounding[i].getArrivalDirection(direction).opposite();        // update direction
+                if (surrounding[i] != null && surrounding[i].getTransition(direction) != null && surrounding[i].getTransition(direction) != tile) { // If the next tile isn't
+                    searchDirections[i] = surrounding[i].getArrivalDirection(direction).opposite();        // a hole or the origin tile, update direction
                     surrounding[i] = surrounding[i].getTransition(direction);                   // increment the farthest tile in this direction.
                     if (this.player.equals(surrounding[i].getOwner()) && steps > 1)
                         return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
@@ -91,6 +91,8 @@ public class BuildMove extends Move {
             changeData[i].tile.setOwner(changeData[i].ogPlayer);
             changeData[i].tile.setProperty(changeData[i].wasProp);
         }
+
+
     }
 
     /**
