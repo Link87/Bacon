@@ -49,6 +49,7 @@ public class AI {
                 double evalValue;
                 double curBestVal = -Double.MAX_VALUE;
                 for (Tile tile : moveTiles) {
+                    long stateTimestamp = System.nanoTime();
                     stateCount++;
                     Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y);
                     moveToEval.doMove();
@@ -59,6 +60,10 @@ public class AI {
                         curBestMove = moveToEval;
                     }
                     moveToEval.undoMove();
+
+                    int stateDuration = (int) (System.nanoTime() - stateTimestamp);
+                    if (stateDuration < minTime) minTime = stateDuration;
+                    if (stateDuration > maxTime) maxTime = stateDuration;
                 }
 
             } else {
