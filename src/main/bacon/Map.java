@@ -1,6 +1,9 @@
 package bacon;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * A map on which Reversi is played.
  */
@@ -13,6 +16,11 @@ public class Map {
     private int totalTiles;
 
     /**
+     * The tiles that has expansion stone on them
+     */
+    private static Set<Tile> expansionTiles;
+
+    /**
      * The tiles this map consists of. This is guaranteed to be non-empty.
      */
     private final Tile[][] tiles;
@@ -23,7 +31,7 @@ public class Map {
      *
      * @param tiles The tiles of the new map
      */
-    private Map(Tile[][] tiles, int initOccupied, int totalTiles) {
+    private Map(Tile[][] tiles, int initOccupied, int totalTiles, Set<Tile> expansionTiles) {
         this.tiles = tiles;
 
         assert tiles.length > 0 && tiles[0].length > 0 : "Dimensions of tiles have to be positive";
@@ -33,6 +41,8 @@ public class Map {
 
         this.occupiedTiles = initOccupied;
         this.totalTiles = totalTiles;
+
+        this.expansionTiles = expansionTiles;
     }
 
     /**
@@ -68,7 +78,7 @@ public class Map {
         }
 
         //setting tile transition pointers to point to tiles in copyTiles
-        return new Map(copyTiles, this.occupiedTiles, this.totalTiles);
+        return new Map(copyTiles, this.occupiedTiles, this.totalTiles, this.expansionTiles);
     }
 
     /**
@@ -94,12 +104,13 @@ public class Map {
      * @param width  width of the map
      * @param height height of the map
      * @param lines  String Array that contains map and transition data split into lines
-     * @return {@link #Map(Tile[][], int,int)} with tiles
+     * @return {@link #Map(Tile[][], int, int, Set<Tile>)} with tiles
      */
     public static Map readFromString(final int width, final int height, String[] lines) {
         Tile[][] tiles = new Tile[width][height];
         int occupiedCount = 0;
         int totalCount = 0;
+        Set<Tile> expansionTiles = new HashSet<>();
 
         // putting tile information into the array
         for (int h = 0; h < height; h++) {
@@ -120,7 +131,10 @@ public class Map {
                     //Tile is not a hole --> Tile has Property
                     tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
 
-                    if (symbol == 'x') occupiedCount++;
+                    if (symbol == 'x') {
+                        occupiedCount++;
+                        expansionTiles.add(tiles[w][h]);
+                    }
                 } else {
                     //Tile is a hole
                     tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
@@ -168,7 +182,7 @@ public class Map {
             }
         }
 
-        Map map = new Map(tiles, occupiedCount, totalCount);
+        Map map = new Map(tiles, occupiedCount, totalCount, expansionTiles);
 
         //adding additional transitions from map specification
         for (int l = height; l < lines.length; l++) {
@@ -201,6 +215,7 @@ public class Map {
 
     /**
      * Gets amount of occupied tiles
+     *
      * @return number of occupied tiles
      */
     public int getOccupiedTiles() {
@@ -209,10 +224,38 @@ public class Map {
 
     /**
      * increase/decrease occupiedTileCount
+     *
      * @param d amount to add to occupiedTileCount
      */
     public void addOccupiedTiles(int d) {
         this.occupiedTiles = this.occupiedTiles + d;
+    }
+
+    /**
+     * Adds expansion stone back onto the tile in case of undo move
+     *
+     * @param tile that the expansion stone should be placed on
+     */
+    public void addExpansionStone(Tile tile) {
+        expansionTiles.add(tile);
+    }
+
+    /**
+     * Removes expansion stone from the tile
+     *
+     * @param tile that has an expansion stone
+     */
+    public void removeExpansionStone(Tile tile) {
+        expansionTiles.remove(tile);
+    }
+
+    /**
+     * Returns current expansion tiles on the map
+     *
+     * @return current expansion tiles on the map
+     */
+    public Set<Tile> getExpansionTiles() {
+        return expansionTiles;
     }
 }
 

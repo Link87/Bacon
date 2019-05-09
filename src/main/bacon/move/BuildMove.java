@@ -81,15 +81,19 @@ public class BuildMove extends Move {
 
     /**
      * undoes a Move
-     * should only be caled after the move has been "done"
+     * should only be called after the move has been "done"
      */
-    public void undoMove(){
+    public void undoMove() {
 
-        assert changeData != null: "Move has to be done before undo!";
+        assert changeData != null : "Move has to be done before undo!";
 
         for (int i = 0; i < changeData.length; i++) {
             changeData[i].tile.setOwner(changeData[i].ogPlayer);
             changeData[i].tile.setProperty(changeData[i].wasProp);
+
+            if (changeData[i].wasProp == Tile.Property.EXPANSION) {
+                Game.getGame().getCurrentState().getMap().addExpansionStone(changeData[i].tile); // adds expansion stone back to expansion stone tracker in Map
+            }
         }
 
         changeData = null;
@@ -122,7 +126,7 @@ public class BuildMove extends Move {
                     Direction oldDirection = searchDirection;
                     searchDirection = last.getArrivalDirection(searchDirection).opposite();
                     last = last.getTransition(oldDirection);
-                    if(last == originTile) break;
+                    if (last == originTile) break;
 
                     if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
                         // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
@@ -135,7 +139,7 @@ public class BuildMove extends Move {
                         // and then we can stop searching in this direction
                         turnOver.addAll(path);
                         break;
-                    } else{
+                    } else {
                         path.add(last);
                     }
                 }
@@ -143,7 +147,7 @@ public class BuildMove extends Move {
         }
 
         //save previous owner information
-        changeData = new ChangeData[turnOver.size()+1];
+        changeData = new ChangeData[turnOver.size() + 1];
         int index = 0;
         for (Tile tile : turnOver) {
             boolean isExpansion = (tile.getProperty() == Tile.Property.EXPANSION);
@@ -152,11 +156,16 @@ public class BuildMove extends Move {
         }
 
         boolean isExpansion = (originTile.getProperty() == Tile.Property.EXPANSION);
-        changeData[index]= new ChangeData(originTile,originTile.getOwner(),originTile.getProperty());
+        changeData[index] = new ChangeData(originTile, originTile.getOwner(), originTile.getProperty());
 
         // now actually turn all stones over
-        turnOver.forEach(t -> t.setProperty(Tile.Property.DEFAULT));
-        turnOver.forEach(t -> t.setOwner(this.player));
+        for (Tile t : turnOver) {
+            if (t.getProperty() == Tile.Property.EXPANSION) {
+                Game.getGame().getCurrentState().getMap().removeExpansionStone(t); // Removes expansion stones from expansion stone tracker in Map
+            }
+            t.setProperty(Tile.Property.DEFAULT);
+            t.setOwner(this.player);
+        }
 
         // new stone is placed on the map
         originTile.setOwner(this.player);

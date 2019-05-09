@@ -53,9 +53,9 @@ public class Heuristics {
             throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
         }
 
-        mobility = LegalMoves.getLegalMoveTiles(state, playerNr, Move.Type.REGULAR).size();
+        mobility = LegalMoves.getLegalRegularMoves(state, playerNr).size();
         //TODO: Weight regular move mobility against override move mobility
-        mobility += LegalMoves.getLegalMoveTiles(state, playerNr, Move.Type.OVERRIDE).size();
+        mobility += LegalMoves.getLegalOverrideMoves(state, playerNr).size();
 
         return mobility;
     }
