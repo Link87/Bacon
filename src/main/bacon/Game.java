@@ -66,7 +66,7 @@ public class Game {
             assert numMsg.getType() == Message.Type.PLAYER_NUMBER;
             processMessage(numMsg);
 
-            runGame(connection);
+            runGame(connection, cfg);
         } catch (IOException ioe) {
             LOGGER.log(Level.SEVERE, ioe.toString());
             System.exit(1);
@@ -77,14 +77,15 @@ public class Game {
      * Runs the main game loop. Returns when game ends.
      *
      * @param connection the {@link ServerConnection} to use for the game
+     * @param cfg the {@link Config} to use
      */
-    private void runGame(ServerConnection connection) {
+    private void runGame(ServerConnection connection, Config cfg) {
         while (currentGameState.getGamePhase() != GamePhase.ENDED) {
             var msg = connection.awaitMessage();
 
             if (msg.getType() == Message.Type.MOVE_REQUEST) {
                 var buffer = ByteBuffer.wrap(msg.getBinaryContent());
-                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), this.getCurrentState());
+                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), cfg.shouldPrune(), this.getCurrentState());
                 connection.sendMessage(new Message(Message.Type.MOVE_RESPONSE, move.encodeBinary()));
                 // Manual gc is usually bad practice, but we have lots of spare time after here
                 // TODO maybe skip GC when we directly have a second turn

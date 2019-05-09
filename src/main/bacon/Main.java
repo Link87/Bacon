@@ -21,7 +21,7 @@ public class Main {
         try {
             config = Config.fromArgs(args);
             // print help if help should be displayed and exit
-            if (config == null) {
+            if (config.isHelpRequested()) {
                 printHelp();
                 System.exit(0);
             }

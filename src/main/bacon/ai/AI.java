@@ -33,10 +33,11 @@ public class AI {
      *
      * @param timeout          the time the ai has for its computation
      * @param depth            the maximum search depth the ai is allowed to do
+     * @param prune            true if the tree should be pruned
      * @param currentGameState current  Game State
      * @return the next move
      */
-    public Move requestMove(int timeout, int depth, GameState currentGameState) {
+    public Move requestMove(int timeout, int depth, boolean prune, GameState currentGameState) {
         long timestamp = System.nanoTime();
         int maxTime = Integer.MIN_VALUE, minTime = Integer.MAX_VALUE, stateCount = 0;
 
