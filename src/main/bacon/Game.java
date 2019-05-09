@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -124,8 +123,10 @@ public class Game {
                 // Disqualify player -- quit when *we* where disqualified
                 byte disqualified = msg.getBinaryContent()[0];
                 LOGGER.log(Level.INFO, "Player {0} is disqualified.", disqualified);
-                if (currentGameState.getMe().number == disqualified)
+                if (currentGameState.getMe().number == disqualified) {
                     currentGameState.setGamePhase(GamePhase.ENDED);
+                    LOGGER.log(Level.SEVERE, "I have been disqualified \uD83D\uDE14");
+                }
                 getCurrentState().getPlayerFromNumber(disqualified).disqualify();
                 break;
             case FIRST_PHASE_END:
