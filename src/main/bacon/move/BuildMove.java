@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class BuildMove extends Move {
 
-    protected ChangeData[] changeData;
+    ChangeData[] changeData;
 
     /**
      * Creates a new move from the given values.

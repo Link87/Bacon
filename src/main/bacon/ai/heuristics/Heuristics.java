@@ -4,16 +4,14 @@ import bacon.Direction;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.Tile;
-import bacon.move.Move;
+import bacon.move.BombMove;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
+import static java.lang.Math.*;
 
 public class Heuristics {
 
@@ -187,13 +185,11 @@ public class Heuristics {
      * basically a copy of clustering heuristic, but evaluates MOVES directly instead of GAME STATES due to high branching
      * factor in the Bombing Phase
      *
-     * @param state         GameState to be examined
-     * @param playerNr      number of player in turn
-     * @param targetTile    the tile to be bombed in the next move
+     * @param move BombMove to rate
      * @return              a real number as clustering heuristics (the only heuristics that matters in Bombing Phase)
      */
-    public static double bombingPhaseHeuristic (GameState state, int playerNr, Tile targetTile) {
-        int playerStoneCount = state.getPlayerFromNumber(playerNr).getStoneCount();
+    public static double bombingPhaseHeuristic(GameState state, BombMove move) {
+        int playerStoneCount = move.getPlayer().getStoneCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
 
@@ -208,7 +204,7 @@ public class Heuristics {
         }
 
         for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
-            if (i + 1 == playerNr) {
+            if (i + 1 == move.getPlayer().number) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             } else {
                 rivalry[i] = (rivalBombCount[i] * (pow(2 * bombRadius + 1, 2))) / ((totalPlayer - 1) * (abs(rivalStoneCount[i] - playerStoneCount) + 1));
@@ -229,8 +225,8 @@ public class Heuristics {
         // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
         var nextTiles = new ArrayList<Tile>();
 
-        bombSet.add(targetTile);
-        currentTiles.add(targetTile);
+        bombSet.add(state.getMap().getTileAt(move.getX(), move.getY()));
+        currentTiles.add(state.getMap().getTileAt(move.getX(), move.getY()));
 
         //searches for all neighbours that need to be bombed out
         for (int i = 0; i < bombRadius; i++) {

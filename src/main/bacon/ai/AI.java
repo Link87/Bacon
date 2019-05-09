@@ -1,10 +1,11 @@
 package bacon.ai;
 
-import bacon.*;
-import bacon.move.BonusRequest;
+import bacon.GamePhase;
+import bacon.GameState;
+import bacon.ai.heuristics.Heuristics;
+import bacon.ai.heuristics.LegalMoves;
+import bacon.move.BombMove;
 import bacon.move.Move;
-import bacon.move.MoveFactory;
-import bacon.ai.heuristics.*;
 
 import java.util.Set;
 import java.util.logging.Level;
@@ -14,15 +15,11 @@ public class AI {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
+    private static final int BRANCHING_FACTOR = 5;
 
     private static final AI INSTANCE = new AI();
-    public double stbltyScaler = 1;
-    public double clstrngScaler = 1;
-    public double mobltyScaler = 1;
-    public double bonusScalar = 1;
 
-    private AI() {
-    }
+    private AI() {}
 
     public static AI getAI() {
         return INSTANCE;
@@ -38,126 +35,34 @@ public class AI {
      */
     public Move requestMove(int timeout, int depth, GameState currentGameState) {
         long timestamp = System.nanoTime();
-        int maxTime = Integer.MIN_VALUE, minTime = Integer.MAX_VALUE, stateCount = 0;
+        int maxTime = Integer.MIN_VALUE, minTime = Integer.MAX_VALUE, stateCount = 1;
 
-        Set<Tile> moveTiles;
-        Move curBestMove = null;
+        Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            moveTiles = LegalMoves.getLegalRegularMoves(currentGameState, currentGameState.getMe().getPlayerNumber());
-            if (moveTiles.isEmpty()) {
-                moveTiles = LegalMoves.getLegalOverrideMoves(currentGameState, currentGameState.getMe().getPlayerNumber());
-                double evalValue;
-                double curBestVal = -Double.MAX_VALUE;
-                for (Tile tile : moveTiles) {
-                    stateCount++;
-                    Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y);
-                    moveToEval.doMove();
-                    int meNumbr = currentGameState.getMe().getPlayerNumber();
-                    evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr);
-                    if (evalValue > curBestVal) {
-                        curBestVal = evalValue;
-                        curBestMove = moveToEval;
-                    }
-                    moveToEval.undoMove();
-                }
+            BRSNode root = new BRSNode(0, depth, BRANCHING_FACTOR, true);
+            root.doBRS();
+            bestMove = root.getBestMove();
 
-            } else {
-                double evalValue;
-                double curBestVal = -Double.MAX_VALUE;
-                for (Tile tile : moveTiles) {
-                    long stateTimestamp = System.nanoTime();
-                    stateCount++;
-
-                    if (tile.getProperty() == Tile.Property.CHOICE) {
-                        for (int numbr = 1; numbr <= currentGameState.getTotalPlayerCount(); numbr++) {
-                            Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, BonusRequest.fromValue(numbr, currentGameState));
-                            moveToEval.doMove();
-                            int meNumbr = currentGameState.getMe().getPlayerNumber();
-                            evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
-//                                + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
-                                    + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr);
-                            if (evalValue > curBestVal) {
-                                curBestVal = evalValue;
-                                curBestMove = moveToEval;
-                            }
-                            moveToEval.undoMove();
-                        }
-                    } else if (tile.getProperty() == Tile.Property.BONUS) {
-                        Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
-                        moveToEval.doMove();
-                        int meNumbr = currentGameState.getMe().getPlayerNumber();
-                        evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
-//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
-                                + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr)
-                                + bonusScalar * Heuristics.bonusBomb(currentGameState, meNumbr);
-                        if (evalValue > curBestVal) {
-                            curBestVal = evalValue;
-                            curBestMove = moveToEval;
-                        }
-                        moveToEval.undoMove();
-
-                        moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
-                        moveToEval.doMove();
-                        meNumbr = currentGameState.getMe().getPlayerNumber();
-                        evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
-//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
-                                + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr)
-                                + bonusScalar * Heuristics.bonusOverride(currentGameState, meNumbr);
-                        if (evalValue > curBestVal) {
-                            curBestVal = evalValue;
-                            curBestMove = moveToEval;
-                        }
-                        moveToEval.undoMove();
-                    } else {
-                        Move moveToEval = MoveFactory.createMove(currentGameState, currentGameState.getMe(), tile.x, tile.y);
-                        moveToEval.doMove();
-                        int meNumbr = currentGameState.getMe().getPlayerNumber();
-                        evalValue = stbltyScaler * StabilityHeuristic.stability(currentGameState, meNumbr)
-//                            + clstrngScaler * Heuristics.clustering(evalState, meNumbr)
-                                + mobltyScaler * Heuristics.mobility(currentGameState, meNumbr);
-                        if (evalValue > curBestVal) {
-                            curBestVal = evalValue;
-                            curBestMove = moveToEval;
-                        }
-                        moveToEval.undoMove();
-                    }
-
-                    int stateDuration = (int) (System.nanoTime() - stateTimestamp);
-                    if (stateDuration < minTime) minTime = stateDuration;
-                    if (stateDuration > maxTime) maxTime = stateDuration;
-                }
-            }
-
+            // int stateDuration = (int) (System.nanoTime() - stateTimestamp);
+            // if (stateDuration < minTime) minTime = stateDuration;
+            // if (stateDuration > maxTime) maxTime = stateDuration;
 
         } else {
-            moveTiles = LegalMoves.getLegalBombMoves(currentGameState);
+            Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe().number);
             double evalValue;
             double curBestVal = -Double.MAX_VALUE;
-            Tile curBestTile = null;
-            for (Tile tile : moveTiles) {
+            for (BombMove move : moves) {
                 long stateTimestamp = System.nanoTime();
                 stateCount++;
-
-                evalValue = Heuristics.bombingPhaseHeuristic(currentGameState, currentGameState.getMe().getPlayerNumber(), tile);
+                evalValue = Heuristics.bombingPhaseHeuristic(currentGameState, move);
                 if (evalValue > curBestVal) {
                     curBestVal = evalValue;
-                    curBestTile = tile;
+                    bestMove = move;
                 }
 
                 int stateDuration = (int) (System.nanoTime() - stateTimestamp);
                 if (stateDuration < minTime) minTime = stateDuration;
                 else if (stateDuration > maxTime) maxTime = stateDuration;
-            }
-            curBestMove = MoveFactory.createMove(currentGameState, currentGameState.getMe(), curBestTile.x, curBestTile.y);
-        }
-
-        //TODO remove after issue #13 is closed (this is a band aid)
-        if (curBestMove == null) {
-            for (int y = 0; y < currentGameState.getMap().height; y++) {
-                for (int x = 0; x < currentGameState.getMap().width; x++) {
-                    if (currentGameState.getMap().getTileAt(x, y).getProperty() == Tile.Property.EXPANSION)
-                        return MoveFactory.createMove(currentGameState, currentGameState.getMe(), x, y);
-                }
             }
         }
 
@@ -167,6 +72,7 @@ public class AI {
         LOGGER.log(Level.INFO, "Computing best move took {0} ms.", totalTimeNanos / 1000000.0);
         LOGGER.log(Level.INFO, "Computing times per move: avg {0} us, min {1} us, max {2} us.",
                 new Object[]{totalTimeNanos / (1000 * stateCount), minTime / 1000, maxTime / 1000});
-        return curBestMove;
+
+        return bestMove;
     }
 }

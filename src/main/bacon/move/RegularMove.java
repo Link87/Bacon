@@ -153,6 +153,10 @@ public class RegularMove extends BuildMove {
         state.getMap().addOccupiedTiles(1);
     }
 
+    public BonusRequest getRequest() {
+        return request;
+    }
+
     @Override
     public byte[] encodeBinary() {
         var data = new byte[5];

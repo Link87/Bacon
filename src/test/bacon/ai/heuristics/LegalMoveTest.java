@@ -1,6 +1,9 @@
 package bacon.ai.heuristics;
 
-import bacon.*;
+import bacon.Game;
+import bacon.GamePhase;
+import bacon.Maps;
+import bacon.Tile;
 import bacon.move.Move;
 import org.junit.Test;
 
@@ -38,19 +41,19 @@ public class LegalMoveTest {
         }
 
         //Regular Moves
-        Set<Tile> evaluatedTiles1 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 1);
-        for (Tile t : evaluatedTiles1) {
-            assertTrue("Player 1: Illegal Move at: (" + t.x + "," + t.y + ")", legalTiles1.contains(t));
+        Set<? extends Move> evaluatedMoves1 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 1);
+        for (Move mv : evaluatedMoves1) {
+            assertTrue("Player 1: Illegal Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles1.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
-        Set<Tile> evaluatedTiles2 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 2);
-        for (Tile t : evaluatedTiles2) {
-            assertTrue("Player 2: Illegal Move at: (" + t.x + "," + t.y + ")", legalTiles2.contains(t));
+        Set<? extends Move> evaluatedMoves2 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 2);
+        for (Move mv : evaluatedMoves2) {
+            assertTrue("Player 2: Illegal Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles2.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
-        Set<Tile> evaluatedTiles3 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 3);
-        for (Tile t : evaluatedTiles3) {
-            assertTrue("Player 3: Illegal Move at: (" + t.x + "," + t.y + ")", legalTiles3.contains(t));
+        Set<? extends Move> evaluatedMoves3 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 3);
+        for (Move mv : evaluatedMoves3) {
+            assertTrue("Player 3: Illegal Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles3.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
         //Override Moves
@@ -71,19 +74,19 @@ public class LegalMoveTest {
             legalTiles3.add(map.getTileAt(x33[i], y33[i]));
         }
 
-        evaluatedTiles1 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 1);
-        for (Tile t : evaluatedTiles1) {
-            assertTrue("Player 1: Illegal Override Move at: (" + t.x + "," + t.y + ")", legalTiles1.contains(t));
+        evaluatedMoves1 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 1);
+        for (Move mv : evaluatedMoves1) {
+            assertTrue("Player 1: Illegal Override Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles1.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
-        evaluatedTiles2 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 2);
-        for (Tile t : evaluatedTiles2) {
-            assertTrue("Player 2: Illegal Override Move at: (" + t.x + "," + t.y + ")", legalTiles2.contains(t));
+        evaluatedMoves2 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 2);
+        for (Move mv : evaluatedMoves2) {
+            assertTrue("Player 2: Illegal Override Move at: (" + mv.getX() + "," + mv.getY()  + ")", legalTiles2.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
-        evaluatedTiles3 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 3);
-        for (Tile t : evaluatedTiles3) {
-            assertTrue("Player 3: Illegal Override Move at: (" + t.x + "," + t.y + ")", legalTiles3.contains(t));
+        evaluatedMoves3 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 3);
+        for (Move mv : evaluatedMoves3) {
+            assertTrue("Player 3: Illegal Override Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles3.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
         //Bomb Moves
@@ -99,9 +102,9 @@ public class LegalMoveTest {
 
         Game.getGame().getCurrentState().setGamePhase(GamePhase.PHASE_TWO);
 
-        evaluatedTiles1 = LegalMoves.getLegalBombMoves(Game.getGame().getCurrentState());
-        for (Tile t : evaluatedTiles1) {
-            assertTrue("Illegal Bomb Move at: (" + t.x + "," + t.y + ")", legalTiles1.contains(t));
+        evaluatedMoves1 = LegalMoves.getLegalBombMoves(Game.getGame().getCurrentState(), 1);
+        for (Move mv : evaluatedMoves1) {
+            assertTrue("Illegal Bomb Move at: (" + mv.getX() + "," + mv.getX() + ")", legalTiles1.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
     }
 }
