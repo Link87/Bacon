@@ -55,11 +55,11 @@ public class LegalMoves {
                         } else if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION) {
                             // checks if the move actually captures any tile
                             // also handle tile property
-                            if (steps > 0 && tile.getProperty() == Tile.Property.CHOICE) {
+                            if (steps > 0 && last.getProperty() == Tile.Property.CHOICE) {
                                 for (int i = 1; i <= Game.getGame().getTotalPlayerCount(); i++) {
                                     legalMoves.add((RegularMove) MoveFactory.createMove(state, player, last.x, last.y, BonusRequest.fromValue(i, state)));
                                 }
-                            } else if (steps > 0 && tile.getProperty() == Tile.Property.BONUS) {
+                            } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
                                 legalMoves.add((RegularMove) MoveFactory.createMove(state, player, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));
                                 legalMoves.add((RegularMove) MoveFactory.createMove(state, player, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
                             } else if (steps > 0) {
