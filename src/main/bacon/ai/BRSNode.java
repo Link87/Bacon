@@ -27,7 +27,7 @@ public class BRSNode {
     private final Move.Type type;
     private double value;
 
-    BRSNode(int layer, int searchDepth, int branchingFactor, boolean isMaxNode, Move.Type type) {
+    public BRSNode(int layer, int searchDepth, int branchingFactor, boolean isMaxNode, Move.Type type) {
         this.layer = layer;
         this.searchDepth = searchDepth;
         this.branchingFactor = branchingFactor;
@@ -37,12 +37,12 @@ public class BRSNode {
         this.state = Game.getGame().getCurrentState();
     }
 
-    BuildMove getBestMove() {
+    public BuildMove getBestMove() {
         return bestMove;
     }
 
-    void doBRS() {
-        double bestValue = -Double.MAX_VALUE;
+    public void doBRS() {
+        this.value = -Double.MAX_VALUE;
 
         this.orderedMoves = computeBestMoves();
 
@@ -55,20 +55,20 @@ public class BRSNode {
                 childNode.doBRS();
                 move.undoMove();
 
-                if (childNode.value > bestValue) {
-                    bestValue = childNode.value;
-                    bestMove = move;
+                if (childNode.value > this.value) {
+                    this.value = childNode.value;
+                    this.bestMove = move;
                 }
             }
 
         } else {
             BuildMove leafMove = orderedMoves.get(0);
             leafMove.doMove();
-            bestValue = computeEvaluationValue(leafMove.getType());
+            this.value = computeEvaluationValue(leafMove.getType());
             leafMove.undoMove();
+            this.bestMove = leafMove;
         }
 
-        this.value = bestValue;
     }
 
     /**
@@ -201,7 +201,8 @@ public class BRSNode {
                     + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe().number)
                     + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe().number)
                     + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe().number);
-        } else if (type == Move.Type.OVERRIDE) {
+        }
+        else if (type == Move.Type.OVERRIDE) {
             return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe().number);
         }
 
