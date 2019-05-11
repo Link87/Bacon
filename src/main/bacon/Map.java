@@ -198,6 +198,41 @@ public class Map {
     }
 
     /**
+     * toString method
+     * @return a string representation of the this map
+     */
+    public String toString() {
+        String out = "";
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                switch (getTileAt(x, y).getProperty()) {
+                    case DEFAULT:
+                        if (getTileAt(x, y).getOwner() == null) out = out.concat("0 ");
+                        else out = out.concat(getTileAt(x, y).getOwner().number + " ");
+                        break;
+                    case HOLE:
+                        out = out.concat("- ");
+                        break;
+                    case CHOICE:
+                        out = out.concat("c ");
+                        break;
+                    case INVERSION:
+                        out = out.concat("i ");
+                        break;
+                    case BONUS:
+                        out = out.concat("b ");
+                        break;
+                    case EXPANSION:
+                        out = out.concat("x ");
+                        break;
+                }
+            }
+            out = out.concat("\n");
+        }
+        return out;
+    }
+
+    /**
      * Returns the tile at the given position. This operation is unchecked.
      *
      * @param x x coordinate of the tile
