@@ -50,6 +50,7 @@ public class BRSNode {
             this.value = evaluateCurrentState(this.type);
         } else if (this.layer < this.searchDepth - 1) {
             for (BuildMove move : beam) {
+                if(move == null) continue;
                 BRSNode childNode = new BRSNode(this.layer + 1, this.searchDepth, this.branchingFactor, !isMaxNode, move.getType());
                 move.doMove();
                 childNode.evaluateNode();
