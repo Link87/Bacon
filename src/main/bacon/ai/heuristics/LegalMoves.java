@@ -56,7 +56,7 @@ public class LegalMoves {
                             // checks if the move actually captures any tile
                             // also handle tile property
                             if (steps > 0 && tile.getProperty() == Tile.Property.CHOICE) {
-                                for (int i = 0; i < Game.getGame().getTotalPlayerCount(); i++) {
+                                for (int i = 1; i <= Game.getGame().getTotalPlayerCount(); i++) {
                                     legalMoves.add((RegularMove) MoveFactory.createMove(state, player, last.x, last.y, BonusRequest.fromValue(i, state)));
                                 }
                             } else if (steps > 0 && tile.getProperty() == Tile.Property.BONUS) {
