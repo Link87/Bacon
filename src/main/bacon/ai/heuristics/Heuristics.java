@@ -162,7 +162,7 @@ public class Heuristics {
         int bombCount = state.getPlayerFromNumber(playerNr).getBombCount();
         int bombRadius = state.getBombRadius();
 
-        return 2 * (pow(2 * bombRadius + 1, 2)) * (pow(bombCount, 0.7));
+        return 20 * (pow(2 * bombRadius + 1, 2)) * (pow(bombCount, 0.7));
     }
 
     /**
@@ -177,7 +177,7 @@ public class Heuristics {
         double mapHeight = state.getMap().height;
         double mapWidth = state.getMap().width;
 
-        return 2 * sqrt(mapHeight * mapWidth) * (pow(overrideStoneCount, 0.7));
+        return 20 * sqrt(mapHeight * mapWidth) * (pow(overrideStoneCount, 0.7));
     }
 
     /**
