@@ -44,6 +44,7 @@ public class BRSNode {
 
     public void evaluateNode() {
         this.value = -Double.MAX_VALUE;
+        if (!this.isMaxNode) this.value = Double.MAX_VALUE;
 
         this.beam = computeBeam();
 
@@ -56,9 +57,16 @@ public class BRSNode {
                 childNode.evaluateNode();
                 move.undoMove();
 
-                if (childNode.value > this.value) {
-                    this.value = childNode.value;
-                    this.bestMove = move;
+                if (this.isMaxNode) {
+                    if (childNode.value > this.value) {
+                        this.value = childNode.value;
+                        this.bestMove = move;
+                    }
+                }else {
+                    if (childNode.value < this.value) {
+                        this.value = childNode.value;
+                        this.bestMove = move;
+                    }
                 }
             }
 
