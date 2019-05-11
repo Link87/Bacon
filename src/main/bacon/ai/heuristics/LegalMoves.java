@@ -92,43 +92,33 @@ public class LegalMoves {
 
         Set<OverrideMove> legalMoves = new HashSet<>();
         Player player = state.getPlayerFromNumber(playerNr);
+        if(player.getOverrideStoneCount()<=0) return legalMoves;
         Iterator<Tile> stoneIterator = player.getStonesIterator();
 
         while (stoneIterator.hasNext()) { // iterates over all of the player's stones
-            Tile tile = stoneIterator.next();
+            Tile ogTile = stoneIterator.next();
 
-            for (Direction direction : Direction.values()) {
-                int steps = 0; //counts steps from our own stone currently under consideration
-                var searchDirection = direction;
-                Tile last = tile;
+            for (Direction ogDirection : Direction.values()) {
+                Direction searchDirection = ogDirection;
+                Tile last = ogTile;
 
                 while (true) {
-                    if (last.getTransition(searchDirection) == null || last.getTransition(searchDirection) == tile)
-                        // If the next tile is a hole (or tile we came from) we can stop searching in this direction
+                    Tile next = last.getTransition(searchDirection);
+                    if(next == null ||
+                            (next.getOwner() == null && next.getProperty()!= Tile.Property.EXPANSION)){
+                        //next is hole or unowned
                         break;
-                    else {
-                        // determine new search direction, is opposite to arrival direction
-                        Direction helper = searchDirection;
-                        searchDirection = last.getArrivalDirection(searchDirection).opposite();
-                        last = last.getTransition(helper);
-
-                        if (last.getOwner() == player) { // we can stop searching if we find a tile occupied by the same player
-                            if (player.getOverrideStoneCount() > 0 && steps > 0) { // checks if the move actually captures any tile
-                                // and if the player is allowed to override stones
-                                legalMoves.add((OverrideMove) MoveFactory.createMove(state, player, last.x, last.y));
-                            }
-                            break;
-                        } else if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION) {
-                            break;
-                        } else {
-                            if (player.getOverrideStoneCount() > 0 && steps > 0) { // checks if the move actually captures any tile
-                                // and if the player is allowed to override stones; the search continues afterwards
-                                legalMoves.add((OverrideMove) MoveFactory.createMove(state, player, last.x, last.y));
-                            }
-                        }
                     }
-
-                    if (last != last.getTransition(searchDirection)) steps++; // increment step counter only if last isn't self-neighboring
+                    if(next != ogTile.getTransition(ogDirection) && next != ogTile){
+                        //next is not right next to og in search direction or og
+                        legalMoves.add((OverrideMove) MoveFactory.createMove(state,player,next.x,next.y));
+                    }
+                    if(next.getOwner()==player){
+                        break;
+                    }
+                    Direction oldDirection = searchDirection;
+                    searchDirection = last.getArrivalDirection(searchDirection).opposite();
+                    last = last.getTransition(oldDirection);
                 }
             }
         }
