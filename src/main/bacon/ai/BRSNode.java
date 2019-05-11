@@ -19,7 +19,7 @@ public class BRSNode {
     private final int layer;
     private final int searchDepth;
     private final int branchingFactor;
-    private List<BuildMove> orderedMoves;
+    private List<BuildMove> beam;
     private BuildMove bestMove;
     private boolean isMaxNode;
     private GameState state;
@@ -41,18 +41,18 @@ public class BRSNode {
         return bestMove;
     }
 
-    public void doBRS() {
+    public void evaluateNode() {
         this.value = -Double.MAX_VALUE;
 
-        this.orderedMoves = computeBestMoves();
+        this.beam = computeBeam();
 
-        if (orderedMoves == null) {
-            this.value = computeEvaluationValue(this.type);
+        if (beam == null) {
+            this.value = evaluateCurrentState(this.type);
         } else if (this.layer < this.searchDepth - 1) {
-            for (BuildMove move : orderedMoves) {
+            for (BuildMove move : beam) {
                 BRSNode childNode = new BRSNode(this.layer + 1, this.searchDepth, this.branchingFactor, !isMaxNode, move.getType());
                 move.doMove();
-                childNode.doBRS();
+                childNode.evaluateNode();
                 move.undoMove();
 
                 if (childNode.value > this.value) {
@@ -62,9 +62,9 @@ public class BRSNode {
             }
 
         } else {
-            BuildMove leafMove = orderedMoves.get(0);
+            BuildMove leafMove = beam.get(0);
             leafMove.doMove();
-            this.value = computeEvaluationValue(leafMove.getType());
+            this.value = evaluateCurrentState(leafMove.getType());
             leafMove.undoMove();
             this.bestMove = leafMove;
         }
@@ -77,7 +77,7 @@ public class BRSNode {
      *
      * @return the n best moves, ordered
      */
-    private List<BuildMove> computeBestMoves() {
+    private List<BuildMove> computeBeam() {
 
         Set<RegularMove> legalRegularMoves;
         Set<OverrideMove> legalOverrideMoves = null;
@@ -136,7 +136,7 @@ public class BRSNode {
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
                 move.doMove();
-                double eval = computeEvaluationValue(move.getType());
+                double eval = evaluateCurrentState(move.getType());
                 move.undoMove();
 
                 // find position to insert into
@@ -168,7 +168,7 @@ public class BRSNode {
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
                 move.doMove();
-                double eval = computeEvaluationValue(move.getType());
+                double eval = evaluateCurrentState(move.getType());
                 move.undoMove();
 
                 // find position to insert into
@@ -194,7 +194,7 @@ public class BRSNode {
 
     }
 
-    private double computeEvaluationValue(Move.Type type) {
+    private double evaluateCurrentState(Move.Type type) {
 
         if (type == Move.Type.REGULAR) {
             return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe().number)
