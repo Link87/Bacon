@@ -40,7 +40,7 @@ public class AI {
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
             BRSNode root = new BRSNode(0, depth, BRANCHING_FACTOR, true, null);
-            root.doBRS();
+            root.evaluateNode();
             bestMove = root.getBestMove();
 
             // int stateDuration = (int) (System.nanoTime() - stateTimestamp);
