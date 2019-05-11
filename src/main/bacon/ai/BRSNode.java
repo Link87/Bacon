@@ -8,6 +8,7 @@ import bacon.ai.heuristics.StabilityHeuristic;
 import bacon.move.*;
 
 import java.util.*;
+import java.lang.Math;
 
 public class BRSNode {
 
@@ -50,7 +51,6 @@ public class BRSNode {
             this.value = evaluateCurrentState(this.type);
         } else if (this.layer < this.searchDepth - 1) {
             for (BuildMove move : beam) {
-                if(move == null) continue;
                 BRSNode childNode = new BRSNode(this.layer + 1, this.searchDepth, this.branchingFactor, !isMaxNode, move.getType());
                 move.doMove();
                 childNode.evaluateNode();
@@ -127,10 +127,12 @@ public class BRSNode {
         // return null if no build moves are possible => first phase ends
         else return null;
 
+        int beamWidth = Math.min(branchingFactor, legalMoves.size());
+
         // me
         if (isMaxNode) {
-            BuildMove[] bestMoves = new BuildMove[this.branchingFactor];
-            double[] values = new double[this.branchingFactor];
+            BuildMove[] bestMoves = new BuildMove[beamWidth];
+            double[] values = new double[beamWidth];
             Arrays.fill(values, -Double.MAX_VALUE);
 
             // check if tile belongs to the n best moves (until now)
@@ -141,17 +143,17 @@ public class BRSNode {
                 move.undoMove();
 
                 // find position to insert into
-                int pos = this.branchingFactor - 1;
+                int pos = beamWidth - 1;
                 while (pos >= 0 && eval > values[pos]) pos--;
 
                 // move all other elements one down, discard the last
-                for (int i = branchingFactor - 2; i > pos; i--) {
+                for (int i = beamWidth - 2; i > pos; i--) {
                     values[i + 1] = values[i];
                     bestMoves[i + 1] = bestMoves[i];
                 }
 
                 // insert the new move, if applicable
-                if (pos + 1 < this.branchingFactor) {
+                if (pos + 1 < beamWidth) {
                     values[pos + 1] = eval;
                     bestMoves[pos + 1] = move;
                 }
@@ -161,8 +163,8 @@ public class BRSNode {
         }
         // TODO "all" other players (since we're doing BRS)
         else {
-            BuildMove[] worstMoves = new BuildMove[this.branchingFactor];
-            double[] values = new double[this.branchingFactor];
+            BuildMove[] worstMoves = new BuildMove[beamWidth];
+            double[] values = new double[beamWidth];
             Arrays.fill(values, Double.MAX_VALUE);
 
             // check if tile belongs to the n best moves (until now)
@@ -173,17 +175,17 @@ public class BRSNode {
                 move.undoMove();
 
                 // find position to insert into
-                int pos = this.branchingFactor - 1;
+                int pos = beamWidth - 1;
                 while (pos >= 0 && eval < values[pos]) pos--;
 
                 // move all other elements one down, discard the last
-                for (int i = branchingFactor - 2; i > pos; i--) {
+                for (int i = beamWidth - 2; i > pos; i--) {
                     values[i + 1] = values[i];
                     worstMoves[i + 1] = worstMoves[i];
                 }
 
                 // insert the new move, if applicable
-                if (pos + 1 < this.branchingFactor) {
+                if (pos + 1 < beamWidth) {
                     values[pos + 1] = eval;
                     worstMoves[pos + 1] = move;
                 }
