@@ -18,8 +18,8 @@ public class BRSNode {
     private final double BONUS_SCALAR = 100;
 
     private final int layer;
-    private final int searchDepth;
-    private final int branchingFactor;
+    private static int searchDepth;
+    private static int branchingFactor;
     private List<BuildMove> beam;
     private BuildMove bestMove;
     private boolean isMaxNode;
@@ -30,12 +30,45 @@ public class BRSNode {
     private final Move.Type type;
     private double value;
 
-    public BRSNode(int layer, int searchDepth, int branchingFactor, boolean isMaxNode, Move.Type type) {
+    private static boolean pruning;
+    private double alpha;
+    private double beta;
+
+    /**
+     * External call constructor for game tree root
+     *
+     * @param depth     maximum depth to be searched
+     * @param branching maximum branching factor at each node
+     * @param prune     set to true if alpha-beta pruning should be applied
+     */
+    public BRSNode(int depth, int branching, boolean prune) {
+        this.layer = 0;
+        searchDepth = depth;
+        branchingFactor = branching;
+        this.isMaxNode = true;
+        this.type = null;
+        pruning = prune;
+        this.alpha = -Double.MAX_VALUE;
+        this.beta = Double.MAX_VALUE;
+
+        this.state = Game.getGame().getCurrentState();
+    }
+
+    /**
+     * Internal constructor for game tree child nodes
+     *
+     * @param layer     layer this node is part of (e.g. root is layer 0)
+     * @param isMaxNode set to true if max player is in turn at this node
+     * @param type      type of move (regular or override) that led to this node
+     * @param alpha     alpha value
+     * @param beta      beta value
+     */
+    private BRSNode(int layer, boolean isMaxNode, Move.Type type, double alpha, double beta) {
         this.layer = layer;
-        this.searchDepth = searchDepth;
-        this.branchingFactor = branchingFactor;
         this.isMaxNode = isMaxNode;
         this.type = type;
+        this.alpha = alpha;
+        this.beta = beta;
 
         this.state = Game.getGame().getCurrentState();
     }
@@ -52,9 +85,16 @@ public class BRSNode {
 
         if (beam == null) {
             this.value = evaluateCurrentState(this.type);
-        } else if (this.layer < this.searchDepth - 1) {
+
+            if (this.isMaxNode) {
+                this.alpha = Math.max(this.alpha, this.value);
+            } else {
+                this.beta = Math.min(this.beta, this.value);
+            }
+
+        } else if (this.layer < searchDepth - 1) {
             for (BuildMove move : beam) {
-                BRSNode childNode = new BRSNode(this.layer + 1, this.searchDepth, this.branchingFactor, !isMaxNode, move.getType());
+                BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta);
                 move.doMove();
                 childNode.evaluateNode();
                 move.undoMove();
@@ -63,11 +103,21 @@ public class BRSNode {
                     if (childNode.value > this.value) {
                         this.value = childNode.value;
                         this.bestMove = move;
+
+                        this.alpha = this.value;
+                        if (pruning && this.beta <= this.alpha) {
+                            break;
+                        }
                     }
                 } else {
                     if (childNode.value < this.value) {
                         this.value = childNode.value;
                         this.bestMove = move;
+
+                        this.beta = this.value;
+                        if (pruning && this.beta <= this.alpha) {
+                            break;
+                        }
                     }
                 }
             }
@@ -78,6 +128,12 @@ public class BRSNode {
             this.value = evaluateCurrentState(leafMove.getType());
             leafMove.undoMove();
             this.bestMove = leafMove;
+
+            if (this.isMaxNode) {
+                this.alpha = Math.max(this.alpha, this.value);
+            } else {
+                this.beta = Math.min(this.beta, this.value);
+            }
         }
 
     }
@@ -146,6 +202,7 @@ public class BRSNode {
             double[] values = new double[beamWidth];
             Arrays.fill(values, -Double.MAX_VALUE);
 
+            // TODO: Use PriorityQueue here instead of custom made insertion sort algorithm
             // check if tile belongs to the n best moves (until now)
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
@@ -171,9 +228,7 @@ public class BRSNode {
             }
 
             return Arrays.asList(beam);
-        }
-        // TODO "all" other players (since we're doing BRS)
-        else {
+        } else {
             BuildMove[] worstMoves = new BuildMove[beamWidth];
             double[] values = new double[beamWidth];
             Arrays.fill(values, Double.MAX_VALUE);

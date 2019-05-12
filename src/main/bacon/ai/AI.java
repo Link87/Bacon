@@ -19,7 +19,8 @@ public class AI {
 
     private static final AI INSTANCE = new AI();
 
-    private AI() {}
+    private AI() {
+    }
 
     public static AI getAI() {
         return INSTANCE;
@@ -39,7 +40,8 @@ public class AI {
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            BRSNode root = new BRSNode(0, depth, BRANCHING_FACTOR, true, null);
+            //TODO Command line switch interface de/activation of alpha-beta pruning
+            BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, true);
             root.evaluateNode();
             bestMove = root.getBestMove();
 
