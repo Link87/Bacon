@@ -45,10 +45,10 @@ public class BRSNode {
     }
 
     public void evaluateNode() {
+        this.beam = computeBeam();
+
         this.value = -Double.MAX_VALUE;
         if (!this.isMaxNode) this.value = Double.MAX_VALUE;
-
-        this.beam = computeBeam();
 
         if (beam == null) {
             this.value = evaluateCurrentState(this.type);
