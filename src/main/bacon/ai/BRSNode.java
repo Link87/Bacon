@@ -73,25 +73,30 @@ public class BRSNode {
         this.state = Game.getGame().getCurrentState();
     }
 
+    /**
+     * Only used for the root node to return best move to the AI
+     *
+     * @return best move from node
+     */
     public BuildMove getBestMove() {
         return bestMove;
     }
 
+    /**
+     * Evaluates the value of the node. Constructs new nodes recursively if this node is neither a leaf nor in the layer above leaf nodes
+     */
     public void evaluateNode() {
+        // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
         this.value = -Double.MAX_VALUE;
         if (!this.isMaxNode) this.value = Double.MAX_VALUE;
 
+        // computes the best moves and orders them in a list as the beam for the beam search
         this.beam = computeBeam();
 
+        // no move is available, return value of current game state directly
         if (beam == null) {
             this.value = evaluateCurrentState(this.type);
-
-            if (this.isMaxNode) {
-                this.alpha = Math.max(this.alpha, this.value);
-            } else {
-                this.beta = Math.min(this.beta, this.value);
-            }
-
+            // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
         } else if (this.layer < searchDepth - 1) {
             for (BuildMove move : beam) {
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta);
@@ -99,6 +104,7 @@ public class BRSNode {
                 childNode.evaluateNode();
                 move.undoMove();
 
+                // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
                 if (this.isMaxNode) {
                     if (childNode.value > this.value) {
                         this.value = childNode.value;
@@ -121,14 +127,14 @@ public class BRSNode {
                     }
                 }
             }
-
-        } else {
+        } else {    // in this case a node is one layer above leaf nodes, i.e. we only need to return the value of the first beam entry
             BuildMove leafMove = beam.get(0);
             leafMove.doMove();
             this.value = evaluateCurrentState(leafMove.getType());
             leafMove.undoMove();
             this.bestMove = leafMove;
 
+            // updates the value of alpha and beta
             if (this.isMaxNode) {
                 this.alpha = Math.max(this.alpha, this.value);
             } else {
@@ -145,31 +151,36 @@ public class BRSNode {
      * @return the n best moves, ordered
      */
     private List<BuildMove> computeBeam() {
-
-        Set<RegularMove> legalRegularMoves = null;
+        // saves legal moves temporary storage
+        Set<RegularMove> legalRegularMoves;
         Set<OverrideMove> legalOverrideMoves = null;
-        if (isMaxNode) {
+
+        if (isMaxNode) { // regular moves are preferred, only if the search turns up empty, do we consider override moves
             legalRegularMoves = LegalMoves.getLegalRegularMoves(state, state.getMe().getPlayerNumber());
+
             if (legalRegularMoves.isEmpty())
                 legalOverrideMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe().getPlayerNumber());
-            if (legalRegularMoves.isEmpty() && legalOverrideMoves.isEmpty()) {
+
+            if (legalRegularMoves.isEmpty() && legalOverrideMoves.isEmpty()) {  // in case no move is available to us at all, change Max to Min-node and resume search
                 this.isMaxNode = false;
                 legalRegularMoves = new HashSet<>();
                 legalOverrideMoves = new HashSet<>();
-                for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+
+                for (int i = 1; i <= state.getTotalPlayerCount(); i++) {    // Add all regular moves of other players to storage (definition of BRS)
                     if (i == state.getMe().number) continue;
                     legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
                 }
-                if (legalRegularMoves.isEmpty()) {
+                if (legalRegularMoves.isEmpty()) {  // If no regular moves exist, add all override moves of other players to storage instead
                     for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                         if (i == state.getMe().number) continue;
                         legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
                     }
                 }
             }
-        } else {
+        } else {    // the Min-Case is analogous and symmetric to Max-Case
             legalRegularMoves = new HashSet<>();
             legalOverrideMoves = new HashSet<>();
+
             for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                 if (i == state.getMe().number) continue;
                 legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
@@ -183,21 +194,24 @@ public class BRSNode {
             if (legalRegularMoves.isEmpty() && legalOverrideMoves.isEmpty()) {
                 this.isMaxNode = true;
                 legalRegularMoves = LegalMoves.getLegalRegularMoves(state, state.getMe().getPlayerNumber());
+
                 if (legalRegularMoves.isEmpty())
                     legalOverrideMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe().getPlayerNumber());
             }
         }
 
-        Set<? extends BuildMove> legalMoves = null;
+        // now assign regular moves or override moves to legalMoves since we are considering either one or the other
+        Set<? extends BuildMove> legalMoves;
         if (!legalRegularMoves.isEmpty()) legalMoves = legalRegularMoves;
         else if (!legalOverrideMoves.isEmpty()) legalMoves = legalOverrideMoves;
             // return null if no build moves are possible => first phase ends
         else return null;
 
+        // beamWidth is usually just the branching factor unless very few legal moves were found
         int beamWidth = Math.min(branchingFactor, legalMoves.size());
 
         // me
-        if (isMaxNode) {
+        if (isMaxNode) {    //  orders the best legal moves into a list (beam)
             BuildMove[] beam = new BuildMove[beamWidth];
             double[] values = new double[beamWidth];
             Arrays.fill(values, -Double.MAX_VALUE);
@@ -263,8 +277,15 @@ public class BRSNode {
 
     }
 
+    /**
+     * Evaluate the current game state depending on whether the game has reached the "override phase"
+     * Mobility is irrelevant in "override phase" since we run out of override stones before legal moves
+     * There are no bonus tiles in "override phase"
+     *
+     * @param type the type of move which led to this state (regular, override)
+     * @return heuristic value
+     */
     private double evaluateCurrentState(Move.Type type) {
-
         if (type == Move.Type.REGULAR) {
             return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe().number)
                     + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe().number)

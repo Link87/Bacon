@@ -26,7 +26,7 @@ public class BRSTest {
         Player me = Game.getGame().getCurrentState().getPlayerFromNumber(1);
         Game.getGame().getCurrentState().setMe(me);
 
-        BRSNode root = new BRSNode(8, 5, false);
+        BRSNode root = new BRSNode(4, 20, false);
         root.evaluateNode();
         Move bestMove = root.getBestMove();
 
