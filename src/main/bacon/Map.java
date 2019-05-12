@@ -42,7 +42,7 @@ public class Map {
         this.occupiedTiles = initOccupied;
         this.totalTiles = totalTiles;
 
-        this.expansionTiles = expansionTiles;
+        Map.expansionTiles = expansionTiles;
     }
 
     /**
@@ -78,7 +78,7 @@ public class Map {
         }
 
         //setting tile transition pointers to point to tiles in copyTiles
-        return new Map(copyTiles, this.occupiedTiles, this.totalTiles, this.expansionTiles);
+        return new Map(copyTiles, this.occupiedTiles, this.totalTiles, Map.expansionTiles);
     }
 
     /**
@@ -198,38 +198,39 @@ public class Map {
     }
 
     /**
-     * toString method
-     * @return a string representation of the this map
+     * Returns a new String representing the Map.
+     *
+     * @return a String representation of the this map
      */
     public String toString() {
-        String out = "";
+        StringBuilder builder = new StringBuilder();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 switch (getTileAt(x, y).getProperty()) {
                     case DEFAULT:
-                        if (getTileAt(x, y).getOwner() == null) out = out.concat("0 ");
-                        else out = out.concat(getTileAt(x, y).getOwner().number + " ");
+                        if (getTileAt(x, y).getOwner() == null) builder.append("0 ");
+                        else builder.append(getTileAt(x, y).getOwner().number).append(" ");
                         break;
                     case HOLE:
-                        out = out.concat("- ");
+                        builder.append("- ");
                         break;
                     case CHOICE:
-                        out = out.concat("c ");
+                        builder.append("c ");
                         break;
                     case INVERSION:
-                        out = out.concat("i ");
+                        builder.append("i ");
                         break;
                     case BONUS:
-                        out = out.concat("b ");
+                        builder.append("b ");
                         break;
                     case EXPANSION:
-                        out = out.concat("x ");
+                        builder.append("x ");
                         break;
                 }
             }
-            out = out.concat("\n");
+            builder.append("\n");
         }
-        return out;
+        return builder.toString();
     }
 
     /**
