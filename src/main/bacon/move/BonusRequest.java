@@ -22,7 +22,7 @@ public class BonusRequest {
         this(type, null);
     }
 
-    BonusRequest(Type type, Player other) {
+    private BonusRequest(Type type, Player other) {
         this.type = type;
         this.other = other;
     }
@@ -63,6 +63,24 @@ public class BonusRequest {
      */
     public static BonusRequest switchWith(Player other) {
         return new BonusRequest(Type.SWITCH_STONES, other);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (obj == null || obj.getClass() != this.getClass())
+            return false;
+
+        if (this.type == Type.SWITCH_STONES)
+            return ((BonusRequest) obj).type == Type.SWITCH_STONES && this.other.equals(((BonusRequest) obj).other);
+        return this.type == ((BonusRequest) obj).type;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * (31 + type.hashCode()) + ((other == null) ? 0 : other.hashCode());
     }
 
     /**
