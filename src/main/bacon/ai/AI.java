@@ -70,9 +70,14 @@ public class AI {
         long totalTimeNanos = Statistics.getStatistics().getElapsedNanos();
         IntSummaryStatistics stats = Statistics.getStatistics().getStateMeasurementResults();
 
-        LOGGER.log(Level.INFO, "Computing best move took {0} ms, {1} us avg per state.",
-                new Object[]{totalTimeNanos / 1000000.0, totalTimeNanos / (1000 * Statistics.getStatistics().getTotalStateCount())});
-        LOGGER.log(Level.INFO, "Computing times per leaf: avg {0} us, min {1} us, max {2} us, leaf time total {3} us .",
+        if (totalTimeNanos < 1000000000) {
+            LOGGER.log(Level.INFO, "Computing best move took {0} ms, {1} us avg per state.",
+                    new Object[]{totalTimeNanos / 1000000, totalTimeNanos / (1000 * Statistics.getStatistics().getTotalStateCount())});
+        } else {
+            LOGGER.log(Level.WARNING, "Computing best move took {0} s, {1} us avg per state!",
+                    new Object[]{totalTimeNanos / 1000000000.0, totalTimeNanos / (1000 * Statistics.getStatistics().getTotalStateCount())});
+        }
+        LOGGER.log(Level.INFO, "Computing times per leaf: avg {0} us, min {1} us, max {2} us, leaf time total {3} us.",
                 new Object[]{(int) (stats.getAverage() / 1000), stats.getMin() / 1000, stats.getMax() / 1000, stats.getSum() / 1000});
 
         return bestMove;

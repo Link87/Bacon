@@ -244,7 +244,7 @@ public class BRSNode {
 
         if (!legalRegularMoves.isEmpty()) return legalRegularMoves;
         else if (!legalOverrideMoves.isEmpty()) return legalOverrideMoves;
-        else return new HashSet<>();
+        else return Collections.emptySet();
     }
 
     /**
