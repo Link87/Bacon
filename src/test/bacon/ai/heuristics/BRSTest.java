@@ -26,7 +26,7 @@ public class BRSTest {
         Player me = Game.getGame().getCurrentState().getPlayerFromNumber(1);
         Game.getGame().getCurrentState().setMe(me);
 
-        BRSNode root = new BRSNode(0, 1, 1000, true, null);
+        BRSNode root = new BRSNode(0, 5, 5, true, null);
         root.evaluateNode();
         Move bestMove = root.getBestMove();
 
@@ -46,8 +46,8 @@ public class BRSTest {
         Player me = Game.getGame().getCurrentState().getPlayerFromNumber(1);
         Game.getGame().getCurrentState().setMe(me);
 
-        for(int i = 0; i < 30; i++) {
-            BRSNode root = new BRSNode(0, 1, 1000, true, null);
+        for(int i = 0; i < 10; i++) {
+            BRSNode root = new BRSNode(0, 5, 5, true, null);
             root.evaluateNode();
             Move bestMove = root.getBestMove();
 
@@ -80,5 +80,4 @@ public class BRSTest {
         }
         System.out.println("BombCount: " + me.getBombCount() + "OverrideCount: " + me.getOverrideStoneCount());
     }
-
 }

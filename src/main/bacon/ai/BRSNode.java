@@ -15,7 +15,7 @@ public class BRSNode {
     private final double STABILITY_SCALAR = 1;
     private final double CLUSTERING_SCALAR = 1;
     private final double MOBILITY_SCALAR = 1;
-    private final double BONUS_SCALAR = 1;
+    private final double BONUS_SCALAR = 100;
 
     private final int layer;
     private final int searchDepth;
