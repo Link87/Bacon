@@ -1,15 +1,16 @@
 package bacon.ai;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-public class Statistics {
+class Statistics {
 
     private static Statistics INSTANCE = new Statistics();
 
-    private List<Integer> stateCounts;
-    private long startTime;
+    private Map<Integer, Integer> stateCounts;
+    private long startTimeStamp;
+    private long stateTimeStamp;
+    private List<Integer> stateTimes;
+    private boolean inMeasuredState;
 
     /**
      * Initializes the stats. This deletes everything that was previously saved and starts the internal Timer.
@@ -19,12 +20,39 @@ public class Statistics {
     }
 
     /**
-     * Adds a state to the statistics. Call this once per state.
+     * Adds a state to the statistics. Call either this or <code>enterMeasuredState</code> once per state.
      *
      * @param layer the layer of the state
      */
-    public void enteredState(int layer) {
-        stateCounts.set(layer, stateCounts.get(layer) + 1);
+    void enterState(int layer) {
+        this.stateCounts.putIfAbsent(layer, 0);
+        this.stateCounts.put(layer, this.stateCounts.get(layer) + 1);
+    }
+
+    /**
+     * Adds a state to the statistics. Call either this or <code>enterState</code> once per state.
+     * This call starts an internal timer, that measures the computing time of the state. A call to
+     * <code>leaveMeasuredState</code> stopping the timer is obligatory.
+     *
+     * @param layer the layer of the state
+     * @throws IllegalStateException when still measuring a state
+     */
+    void enterMeasuredState(int layer) {
+        if (this.inMeasuredState) throw new IllegalStateException("Cannot enter another measured state.");
+        this.inMeasuredState = true;
+        enterState(layer);
+        this.stateTimeStamp = System.nanoTime();
+    }
+
+    /**
+     * Call this when calculations of a state are finished that was added by <code>enterMeasuredState</code>.
+     *
+     * @throws IllegalStateException when not measuring a state
+     */
+    void leaveMeasuredState() {
+        if (!this.inMeasuredState) throw new IllegalStateException("Cannot leave state.");
+        this.inMeasuredState = false;
+        this.stateTimes.add((int) (System.nanoTime() - this.stateTimeStamp));
     }
 
     /**
@@ -33,16 +61,16 @@ public class Statistics {
      * @return the nanoseconds that elapsed since timer start
      */
     long getElapsedNanos() {
-        return System.nanoTime() - startTime;
+        return System.nanoTime() - this.startTimeStamp;
     }
 
     /**
      * Returns the amount of states in each layer.
      *
-     * @return a list containing the state counts, where the index determines the layer
+     * @return a map containing the state counts, where <code>key</code> is the layer and <code>value</code> the count
      */
-    List<Integer> getStateCounts() {
-        return Collections.unmodifiableList(stateCounts);
+    Map<Integer, Integer> getStateCounts() {
+        return Collections.unmodifiableMap(this.stateCounts);
     }
 
     /**
@@ -51,7 +79,17 @@ public class Statistics {
      * @return the total state count
      */
     int getTotalStateCount() {
-        return stateCounts.stream().reduce(Integer::sum).orElse(0);
+        return this.stateCounts.values().stream().reduce(Integer::sum).orElse(0);
+    }
+
+    /**
+     * Returns the time statistics of all measured states.
+     *
+     * @return the measurement results
+     */
+    IntSummaryStatistics getStateMeasurementResults() {
+        return this.stateTimes.stream().collect(IntSummaryStatistics::new,
+                IntSummaryStatistics::accept, IntSummaryStatistics::combine);
     }
 
     /**
@@ -60,8 +98,8 @@ public class Statistics {
      * @return the leaf count
      */
     int getLeafCount() {
-        if (stateCounts.size() > 0)
-            return stateCounts.get(stateCounts.size() - 1);
+        if (this.stateCounts.size() > 0)
+            return this.stateCounts.get(this.stateCounts.size() - 1);
         else return 0;
     }
 
@@ -70,12 +108,14 @@ public class Statistics {
      *
      * @return the Statistics instance
      */
-    Statistics getStatistics() {
+    static Statistics getStatistics() {
         return INSTANCE;
     }
 
     private Statistics() {
-        this.stateCounts = new ArrayList<>();
-        this.startTime = System.nanoTime();
+        this.stateCounts = new HashMap<>();
+        this.stateTimes = new ArrayList<>();
+        this.startTimeStamp = System.nanoTime();
+        this.inMeasuredState = false;
     }
 }

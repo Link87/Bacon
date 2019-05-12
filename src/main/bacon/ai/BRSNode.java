@@ -51,8 +51,10 @@ public class BRSNode {
         if (!this.isMaxNode) this.value = Double.MAX_VALUE;
 
         if (beam == null) {
+            Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
         } else if (this.layer < this.searchDepth - 1) {
+            Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : beam) {
                 BRSNode childNode = new BRSNode(this.layer + 1, this.searchDepth, this.branchingFactor, !isMaxNode, move.getType());
                 move.doMove();
@@ -73,11 +75,13 @@ public class BRSNode {
             }
 
         } else {
+            Statistics.getStatistics().enterMeasuredState(this.layer);
             BuildMove leafMove = beam.get(0);
             leafMove.doMove();
             this.value = evaluateCurrentState(leafMove.getType());
             leafMove.undoMove();
             this.bestMove = leafMove;
+            Statistics.getStatistics().leaveMeasuredState();
         }
 
     }
