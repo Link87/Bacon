@@ -20,7 +20,6 @@ public class BRSNode {
     private final int layer;
     private final int searchDepth;
     private final int branchingFactor;
-    private List<BuildMove> beam;
     private BuildMove bestMove;
     private boolean isMaxNode;
     private GameState state;
@@ -30,6 +29,15 @@ public class BRSNode {
     private final Move.Type type;
     private double value;
 
+    /**
+     * Creates a new {@link BRSNode} instance from the given values.
+     *
+     * @param layer the layer of the node in the search tree
+     * @param searchDepth the maximum search depth
+     * @param branchingFactor the maximum branching factor
+     * @param isMaxNode <code>true</code> if this is a max node, <code>false</code>, if not
+     * @param type the type of the move that lead to this node
+     */
     public BRSNode(int layer, int searchDepth, int branchingFactor, boolean isMaxNode, Move.Type type) {
         this.layer = layer;
         this.searchDepth = searchDepth;
@@ -40,20 +48,33 @@ public class BRSNode {
         this.state = Game.getGame().getCurrentState();
     }
 
+    /**
+     * Returns the best move that can be made according to the heuristics and tree search. Only call after
+     * <code>evaluateNode</code> has been called.
+     *
+     * @return the best move to do
+     */
     public BuildMove getBestMove() {
         return bestMove;
     }
 
+    /**
+     * Evaluates this node using Best Reply Search. The results are saved in the fields of the instance.
+     * Determines child nodes and recursively executes this function, if depth limit is not reached and further valid
+     * moves can be done.
+     */
     public void evaluateNode() {
-        this.beam = computeBeam();
+        // do beam search to limit the branching factor
+        List<BuildMove> beam = computeBeam();
 
-        this.value = -Double.MAX_VALUE;
-        if (!this.isMaxNode) this.value = Double.MAX_VALUE;
+        this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE ;
 
         if (beam == null) {
+            // no further moves can be done => the first phase ends here
             Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
         } else if (this.layer < this.searchDepth - 1) {
+            // recurse if depth limit is not reached with next move
             Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : beam) {
                 BRSNode childNode = new BRSNode(this.layer + 1, this.searchDepth, this.branchingFactor, !isMaxNode, move.getType());
@@ -75,6 +96,7 @@ public class BRSNode {
             }
 
         } else {
+            // directly evaluate best child node when next layer is on depth limit
             Statistics.getStatistics().enterMeasuredState(this.layer);
             BuildMove leafMove = beam.get(0);
             leafMove.doMove();
@@ -94,58 +116,30 @@ public class BRSNode {
      */
     private List<BuildMove> computeBeam() {
 
-        Set<RegularMove> legalRegularMoves = null;
-        Set<OverrideMove> legalOverrideMoves = null;
+        Set<? extends BuildMove> legalMoves;
         if (isMaxNode) {
-            legalRegularMoves = LegalMoves.getLegalRegularMoves(state, state.getMe().getPlayerNumber());
-            if (legalRegularMoves.isEmpty())
-                legalOverrideMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe().getPlayerNumber());
-            if (legalRegularMoves.isEmpty() && legalOverrideMoves.isEmpty()) {
+            legalMoves = getMaxMoves();
+            if (legalMoves.isEmpty()) {
                 this.isMaxNode = false;
-                legalRegularMoves = new HashSet<>();
-                legalOverrideMoves = new HashSet<>();
-                for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-                    if (i == state.getMe().number) continue;
-                    legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
-                }
-                if (legalRegularMoves.isEmpty()) {
-                    for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-                        if (i == state.getMe().number) continue;
-                        legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
-                    }
-                }
+                legalMoves = getMinMoves();
             }
-        } else {
-            legalRegularMoves = new HashSet<>();
-            legalOverrideMoves = new HashSet<>();
-            for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-                if (i == state.getMe().number) continue;
-                legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
-            }
-            if (legalRegularMoves.isEmpty()) {
-                for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-                    if (i == state.getMe().number) continue;
-                    legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
-                }
-            }
-            if (legalRegularMoves.isEmpty() && legalOverrideMoves.isEmpty()) {
+        }
+        else {
+            legalMoves = getMinMoves();
+            if (legalMoves.isEmpty()) {
                 this.isMaxNode = true;
-                legalRegularMoves = LegalMoves.getLegalRegularMoves(state, state.getMe().getPlayerNumber());
-                if (legalRegularMoves.isEmpty())
-                    legalOverrideMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe().getPlayerNumber());
+                legalMoves = getMaxMoves();
             }
         }
 
-        Set<? extends BuildMove> legalMoves = null;
-        if (!legalRegularMoves.isEmpty()) legalMoves = legalRegularMoves;
-        else if (!legalOverrideMoves.isEmpty()) legalMoves = legalOverrideMoves;
-            // return null if no build moves are possible => first phase ends
-        else return null;
+        // return null if no build moves are possible => first phase ends
+        if (legalMoves.isEmpty())
+            return null;
 
         int beamWidth = Math.min(branchingFactor, legalMoves.size());
 
-        // me
         if (isMaxNode) {
+            // me
             BuildMove[] beam = new BuildMove[beamWidth];
             double[] values = new double[beamWidth];
             Arrays.fill(values, -Double.MAX_VALUE);
@@ -176,8 +170,8 @@ public class BRSNode {
 
             return Arrays.asList(beam);
         }
-        // TODO "all" other players (since we're doing BRS)
         else {
+            // "all" other players (since we're doing BRS)
             BuildMove[] worstMoves = new BuildMove[beamWidth];
             double[] values = new double[beamWidth];
             Arrays.fill(values, Double.MAX_VALUE);
@@ -212,6 +206,55 @@ public class BRSNode {
 
     }
 
+    /**
+     * Returns all legal {@link BuildMove}s the max player can do.
+     *
+     * @return a <code>Set</code> of {@link BuildMove}s the max player can do
+     */
+    private Set<? extends BuildMove> getMaxMoves() {
+        Set<? extends BuildMove> legalMoves;
+        legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe().getPlayerNumber());
+        if (legalMoves.isEmpty())
+            legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe().getPlayerNumber());
+
+        return legalMoves;
+    }
+
+    /**
+     * Returns all legal {@link BuildMove}s any min player can do.
+     *
+     * @return a <code>Set</code> of {@link BuildMove}s the min players can do
+     */
+    private Set<? extends BuildMove> getMinMoves() {
+        Set<RegularMove> legalRegularMoves;
+        Set<OverrideMove> legalOverrideMoves;
+
+        legalRegularMoves = new HashSet<>();
+        legalOverrideMoves = new HashSet<>();
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+            if (i == state.getMe().number) continue;
+            legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
+        }
+        if (legalRegularMoves.isEmpty()) {
+            for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+                if (i == state.getMe().number) continue;
+                legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
+            }
+        }
+
+        if (!legalRegularMoves.isEmpty()) return legalRegularMoves;
+        else if (!legalOverrideMoves.isEmpty()) return legalOverrideMoves;
+        else return new HashSet<>();
+    }
+
+    /**
+     * Evaluates the current game state. The heuristic to use is determined by the type of the move that lead
+     * to this state.
+     *
+     * @param type the type of the last executed move
+     * @return the evaluation value of the current game state
+     * @throws IllegalStateException when called with a move type, that is not <code>REGULAR</code> or <code>OVERRIDE</code>
+     */
     private double evaluateCurrentState(Move.Type type) {
 
         if (type == Move.Type.REGULAR) {
