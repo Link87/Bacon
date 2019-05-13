@@ -32,7 +32,6 @@ public class AI {
      *
      * @param timeout          the time the ai has for its computation
      * @param depth            the maximum search depth the ai is allowed to do
-     * @param prune            true if the tree should be pruned
      * @param currentGameState current  Game State
      * @return the next move
      */
