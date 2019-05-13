@@ -46,7 +46,7 @@ public class Maps {
             "6 0 0 <-> 9 1 1\n" +
             "7 14 4 <-> 7 0 0";
 
-    public static final String EXAMPLE_BRS = "3\n" +
+    public static final String EXAMPLE_BRS_UNCERTAIN = "3\n" +
             "0\r\n" +
             "0 2\n" +
             "15 15\n" +
@@ -68,7 +68,27 @@ public class Maps {
             "6 0 0 <-> 9 1 1\n" +
             "7 14 4 <-> 7 0 0";
 
-
+    public static final String EXAMPLE_BRS_BONUS = "3\n" +
+            "0\r\n" +
+            "0 2\n" +
+            "15 15\n" +
+            "- - - - - 0 0 0 0 0 - - - - -\n" +
+            "- - - - - 0 0 0 0 0 - - - - -\n" +
+            "- - - - - 0 0 0 0 0 - - - - -\n" +
+            "- - - - - 0 0 b 0 0 - - - - -\n" +
+            "- - - - - 0 0 b 0 0 - - - - -\r\n" +
+            "0 0 0 b 0 0 0 0 0 0 0 0 0 0 0\n" +
+            "0 0 0 0 0 0 1 2 3 0 0 0 b 0 0\n" +
+            "0 b 0 b 0 0 3 1 2 0 b 0 0 0 0\n" +
+            "0 0 0 0 0 0 2 3 1 0 0 0 0 0 0\r\n" +
+            "0 0 0 b 0 b 0 b 0 0 0 0 b 0 0\n" +
+            "- - - - - 0 0 x 0 0 - - - - -\n" +
+            "- - - - - 0 b x x 0 - - - - -\n" +
+            "- - - - - 0 0 x 0 0 - - - - -\n" +
+            "- - - - - 0 0 0 0 0 - - - - -\n" +
+            "- - - - - 0 0 0 0 0 - - - - -\n" +
+            "6 0 0 <-> 9 1 1\n" +
+            "7 14 4 <-> 7 0 0";
 
     public static final String EXAMPLE_STABILITY = "3\n" +
             "6\r\n" +
