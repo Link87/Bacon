@@ -26,7 +26,7 @@ public class BRSTest {
         Player me = Game.getGame().getCurrentState().getPlayerFromNumber(1);
         Game.getGame().getCurrentState().setMe(me);
 
-        BRSNode root = new BRSNode(0, 5, 5, true, null);
+        BRSNode root = new BRSNode(4, 20, false);
         root.evaluateNode();
         Move bestMove = root.getBestMove();
 
@@ -36,18 +36,17 @@ public class BRSTest {
         System.out.println(Game.getGame().getCurrentState().getMap().toString());
 
         assertTrue("BRS returns illegal move", bestMove.isLegal());
-
     }
 
     @Test
     public void bonusCapture() {
         //Does BRS try to capture bonus tiles ?
-        Game.getGame().readMap(Maps.EXAMPLE_BRS);
+        Game.getGame().readMap(Maps.EXAMPLE_BRS_BONUS);
         Player me = Game.getGame().getCurrentState().getPlayerFromNumber(1);
         Game.getGame().getCurrentState().setMe(me);
 
-        for(int i = 0; i < 10; i++) {
-            BRSNode root = new BRSNode(0, 5, 5, true, null);
+        for (int i = 0; i < 10; i++) {
+            BRSNode root = new BRSNode(6, 5, true);
             root.evaluateNode();
             Move bestMove = root.getBestMove();
 
@@ -55,10 +54,12 @@ public class BRSTest {
             System.out.println("Player 1 Best Move: " + "(" + bestMove.getX() + "," + bestMove.getY() + ")");
             assertTrue("BRS returns illegal move", bestMove.isLegal());
 
-            bestMove.doMove();
-            System.out.println(Game.getGame().getCurrentState().getMap().toString());
+            if (bestMove != null) {
+                bestMove.doMove();
+                System.out.println(Game.getGame().getCurrentState().getMap().toString());
+            }
 
-            for(int j = 2; j < 4; j++) {
+            for (int j = 2; j < 4; j++) {
                 Set<RegularMove> move = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), j);
                 int size = move.size();
                 int index = (int) (Math.random() * (size));
@@ -78,9 +79,9 @@ public class BRSTest {
                 System.out.println("Player " + j + " doMove: " + "(" + doMove.getX() + "," + doMove.getY() + ")");
                 doMove.doMove();
                 System.out.println(Game.getGame().getCurrentState().getMap().toString());
-
             }
         }
-        System.out.println("BombCount: " + me.getBombCount() + "OverrideCount: " + me.getOverrideStoneCount());
+        System.out.println("BombCount: " + me.getBombCount() + "; OverrideCount: " + me.getOverrideStoneCount());
     }
+
 }
