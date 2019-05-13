@@ -1,6 +1,7 @@
 package bacon.ai.heuristics;
 
 import bacon.Game;
+import bacon.GameState;
 import bacon.Maps;
 import bacon.move.OverrideMove;
 import bacon.move.RegularMove;
@@ -49,8 +50,16 @@ public class HeuristicsTest {
         Game.getGame().readMap(Maps.EXAMPLE);
 
         //Bombs
-        assertEquals("Bomb bonus heuristic error", 131.95, Heuristics.bonusBomb(Game.getGame().getCurrentState(), 1), 0.01);
+        assertEquals("Bomb bonus heuristic error", 1319.5, Heuristics.bonusBomb(Game.getGame().getCurrentState(), 1), 0.01);
         //Override stones
-        assertEquals("Override bonus heuristic error", 105.15, Heuristics.bonusOverride(Game.getGame().getCurrentState(), 1), 0.1);
+        assertEquals("Override bonus heuristic error", 1051.5, Heuristics.bonusOverride(Game.getGame().getCurrentState(), 1), 0.1);
+    }
+
+    @Test
+    public void bombingPhaseHeuristic() {
+        Game.getGame().readMap(Maps.EXAMPLE_BOMBINGPHASE);
+        GameState state =  Game.getGame().getCurrentState();
+        assertEquals("Bombing Phase heuristic error", 2.0,
+                Heuristics.bombingPhaseHeuristic(state, 1, state.getMap().getTileAt(7,7)), 0.01);
     }
 }

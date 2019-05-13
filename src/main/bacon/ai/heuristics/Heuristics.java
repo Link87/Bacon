@@ -162,7 +162,7 @@ public class Heuristics {
         int bombCount = state.getPlayerFromNumber(playerNr).getBombCount();
         int bombRadius = state.getBombRadius();
 
-        return 2 * (pow(2 * bombRadius + 1, 2)) * (pow(bombCount, 0.7));
+        return 20 * (pow(2 * bombRadius + 1, 2)) * (pow(bombCount, 0.7));
     }
 
     /**
@@ -177,7 +177,7 @@ public class Heuristics {
         double mapHeight = state.getMap().height;
         double mapWidth = state.getMap().width;
 
-        return 2 * sqrt(mapHeight * mapWidth) * (pow(overrideStoneCount, 0.7));
+        return 20 * sqrt(mapHeight * mapWidth) * (pow(overrideStoneCount, 0.7));
     }
 
     /**
@@ -203,11 +203,14 @@ public class Heuristics {
             rivalStoneCount[i] = state.getPlayerFromNumber(i + 1).getStoneCount();
         }
 
+        if (rivalBombCount[playerNr-1] == 0) throw new IllegalArgumentException  ("bombingPhaseHeuristic is a move heuristic; cannot make a move without bombs");
+
         for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
             if (i + 1 == move.getPlayer().number) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             } else {
-                rivalry[i] = (rivalBombCount[i] * (pow(2 * bombRadius + 1, 2))) / ((totalPlayer - 1) * (abs(rivalStoneCount[i] - playerStoneCount) + 1));
+                rivalry[i] = (rivalBombCount[playerNr-1] * (pow(2 * bombRadius + 1, 2))) /
+                        (abs(rivalStoneCount[i] - playerStoneCount) + rivalBombCount[playerNr-1] * pow(2 * bombRadius + 1, 2));
             }
         }
 
@@ -258,8 +261,7 @@ public class Heuristics {
             bombedStoneCount[i] = 0;
         }
 
-        double clusteringScaled = clusteringSum / (pow(2 * (2 * bombRadius + 1) - 1, 2)); // re-normalizes clustering factor such that
-        return clusteringScaled;                                            // it is independent of bomb radius
+        return clusteringSum;
     }
 
 }

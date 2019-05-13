@@ -13,16 +13,15 @@ public class Main {
         // Replace all present root logger handler with our own ConsoleHandler
         LOGGER.setLevel(Level.FINE);
         Arrays.stream(Logger.getLogger("").getHandlers()).forEach(value -> Logger.getLogger("").removeHandler(value));
-        ConsoleHandler handler = new ConsoleHandler();
+        DualConsoleHandler handler = new DualConsoleHandler(new PrivacyFormatter());
         handler.setLevel(Level.ALL);
-        handler.setFormatter(new PrivacyFormatter());
         LOGGER.addHandler(handler);
 
         Config config = null;
         try {
             config = Config.fromArgs(args);
             // print help if help should be displayed and exit
-            if (config == null) {
+            if (config.isHelpRequested()) {
                 printHelp();
                 System.exit(0);
             }
@@ -71,6 +70,30 @@ public class Main {
         @Override
         public String format(LogRecord record) {
             return record.getLevel() + ": " + formatMessage(record) + "\n";
+        }
+    }
+
+    /**
+     * A {@link Handler} that prints INFO and below to System.out and everything above to System.err.
+     */
+    public static class DualConsoleHandler extends StreamHandler {
+
+        private final ConsoleHandler stderrHandler = new ConsoleHandler();
+
+        DualConsoleHandler(Formatter fmt) {
+            super(System.out, fmt);
+            stderrHandler.setFormatter(fmt);
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getLevel().intValue() <= Level.INFO.intValue()) {
+                super.publish(record);
+                super.flush();
+            } else {
+                stderrHandler.publish(record);
+                stderrHandler.flush();
+            }
         }
     }
 
