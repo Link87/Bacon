@@ -186,7 +186,7 @@ public class Heuristics {
      * factor in the Bombing Phase
      *
      * @param move BombMove to rate
-     * @return              a real number as clustering heuristics (the only heuristics that matters in Bombing Phase)
+     * @return a real number as clustering heuristics (the only heuristics that matters in Bombing Phase)
      */
     public static double bombingPhaseHeuristic(GameState state, BombMove move) {
         int playerStoneCount = move.getPlayer().getStoneCount();
@@ -203,14 +203,15 @@ public class Heuristics {
             rivalStoneCount[i] = state.getPlayerFromNumber(i + 1).getStoneCount();
         }
 
-        if (rivalBombCount[playerNr-1] == 0) throw new IllegalArgumentException  ("bombingPhaseHeuristic is a move heuristic; cannot make a move without bombs");
+        assert rivalBombCount[move.getPlayer().number - 1] > 0 :
+                "bombingPhaseHeuristic is a move heuristic: cannot make a move without bombs";
 
         for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
             if (i + 1 == move.getPlayer().number) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             } else {
-                rivalry[i] = (rivalBombCount[playerNr-1] * (pow(2 * bombRadius + 1, 2))) /
-                        (abs(rivalStoneCount[i] - playerStoneCount) + rivalBombCount[playerNr-1] * pow(2 * bombRadius + 1, 2));
+                rivalry[i] = (rivalBombCount[move.getPlayer().number - 1] * (pow(2 * bombRadius + 1, 2))) /
+                        (abs(rivalStoneCount[i] - playerStoneCount) + rivalBombCount[move.getPlayer().number - 1] * pow(2 * bombRadius + 1, 2));
             }
         }
 

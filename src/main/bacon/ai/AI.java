@@ -32,11 +32,11 @@ public class AI {
      *
      * @param timeout          the time the ai has for its computation
      * @param depth            the maximum search depth the ai is allowed to do
-     * @param prune            true if the tree should be pruned
-     * @param currentGameState current  Game State
+     * @param enablePruning    true if the tree should be pruned
+     * @param currentGameState current Game State
      * @return the next move
      */
-    public Move requestMove(int timeout, int depth, GameState currentGameState) {
+    public Move requestMove(int timeout, int depth, boolean enablePruning, GameState currentGameState) {
 
         Statistics.getStatistics().init();
 
@@ -45,7 +45,6 @@ public class AI {
             BRSNode root = new BRSNode(0, depth, BRANCHING_FACTOR, true, null);
             root.evaluateNode();
             bestMove = root.getBestMove();
-
         } else {
             Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe().number);
             double evalValue;

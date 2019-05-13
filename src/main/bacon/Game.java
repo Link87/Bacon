@@ -85,7 +85,7 @@ public class Game {
 
             if (msg.getType() == Message.Type.MOVE_REQUEST) {
                 var buffer = ByteBuffer.wrap(msg.getBinaryContent());
-                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), cfg.shouldPrune(), this.getCurrentState());
+                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), cfg.isPruningEnabled(), this.getCurrentState());
                 connection.sendMessage(new Message(Message.Type.MOVE_RESPONSE, move.encodeBinary()));
                 // Manual gc is usually bad practice, but we have lots of spare time after here
                 // TODO maybe skip GC when we directly have a second turn

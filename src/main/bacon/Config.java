@@ -51,7 +51,7 @@ public class Config {
      *
      * @return <code>true</code> if pruning should be used, <code>false</code> otherwise
      */
-    public boolean shouldPrune() {
+    public boolean isPruningEnabled() {
         return !noPrune;
     }
 

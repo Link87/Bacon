@@ -47,16 +47,16 @@ public class ConfigTest {
         assertNotNull(valid);
         assertEquals("localhost", valid.getHost());
         assertEquals(51312, valid.getPort());
-        assertTrue(valid.shouldPrune());
+        assertTrue(valid.isPruningEnabled());
 
         var valid2 = Config.fromArgs(new String[]{"-s", "localhost", "-p", "51312", "--no-prune"});
         assertNotNull(valid2);
         assertEquals("localhost", valid2.getHost());
         assertEquals(51312, valid2.getPort());
-        assertFalse(valid2.shouldPrune());
+        assertFalse(valid2.isPruningEnabled());
 
         var help = Config.fromArgs(new String[]{"--help"});
-        assertTrue(help.shouldPrune());
+        assertTrue(help.isPruningEnabled());
 
     }
 }

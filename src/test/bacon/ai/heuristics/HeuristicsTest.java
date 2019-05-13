@@ -1,8 +1,11 @@
 package bacon.ai.heuristics;
 
 import bacon.Game;
+import bacon.GamePhase;
 import bacon.GameState;
 import bacon.Maps;
+import bacon.move.BombMove;
+import bacon.move.MoveFactory;
 import bacon.move.OverrideMove;
 import bacon.move.RegularMove;
 import org.junit.Ignore;
@@ -59,7 +62,8 @@ public class HeuristicsTest {
     public void bombingPhaseHeuristic() {
         Game.getGame().readMap(Maps.EXAMPLE_BOMBINGPHASE);
         GameState state =  Game.getGame().getCurrentState();
+        state.setGamePhase(GamePhase.PHASE_TWO);
         assertEquals("Bombing Phase heuristic error", 2.0,
-                Heuristics.bombingPhaseHeuristic(state, 1, state.getMap().getTileAt(7,7)), 0.01);
+                Heuristics.bombingPhaseHeuristic(state, (BombMove) MoveFactory.createMove(state, state.getPlayerFromNumber(1), 7, 7)), 0.01);
     }
 }
