@@ -88,18 +88,21 @@ public class BRSNode {
      * moves can be done.
      */
     public void evaluateNode() {
-        // do beam search to limit the branching factor
+        // computes the best moves and orders them in a list as the beam for the beam search
         List<BuildMove> beam = computeBeam();
 
+        // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
         this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE ;
 
         // no move is available, return value of current game state directly
         if (beam == null) {
-            // no further moves can be done => the first phase ends here
             Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
-        } else if (this.layer < this.searchDepth - 1) {
-            // recurse if depth limit is not reached with next move
+
+        }
+
+        // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
+        else if (this.layer < this.searchDepth - 1) {
             Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : beam) {
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta);
@@ -131,8 +134,10 @@ public class BRSNode {
                 }
             }
 
-        } else {
-            // directly evaluate best child node when next layer is on depth limit
+        }
+
+        // in this case a node is one layer above leaf nodes, i.e. we only need to return the value of the first beam entry
+        else {
             Statistics.getStatistics().enterMeasuredState(this.layer);
             BuildMove leafMove = beam.get(0);
             leafMove.doMove();
@@ -146,6 +151,7 @@ public class BRSNode {
             } else {
                 this.beta = Math.min(this.beta, this.value);
             }
+            Statistics.getStatistics().leaveMeasuredState();
         }
 
     }
@@ -158,6 +164,7 @@ public class BRSNode {
      */
     private List<BuildMove> computeBeam() {
 
+        // saves legal moves temporary storage
         Set<? extends BuildMove> legalMoves;
         if (isMaxNode) {
             legalMoves = getMaxMoves();
@@ -256,9 +263,10 @@ public class BRSNode {
      * @return a <code>Set</code> of {@link BuildMove}s the max player can do
      */
     private Set<? extends BuildMove> getMaxMoves() {
+        // Assign either regular moves or override moves to legalMoves since we are considering either one or the other
         Set<? extends BuildMove> legalMoves;
         legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe().getPlayerNumber());
-        if (legalMoves.isEmpty())
+        if (legalMoves.isEmpty()) // regular moves are preferred, only if the search turns up empty do we consider override moves
             legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe().getPlayerNumber());
 
         return legalMoves;
@@ -275,17 +283,18 @@ public class BRSNode {
 
         legalRegularMoves = new HashSet<>();
         legalOverrideMoves = new HashSet<>();
-        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) { // Add all regular moves of other players to storage (definition of BRS)
             if (i == state.getMe().number) continue;
             legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
         }
-        if (legalRegularMoves.isEmpty()) {
+        if (legalRegularMoves.isEmpty()) { // If no regular moves exist, add all override moves of other players to storage instead
             for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                 if (i == state.getMe().number) continue;
                 legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
             }
         }
 
+        // Return either regular moves or override moves since we are considering either one or the other
         if (!legalRegularMoves.isEmpty()) return legalRegularMoves;
         else if (!legalOverrideMoves.isEmpty()) return legalOverrideMoves;
         else return Collections.emptySet();
