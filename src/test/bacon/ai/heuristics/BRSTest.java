@@ -71,8 +71,11 @@ public class BRSTest {
                     }
                     index--;
                 }
-
-                System.out.println("Player" + j + "doMove: " + "(" + doMove.getX() + "," + doMove.getY() + ")");
+                if(doMove==null){
+                    System.out.println("Player " + j +" could not make a regular Move so we skip him.");
+                    continue;
+                }
+                System.out.println("Player " + j + " doMove: " + "(" + doMove.getX() + "," + doMove.getY() + ")");
                 doMove.doMove();
                 System.out.println(Game.getGame().getCurrentState().getMap().toString());
 
