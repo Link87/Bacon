@@ -1,7 +1,9 @@
 package bacon;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * A Player class which contains player data and performs player actions.
@@ -40,7 +42,7 @@ public class Player {
      *
      * @return a shallow copy
      */
-    public Player shallowCopy() {
+    Player shallowCopy() {
         Player copy = new Player(this.number, this.overrideStoneCount, this.bombCount);
         copy.disqualified = this.disqualified;
         return copy;
@@ -154,8 +156,17 @@ public class Player {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Player)
-            return this.number == ((Player) obj).number;
-        else return false;
+        if (obj == this)
+            return true;
+
+        if (obj == null || obj.getClass() != this.getClass())
+            return false;
+
+        return this.number == ((Player) obj).number;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.number;
     }
 }

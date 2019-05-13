@@ -158,6 +158,18 @@ public class RegularMove extends BuildMove {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        // use equals implementation in Move
+        return super.equals(obj) && this.request.equals(((RegularMove) obj).request);
+    }
+
+    @Override
+    public int hashCode() {
+        // use hashCode implementation in Move
+        return super.hashCode() + 8387 * this.request.hashCode();
+    }
+
+    @Override
     public byte[] encodeBinary() {
         var data = new byte[5];
         ByteBuffer.wrap(data)

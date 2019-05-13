@@ -91,6 +91,28 @@ public abstract class Move {
 
     public abstract void undoMove();
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (obj == null || this.getClass() != obj.getClass())
+            return false;
+
+        Move other = (Move) obj;
+        return this.xPos == other.xPos && this.yPos == other.yPos &&
+                this.type == other.type && this.player.equals(other.player);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = prime * (this.xPos * 50 + this.yPos);
+        result += prime * result + this.type.hashCode();
+        result += prime * result + this.player.hashCode();
+        return result;
+    }
+
     /**
      * An enum for the different types of moves.
      */
