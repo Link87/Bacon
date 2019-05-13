@@ -55,9 +55,10 @@ public class Main {
      */
     private static void printHelp() {
         String nl = System.getProperty("line.separator");
-        String helpInfo = "usage: bacon [--help] [-s | --server <server> -p | --port <port>]" + nl +
+        String helpInfo = "usage: bacon [--help] [-s | --server <server> -p | --port <port>] [--no-prune]" + nl +
                 "-s, --server <host>\t server to connect with (mandatory)" + nl +
-                "-p, --port <port>  \t port to connect to (mandatory)" + nl +
+                "-p, --port <port>\t port to connect to (mandatory)" + nl +
+                "--no-prune        \t disable pruning (optional)" + nl +
                 "    --help         \t displays this help text" + nl;
 
         System.out.println(helpInfo);
