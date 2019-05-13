@@ -43,8 +43,7 @@ public class AI {
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            //TODO Command line switch interface de/activation of alpha-beta pruning
-            BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, true);
+            BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, enablePruning);
             root.evaluateNode();
             bestMove = root.getBestMove();
         } else {
