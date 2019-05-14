@@ -15,6 +15,8 @@ public abstract class Move {
     int yPos;
     Type type;
 
+    double value;
+
     /**
      * Creates a new move from the given values.
      *
@@ -72,6 +74,24 @@ public abstract class Move {
 
     public Type getType() {
         return type;
+    }
+
+    /**
+     * Returns the evaluation value of this move.
+     *
+     * @return the evaluation value
+     */
+    public double getValue() {
+        return value;
+    }
+
+    /**
+     * Sets the evaluation value of this move.
+     *
+     * @param value the evaluation value
+     */
+    public void setValue(double value) {
+        this.value = value;
     }
 
     /**

@@ -20,7 +20,6 @@ public class BRSNode {
     private final int layer;
     private static int searchDepth;
     private static int branchingFactor;
-    private List<BuildMove> beam;
     private BuildMove bestMove;
     private boolean isMaxNode;
     private GameState state;
@@ -102,7 +101,7 @@ public class BRSNode {
         }
 
         // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
-        else if (this.layer < this.searchDepth - 1) {
+        else if (this.layer < searchDepth - 1) {
             Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : beam) {
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta);
@@ -190,36 +189,26 @@ public class BRSNode {
 
         // me
         if (isMaxNode) {    //  orders the best legal moves into a list (beam)
-            BuildMove[] beam = new BuildMove[beamWidth];
-            double[] values = new double[beamWidth];
-            Arrays.fill(values, -Double.MAX_VALUE);
+            PriorityQueue<BuildMove> minHeap = new PriorityQueue<>(beamWidth, Comparator.comparing(Move::getValue));
 
-            // TODO: Use PriorityQueue here instead of custom made insertion sort algorithm
             // check if tile belongs to the n best moves (until now)
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
                 move.doMove();
-                double eval = evaluateCurrentState(move.getType());
+                move.setValue(evaluateCurrentState(move.getType()));
                 move.undoMove();
 
-                // find position to insert into
-                int pos = beamWidth - 1;
-                while (pos >= 0 && eval > values[pos]) pos--;
-
-                // move all other elements one down, discard the last
-                for (int i = beamWidth - 2; i > pos; i--) {
-                    values[i + 1] = values[i];
-                    beam[i + 1] = beam[i];
-                }
-
-                // insert the new move, if applicable
-                if (pos + 1 < beamWidth) {
-                    values[pos + 1] = eval;
-                    beam[pos + 1] = move;
+                if (minHeap.size() < beamWidth)
+                    // insert move if not reached beam width
+                    minHeap.add(move);
+                else if (minHeap.peek() != null && minHeap.peek().getValue() < move.getValue()) {
+                    // otherwise, if new move ist better, replace first (worst) move with new move
+                    minHeap.remove();
+                    minHeap.add(move);
                 }
             }
 
-            return Arrays.asList(beam);
+            return new ArrayList<>(minHeap);
         }
         else {
             // "all" other players (since we're doing BRS)
