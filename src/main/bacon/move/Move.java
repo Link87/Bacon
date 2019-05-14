@@ -15,7 +15,7 @@ public abstract class Move {
     int yPos;
     Type type;
 
-    double value;
+    private double value;
 
     /**
      * Creates a new move from the given values.

@@ -139,9 +139,7 @@ public class BRSNode {
         else {
             Statistics.getStatistics().enterMeasuredState(this.layer);
             BuildMove leafMove = beam.get(0);
-            leafMove.doMove();
-            this.value = evaluateCurrentState(leafMove.getType());
-            leafMove.undoMove();
+            this.value = leafMove.getValue();
             this.bestMove = leafMove;
 
             // updates the value of alpha and beta
