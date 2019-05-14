@@ -192,7 +192,6 @@ public class BRSNode {
             PriorityQueue<BuildMove> minHeap = new PriorityQueue<>(beamWidth, Comparator.comparing(Move::getValue));
 
             // check if tile belongs to the n best moves (until now)
-            // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
                 move.doMove();
                 move.setValue(evaluateCurrentState(move.getType()));
@@ -212,36 +211,26 @@ public class BRSNode {
         }
         else {
             // "all" other players (since we're doing BRS)
-            BuildMove[] worstMoves = new BuildMove[beamWidth];
-            double[] values = new double[beamWidth];
-            Arrays.fill(values, Double.MAX_VALUE);
+            PriorityQueue<BuildMove> maxHeap = new PriorityQueue<>(beamWidth,
+                    Comparator.comparing(Move::getValue).reversed());
 
             // check if tile belongs to the n best moves (until now)
-            // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
                 move.doMove();
-                double eval = evaluateCurrentState(move.getType());
+                move.setValue(evaluateCurrentState(move.getType()));
                 move.undoMove();
 
-                // find position to insert into
-                int pos = beamWidth - 1;
-                while (pos >= 0 && eval < values[pos]) pos--;
-
-                // move all other elements one down, discard the last
-                for (int i = beamWidth - 2; i > pos; i--) {
-                    values[i + 1] = values[i];
-                    worstMoves[i + 1] = worstMoves[i];
+                if (maxHeap.size() < beamWidth)
+                    // insert move if not reached beam width
+                    maxHeap.add(move);
+                else if (maxHeap.peek() != null && maxHeap.peek().getValue() > move.getValue()) {
+                    // otherwise, if new move ist worse, replace first (better) move with new move
+                    maxHeap.remove();
+                    maxHeap.add(move);
                 }
-
-                // insert the new move, if applicable
-                if (pos + 1 < beamWidth) {
-                    values[pos + 1] = eval;
-                    worstMoves[pos + 1] = move;
-                }
-
             }
 
-            return Arrays.asList(worstMoves);
+            return new ArrayList<>(maxHeap);
         }
 
     }
