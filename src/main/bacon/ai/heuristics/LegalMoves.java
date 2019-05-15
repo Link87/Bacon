@@ -3,6 +3,7 @@ package bacon.ai.heuristics;
 import bacon.*;
 import bacon.move.*;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -27,6 +28,9 @@ public class LegalMoves {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
+
+        if (state.getPlayerFromNumber(playerNr).isDisqualified())
+            return Collections.emptySet();
 
         Set<RegularMove> legalMoves = new HashSet<>();
         Player player = state.getPlayerFromNumber(playerNr);
@@ -90,6 +94,9 @@ public class LegalMoves {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
 
+        if (state.getPlayerFromNumber(playerNr).isDisqualified())
+            return Collections.emptySet();
+
         Set<OverrideMove> legalMoves = new HashSet<>();
         Player player = state.getPlayerFromNumber(playerNr);
         if(player.getOverrideStoneCount()<=0) return legalMoves;
@@ -141,6 +148,9 @@ public class LegalMoves {
         if (state.getGamePhase() != GamePhase.PHASE_TWO) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
+
+        if (state.getPlayerFromNumber(playerNo).isDisqualified())
+            return Collections.emptySet();
 
         Set<BombMove> legalMoves= new HashSet<>();
         for (int x = 0; x < state.getMap().width; x++) {
