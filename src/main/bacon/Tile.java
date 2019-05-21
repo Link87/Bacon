@@ -1,7 +1,7 @@
 package bacon;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A tile on the map. A Tile may have a special {@link Property}.
@@ -15,18 +15,17 @@ public class Tile {
      * Neighbouring tiles in each direction. May also contains extraneous transitions.
      * The direction is defined by the array index, as defined in {@link Direction}.
      * <p>
-     * If no transition is possible in a given direction, the WeakReferences point to <code>null</code>.
-     * The WeakReference objects itself are never null.
+     * If no transition is possible in a given direction, the value is set to <code>null</code>.
      */
-    private final ArrayList<WeakReference<Tile>> transitions;
+    private final Tile[] transitions;
 
     /**
      * Direction in which the according transition arrives at the other tile.
      * The direction is defined by the array index, as defined in {@link Direction}.
      * <p>
-     * If no transition is possible in a given direction, the array element is set to  <code>null</code>.
+     * If no transition is possible in a given direction, the array element is set to <code>-1</code>.
      */
-    private final Direction[] arrivals;
+    private final int[] arrivals;
 
     private WeakReference<Player> owner;
     private Property property;
@@ -51,10 +50,9 @@ public class Tile {
         this.x = x;
         this.y = y;
 
-        this.transitions = new ArrayList<>(Direction.values().length);
-        for (int i = 0; i < Direction.values().length; i++)
-            this.transitions.add(new WeakReference<>(null));
-        this.arrivals = new Direction[Direction.values().length];
+        this.transitions = new Tile[Direction.values().length];
+        this.arrivals = new int[Direction.values().length];
+        Arrays.fill(this.arrivals, Direction.NO_DIRECTION_NO);
     }
 
     /**
@@ -91,9 +89,9 @@ public class Tile {
      * @param direction Direction in which the transition is applied
      * @param arrival   Direction in which the transition arrives at the other tile
      */
-    void setTransition(Tile other, Direction direction, Direction arrival) {
-        this.transitions.set(direction.ordinal(), new WeakReference<>(other));
-        this.arrivals[direction.ordinal()] = arrival;
+    void setTransition(Tile other, int direction, int arrival) {
+        this.transitions[direction] = other;
+        this.arrivals[direction] = arrival;
     }
 
 
@@ -106,17 +104,17 @@ public class Tile {
         setOwner(null);
 
         //remove transition from neighbors to bombed tile
-        for (Direction direction : Direction.values()) {
+        for (int direction = 0; direction < Direction.values().length; direction++) {
             Tile neighbor = this.getTransition(direction);
             if (neighbor == null) continue;
-            for (Direction neighborDirection : Direction.values()) {
+            for (int neighborDirection = 0; neighborDirection < Direction.values().length; neighborDirection++) {
                 Tile t = neighbor.getTransition(neighborDirection);
-                if (t == this) neighbor.setTransition(null, neighborDirection, null);
+                if (t == this) neighbor.setTransition(null, neighborDirection, Direction.NO_DIRECTION_NO);
             }
         }
         //remove transitions from bombed tile to neighbors
-        for (Direction direction : Direction.values()) {
-            this.setTransition(null, direction, null);
+        for (int direction = 0; direction < Direction.values().length; direction++) {
+            this.setTransition(null, direction, Direction.NO_DIRECTION_NO);
         }
 
     }
@@ -128,8 +126,8 @@ public class Tile {
      * @param direction {@link Direction} in which the transition is applied
      * @return the Tile the transition points to or <code>null</code> if no transition is present
      */
-    public Tile getTransition(Direction direction) {
-        return this.transitions.get(direction.ordinal()).get();
+    public Tile getTransition(int direction) {
+        return this.transitions[direction];
     }
 
     /**
@@ -138,8 +136,8 @@ public class Tile {
      * @param direction {@link Direction} in which the transition starts on this tile
      * @return the arriving direction or <code>null</code> if no transition is present in the given direction
      */
-    public Direction getArrivalDirection(Direction direction) {
-        return this.arrivals[direction.ordinal()];
+    public int getArrivalDirection(int direction) {
+        return this.arrivals[direction];
     }
 
     /**

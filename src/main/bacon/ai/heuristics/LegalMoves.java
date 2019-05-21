@@ -39,9 +39,9 @@ public class LegalMoves {
         while (stoneIterator.hasNext()) { // iterates over all of the player's stones
             Tile tile = stoneIterator.next();
 
-            for (Direction direction : Direction.values()) {
+            for (int direction = 0; direction < Direction.values().length; direction++) {
                 int steps = 0; //counts steps from our own stone currently under consideration
-                var searchDirection = direction;
+                int searchDirection = direction;
                 Tile last = tile;
 
                 while (true) {
@@ -50,8 +50,8 @@ public class LegalMoves {
                         break;
                     else {
                         // determine new search direction, is opposite to arrival direction
-                        Direction helper = searchDirection;
-                        searchDirection = last.getArrivalDirection(searchDirection).opposite();
+                        int helper = searchDirection;
+                        searchDirection = Direction.oppositeOf(last.getArrivalDirection(searchDirection));
                         last = last.getTransition(helper);
 
                         if (last.getOwner() == player) { // we can stop searching if we find a tile occupied by the same player
@@ -73,7 +73,8 @@ public class LegalMoves {
                         }
                     }
 
-                    if (last != last.getTransition(searchDirection)) steps++; // increment step counter only if last isn't self-neighboring
+                    if (last != last.getTransition(searchDirection))
+                        steps++; // increment step counter only if last isn't self-neighboring
                 }
             }
         }
@@ -105,8 +106,8 @@ public class LegalMoves {
         while (stoneIterator.hasNext()) { // iterates over all of the player's stones
             Tile ogTile = stoneIterator.next();
 
-            for (Direction ogDirection : Direction.values()) {
-                Direction searchDirection = ogDirection;
+            for (int ogDirection = 0; ogDirection < Direction.values().length; ogDirection++) {
+                int searchDirection = ogDirection;
                 Tile last = ogTile;
 
                 while (true) {
@@ -116,15 +117,15 @@ public class LegalMoves {
                         //next is hole or unowned
                         break;
                     }
-                    if(next != ogTile.getTransition(ogDirection) && next != ogTile){
+                    if (next != ogTile.getTransition(ogDirection) && next != ogTile) {
                         //next is not right next to og in search direction or og
                         legalMoves.add((OverrideMove) MoveFactory.createMove(state,player,next.x,next.y));
                     }
                     if(next.getOwner()==player){
                         break;
                     }
-                    Direction oldDirection = searchDirection;
-                    searchDirection = last.getArrivalDirection(searchDirection).opposite();
+                    int oldDirection = searchDirection;
+                    searchDirection = Direction.oppositeOf(last.getArrivalDirection(searchDirection));
                     last = last.getTransition(oldDirection);
                 }
             }

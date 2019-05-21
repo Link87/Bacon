@@ -1,6 +1,5 @@
 package bacon;
 
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -66,7 +65,7 @@ public class Map {
                 Tile original = this.getTileAt(x, y);
 
                 Tile currentTile = copyTiles[x][y];
-                for (Direction direction : Direction.values()) {
+                for (int direction = 0; direction < Direction.values().length; direction++) {
                     if (original.getTransition(direction) != null) {
                         int xOfTrans = original.getTransition(direction).x;
                         int yOfTrans = original.getTransition(direction).y;
@@ -89,7 +88,7 @@ public class Map {
      * @param tile2      Second Tile of the transition
      * @param direction2 Direction in which the transition applies on the second tile
      */
-    private void addTransition(Tile tile1, Direction direction1, Tile tile2, Direction direction2) {
+    private void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
         tile1.setTransition(tile2, direction1, direction2);
         tile2.setTransition(tile1, direction2, direction1);
     }
@@ -140,7 +139,6 @@ public class Map {
                     tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
                     totalCount--;
                 }
-
             }
         }
 
@@ -152,31 +150,31 @@ public class Map {
                 }
                 if (y != 0) {
                     if (tiles[x][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP, Direction.DOWN);
+                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP.id, Direction.UP.opposite().id);
                     }
                     if (x != 0 && tiles[x - 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT, Direction.DOWN_RIGHT);
+                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT.id, Direction.UP_LEFT.opposite().id);
                     }
                     if (x != width - 1 && tiles[x + 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT, Direction.DOWN_LEFT);
+                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT.id, Direction.UP_RIGHT.opposite().id);
                     }
                 }
                 if (y != height - 1) {
                     if (tiles[x][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN, Direction.UP);
+                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN.id, Direction.DOWN.opposite().id);
                     }
                     if (x != 0 && tiles[x - 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT, Direction.UP_RIGHT);
+                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT.id, Direction.DOWN_LEFT.opposite().id);
                     }
                     if (x != width - 1 && tiles[x + 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT, Direction.UP_LEFT);
+                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT.id, Direction.DOWN_RIGHT.opposite().id);
                     }
                 }
                 if (x != width - 1 && tiles[x + 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT, Direction.LEFT);
+                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT.id, Direction.RIGHT.opposite().id);
                 }
                 if (x != 0 && tiles[x - 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT, Direction.RIGHT);
+                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT.id, Direction.LEFT.opposite().id);
                 }
 
             }
@@ -188,9 +186,9 @@ public class Map {
         for (int l = height; l < lines.length; l++) {
             String[] elements = lines[l].split(" ");
             map.addTransition(tiles[Integer.parseInt(elements[0])][Integer.parseInt(elements[1])],
-                    Direction.values()[Integer.parseInt(elements[2])],
+                    Integer.parseInt(elements[2]),
                     tiles[Integer.parseInt(elements[4])][Integer.parseInt(elements[5])],
-                    Direction.values()[Integer.parseInt(elements[6])]
+                    Integer.parseInt(elements[6])
             );
         }
 

@@ -16,6 +16,17 @@ public class DirectionTest {
         assertEquals(Direction.UP_LEFT, Direction.DOWN_RIGHT.opposite());
         assertEquals(Direction.LEFT, Direction.RIGHT.opposite());
         assertEquals(Direction.DOWN_LEFT, Direction.UP_RIGHT.opposite());
+    }
 
+    @Test
+    public void oppositeOf() {
+        assertEquals(Direction.DOWN.id, Direction.oppositeOf(Direction.UP.id));
+        assertEquals(Direction.DOWN_RIGHT.id, Direction.oppositeOf(Direction.UP_LEFT.id));
+        assertEquals(Direction.RIGHT.id, Direction.oppositeOf(Direction.LEFT.id));
+        assertEquals(Direction.UP_RIGHT.id, Direction.oppositeOf(Direction.DOWN_LEFT.id));
+        assertEquals(Direction.UP.id, Direction.oppositeOf(Direction.DOWN.id));
+        assertEquals(Direction.UP_LEFT.id, Direction.oppositeOf(Direction.DOWN_RIGHT.id));
+        assertEquals(Direction.LEFT.id, Direction.oppositeOf(Direction.RIGHT.id));
+        assertEquals(Direction.DOWN_LEFT.id, Direction.oppositeOf(Direction.UP_RIGHT.id));
     }
 }

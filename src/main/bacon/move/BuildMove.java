@@ -4,6 +4,7 @@ import bacon.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class BuildMove extends Move {
@@ -39,10 +40,10 @@ public class BuildMove extends Move {
         // farthest reachable tile in each direction
         Tile[] surrounding = new Tile[Direction.values().length];
         // direction in which to walk for each starting direction
-        Direction[] searchDirections = new Direction[Direction.values().length];
+        int[] searchDirections = new int[Direction.values().length];
         for (int i = 0; i < surrounding.length; i++) {
             surrounding[i] = tile;
-            searchDirections[i] = Direction.values()[i];
+            searchDirections[i] = i;
         }
 
         // Going radially outward in 8 straight lines, one step for each outer for-loop cycle, beginning with the same center tile
@@ -54,10 +55,10 @@ public class BuildMove extends Move {
 
             // iterating over directions
             for (int i = 0; i < surrounding.length; i++) {
-                var direction = searchDirections[i];
+                int direction = searchDirections[i];
 
                 if (surrounding[i] != null && surrounding[i].getTransition(direction) != null && surrounding[i].getTransition(direction) != tile) { // If the next tile isn't
-                    searchDirections[i] = surrounding[i].getArrivalDirection(direction).opposite();        // a hole or the origin tile, update direction
+                    searchDirections[i] = Direction.oppositeOf(surrounding[i].getArrivalDirection(direction));        // a hole or the origin tile, update direction
                     surrounding[i] = surrounding[i].getTransition(direction);                   // increment the farthest tile in this direction.
                     if (this.player.equals(surrounding[i].getOwner()) && steps > 1)
                         return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
@@ -110,10 +111,10 @@ public class BuildMove extends Move {
 
         Set<Tile> turnOver = new HashSet<>();
 
-        for (Direction direction : Direction.values()) {
-            var path = new ArrayList<Tile>();   // path in the given direction
+        for (int direction = 0; direction < Direction.values().length; direction++) {
+            List<Tile> path = new ArrayList<>();   // path in the given direction
             Tile last = originTile;                   // last tile of the path
-            var searchDirection = direction;    // the direction we're searching in
+            int searchDirection = direction;    // the direction we're searching in
 
 
             while (true) {
@@ -123,8 +124,8 @@ public class BuildMove extends Move {
                 else {
                     // if not, we add it to path
                     // determine new search direction, is opposite to arrival direction
-                    Direction oldDirection = searchDirection;
-                    searchDirection = last.getArrivalDirection(searchDirection).opposite();
+                    int oldDirection = searchDirection;
+                    searchDirection = Direction.oppositeOf(last.getArrivalDirection(searchDirection));
                     last = last.getTransition(oldDirection);
                     if (last == originTile) break;
 

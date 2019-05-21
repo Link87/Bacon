@@ -66,7 +66,7 @@ public class BombMove extends Move {
         //searches for all neighbours that need to be bombed out
         for (int i = 0; i < radius; i++) {
             for (Tile t : currentTiles) {
-                for (Direction direction : Direction.values()) {
+                for (int direction = 0; direction < Direction.values().length; direction++) {
                     if (t.getTransition(direction) != null) {
                         if (!bombSet.contains(t.getTransition(direction))) {
                             bombSet.add(t.getTransition(direction));

@@ -24,7 +24,7 @@ public class GameStateTest {
             for (int y = 0; y < origin.getMap().height; y++) {
                 assertNotSame(origin.getMap().getTileAt(x, y), copy.getMap().getTileAt(x, y));
                 assertEquals(origin.getMap().getTileAt(x, y).getProperty(), copy.getMap().getTileAt(x, y).getProperty());
-                for (Direction direction : Direction.values()) {
+                for (int direction = 0; direction < Direction.values().length; direction++) {
                     if (origin.getMap().getTileAt(x, y).getTransition(direction) == null) {
                         assertNull(copy.getMap().getTileAt(x, y).getTransition(direction));
                     } else {
@@ -37,9 +37,9 @@ public class GameStateTest {
                     }
                 }
 
-                for (Direction direction : Direction.values()) {
+                for (int direction = 0; direction < Direction.values().length; direction++) {
                     if (origin.getMap().getTileAt(x, y).getTransition(direction) == null)
-                        assertNull(copy.getMap().getTileAt(x, y).getArrivalDirection(direction));
+                        assertEquals(Direction.NO_DIRECTION_NO, copy.getMap().getTileAt(x, y).getArrivalDirection(direction));
                     else assertEquals(origin.getMap().getTileAt(x, y).getArrivalDirection(direction),
                                 copy.getMap().getTileAt(x, y).getArrivalDirection(direction));
                 }
