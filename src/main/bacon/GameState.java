@@ -50,9 +50,7 @@ public class GameState {
         //every Player gets the tiles he owns correctly assigned
         for (int i = 0; i < playersCopy.length; i++) {
             playersCopy[i] = this.players[i].shallowCopy();
-            Iterator<Tile> itr = this.players[i].getStonesIterator();
-            while (itr.hasNext()) {
-                Tile stone = itr.next();
+            for (Tile stone : this.players[i].getStones()) {
                 mapCopy.getTileAt(stone.x, stone.y).setOwner(playersCopy[i]);
                 playersCopy[i].addStone(mapCopy.getTileAt(stone.x, stone.y));
             }

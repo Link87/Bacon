@@ -4,7 +4,6 @@ import bacon.Direction;
 import bacon.Tile;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 
@@ -40,8 +39,7 @@ public class StabilityHeuristic {
         Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
         Tile stone;
 
-        while (stoneIterator.hasNext()) {     //Iterates over all player's stones and categorizes them according to stability directions
-            stone = stoneIterator.next();
+        for (Tile stone : state.getPlayerFromId(playerId).getStones()) {     //Iterates over all player's stones and categorizes them according to stability directions
 
             if (stone.getTransition(Direction.LEFT.id) == null || stone.getTransition(Direction.RIGHT.id) == null) {
                 horzStbl.add(stone);

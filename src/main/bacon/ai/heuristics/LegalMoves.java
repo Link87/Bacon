@@ -5,7 +5,6 @@ import bacon.move.*;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -33,11 +32,8 @@ public class LegalMoves {
             return Collections.emptySet();
 
         Set<RegularMove> legalMoves = new HashSet<>();
-        Player player = state.getPlayerFromNumber(playerNr);
-        Iterator<Tile> stoneIterator = player.getStonesIterator();
 
-        while (stoneIterator.hasNext()) { // iterates over all of the player's stones
-            Tile tile = stoneIterator.next();
+        for (Tile tile : state.getPlayerFromId(playerId).getStones()) { // iterates over all of the player's stones
 
             for (int direction = 0; direction < Direction.values().length; direction++) {
                 int steps = 0; //counts steps from our own stone currently under consideration
@@ -99,12 +95,9 @@ public class LegalMoves {
             return Collections.emptySet();
 
         Set<OverrideMove> legalMoves = new HashSet<>();
-        Player player = state.getPlayerFromNumber(playerNr);
-        if(player.getOverrideStoneCount()<=0) return legalMoves;
-        Iterator<Tile> stoneIterator = player.getStonesIterator();
+        if (state.getPlayerFromId(playerId).getOverrideStoneCount() <= 0) return legalMoves;
 
-        while (stoneIterator.hasNext()) { // iterates over all of the player's stones
-            Tile ogTile = stoneIterator.next();
+        for (Tile ogTile : state.getPlayerFromId(playerId).getStones()) { // iterates over all of the player's stones
 
             for (int ogDirection = 0; ogDirection < Direction.values().length; ogDirection++) {
                 int searchDirection = ogDirection;

@@ -1,9 +1,6 @@
 package bacon;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 
 /**
  * A Player class which contains player data and performs player actions.
@@ -33,7 +30,7 @@ public class Player {
         this.disqualified = false;
         // Create a set that only hold weak references to its contents
         // This may break the invariants of all set methods, if not handled carefully!
-        this.stones = Collections.newSetFromMap(new WeakHashMap<>());
+        this.stones = new HashSet<>();
     }
 
     /**
@@ -114,12 +111,12 @@ public class Player {
     }
 
     /**
-     * Returns an iterator over all tiles owned by the player.
+     * Returns the tiles owned by the player.
      *
-     * @return an iterator containing all of the players tiles
+     * @return a set containing all of the players tiles
      */
-    public Iterator<Tile> getStonesIterator() {
-        return this.stones.iterator();
+    public Set<Tile> getStones() {
+        return Collections.unmodifiableSet(this.stones);
     }
 
     /**

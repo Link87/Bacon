@@ -8,7 +8,7 @@ import bacon.move.BombMove;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import static java.lang.Math.*;
@@ -89,13 +89,11 @@ public class Heuristics {
             }
         }
 
-        Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
         int[] bombedStoneCount = new int[totalPlayer]; // the number of stones of each rival within the bomb diameter of a player's stone
         int diameter = 2 * bombRadius;
         double clusteringSum = 0; // heuristic to be returned
 
-        while (stoneIterator.hasNext()) { // iterates over all player's stones; adding clustering factor of each stone to clusteringSum
-            Tile stone = stoneIterator.next();
+        for (Tile stone : state.getPlayerFromId(playerId).getStones()) { // iterates over all player's stones; adding clustering factor of each stone to clusteringSum
 
             // in the following part of the code we search for all tiles within one bomb diameter (not radius!) of a player's stone
             // we recycle code from BombMove for this purpose
