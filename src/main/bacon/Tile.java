@@ -26,7 +26,7 @@ public class Tile {
      */
     private final int[] arrivals;
 
-    private WeakReference<Player> owner;
+    private int ownerId;
     private Property property;
 
     public final int x;
@@ -35,16 +35,17 @@ public class Tile {
     /**
      * Creates a new Tile at the given position. If the owner is set, the property has to be set to <code>DEFAULT</code>.
      *
-     * @param owner    {@link Player} that owns the stone on this Tile. Set to <code>null</code> if there is no stone on this Tile.
+     * @param ownerId  number of {@link Player} that owns the stone on this Tile.
+     *                 Set to <code>Player.NULL_PLAYER_ID</code> if there is no stone on this Tile.
      * @param property Special {@link Property} that this Tile has
      * @param x        horizontal coordinate of this Tile
      * @param y        vertical coordinate of this Tile
      */
-    public Tile(Player owner, Property property, int x, int y) {
-        this.owner = new WeakReference<>(owner);
+    public Tile(int ownerId, Property property, int x, int y) {
+        this.ownerId = ownerId;
         this.property = property;
 
-        assert this.owner.get() == null || property == Property.DEFAULT : "Only default state can define initial owner";
+        assert this.ownerId == Player.NULL_PLAYER_ID || property == Property.DEFAULT : "Only default state can define initial owner";
 
         this.x = x;
         this.y = y;
@@ -55,20 +56,19 @@ public class Tile {
     }
 
     /**
-     * Sets the owner of this Tile. Use <code>null</code> to remove any ownership.
-     * Also updates the player.
+     * Sets the owner of this Tile and updates the players stones.
      *
-     * @param owner new owner of this Tile. <code>null</code> resets ownership
+     * @param ownerId id of new owner of this Tile.
      */
-    public void setOwner(Player owner) {
-        if (this.owner.get() != null) {
-            this.owner.get().removeStone(this);
+    public void setOwnerId(int ownerId) {
+        if (this.ownerId != Player.NULL_PLAYER_ID) {
+            Game.getGame().getCurrentState().getPlayerFromId(this.ownerId).removeStone(this);
         }
-        this.owner = new WeakReference<>(owner);
+        if (ownerId != Player.NULL_PLAYER_ID) {
+            Game.getGame().getCurrentState().getPlayerFromId(ownerId).addStone(this);
+        }
+        this.ownerId = ownerId;
 
-        if (this.owner.get() != null) {
-            this.owner.get().addStone(this);
-        }
     }
 
     /**
@@ -100,7 +100,7 @@ public class Tile {
      */
     public void bombTile() {
         setProperty(Property.HOLE);
-        setOwner(null);
+        setOwnerId(Player.NULL_PLAYER_ID);
 
         //remove transition from neighbors to bombed tile
         for (int direction = 0; direction < Direction.values().length; direction++) {
@@ -140,12 +140,12 @@ public class Tile {
     }
 
     /**
-     * Returns the owner of this Tile.
+     * Returns the id of the owner of this Tile.
      *
-     * @return the owner of this Tile
+     * @return the id of the owner of this Tile or <code>Player.NULL_PLAYER_ID</code> if tile is unoccupied
      */
-    public Player getOwner() {
-        return this.owner.get();
+    public int getOwnerId() {
+        return this.ownerId;
     }
 
     /**

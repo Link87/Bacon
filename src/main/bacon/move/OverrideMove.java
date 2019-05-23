@@ -1,8 +1,6 @@
 package bacon.move;
 
-import bacon.Game;
 import bacon.GameState;
-import bacon.Player;
 import bacon.Tile;
 
 /**
@@ -18,7 +16,7 @@ public class OverrideMove extends BuildMove {
      * @param x      the x coordinate
      * @param y      the y coordinate
      */
-    OverrideMove(GameState state, Player player, int x, int y) {
+    OverrideMove(GameState state, int player, int x, int y) {
         super(state, player, x, y);
         this.type = Type.OVERRIDE;
     }
@@ -29,9 +27,9 @@ public class OverrideMove extends BuildMove {
      * @return true if the move is legal, false otherwise
      */
     public boolean isLegal() {
-        if (this.player.getOverrideStoneCount() == 0)
+        if (this.state.getPlayerFromId(this.playerId).getOverrideStoneCount() == 0)
             return false; // player must have at least 1 override stone to make the move
-        if (state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.EXPANSION)
+        if (this.state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.EXPANSION)
             return true;
         return super.isLegal();
     }
@@ -42,14 +40,14 @@ public class OverrideMove extends BuildMove {
     @Override
     public void undoMove() {
         super.undoMove();
-        this.player.receiveOverrideStone(1);
+        this.state.getPlayerFromId(this.playerId).receiveOverrideStone(1);
     }
 
     /**
      * Executes this move.
      */
     public void doMove() {
-        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
+        Tile tile = this.state.getMap().getTileAt(this.xPos, this.yPos);
 
         super.doMove();
 
@@ -58,7 +56,7 @@ public class OverrideMove extends BuildMove {
             tile.setProperty(Tile.Property.DEFAULT);    // the tile we placed our override stone on could be an expansion field
         }
 
-        this.player.receiveOverrideStone(-1);    // Subtract 1 override stone from player's inventory
+        this.state.getPlayerFromId(this.playerId).receiveOverrideStone(-1);    // Subtract 1 override stone from player's inventory
     }
 
 }

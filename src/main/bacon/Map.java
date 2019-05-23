@@ -56,7 +56,7 @@ public class Map {
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
                 Tile original = this.getTileAt(x, y);
-                copyTiles[x][y] = new Tile(original.getOwner(), original.getProperty(), original.x, original.y);
+                copyTiles[x][y] = new Tile(original.getOwnerId(), original.getProperty(), original.x, original.y);
             }
         }
 
@@ -120,15 +120,16 @@ public class Map {
                 totalCount++;
                 if (symbol == '0') {
                     //Tile is empty
-                    tiles[w][h] = new Tile(null, Tile.Property.DEFAULT, w, h);
+                    tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.DEFAULT, w, h);
                 } else if (symbol <= '8' && symbol > '0') {
                     //Tile has a Stone (an owner)
-                    tiles[w][h] = new Tile(Game.getGame().getCurrentState().getPlayerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
-                    Game.getGame().getCurrentState().getPlayerFromNumber(Character.getNumericValue(symbol)).addStone(tiles[w][h]);
+                    int playerId = Character.getNumericValue(symbol);
+                    tiles[w][h] = new Tile(playerId, Tile.Property.DEFAULT, w, h);
+                    Game.getGame().getCurrentState().getPlayerFromId(playerId).addStone(tiles[w][h]);
                     occupiedCount++;
                 } else if (symbol != '-') {
                     //Tile is not a hole --> Tile has Property
-                    tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
+                    tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.fromChar(symbol), w, h);
 
                     if (symbol == 'x') {
                         occupiedCount++;
@@ -136,7 +137,7 @@ public class Map {
                     }
                 } else {
                     //Tile is a hole
-                    tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
+                    tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.HOLE, w, h);
                     totalCount--;
                 }
             }
@@ -206,8 +207,8 @@ public class Map {
             for (int x = 0; x < width; x++) {
                 switch (getTileAt(x, y).getProperty()) {
                     case DEFAULT:
-                        if (getTileAt(x, y).getOwner() == null) builder.append("0 ");
-                        else builder.append(getTileAt(x, y).getOwner().number).append(" ");
+                        if (getTileAt(x, y).getOwnerId() == Player.NULL_PLAYER_ID) builder.append("0 ");
+                        else builder.append(getTileAt(x, y).getOwnerId()).append(" ");
                         break;
                     case HOLE:
                         builder.append("- ");

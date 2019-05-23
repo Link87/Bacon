@@ -31,12 +31,10 @@ public class StabilityHeuristic {
      * Calculates the stability heuristics of this certain given game state and player.
      *
      * @param state    GameState to be examined
-     * @param playerNr number of the player in turn
+     * @param playerId number of the player in turn
      * @return a real number as stability heuristics
      */
-    public static double stability(bacon.GameState state, int playerNr) {
-        Iterator<Tile> stoneIterator = state.getPlayerFromNumber(playerNr).getStonesIterator();
-        Tile stone;
+    public static double stability(bacon.GameState state, int playerId) {
 
         for (Tile stone : state.getPlayerFromId(playerId).getStones()) {     //Iterates over all player's stones and categorizes them according to stability directions
 
@@ -61,10 +59,10 @@ public class StabilityHeuristic {
         while (!horzStbl.isEmpty() || !vertStbl.isEmpty() || !diagStbl.isEmpty() || !indiagStbl.isEmpty()) {
             for (Tile tile : horzStbl) { // Extending horizontally stable stones
                 // In case there is a neighbour in this stability direction, find the arrival direction and add neighbour to temporary memory
-                if (tile.getTransition(Direction.LEFT.id) != null && tile.getTransition(Direction.LEFT.id).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.LEFT.id) != null && tile.getTransition(Direction.LEFT.id).getOwnerId() == playerId) {
                     stabilityFinder(tile, Direction.LEFT.id);
                 }
-                if (tile.getTransition(Direction.RIGHT.id) != null && tile.getTransition(Direction.RIGHT.id).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.RIGHT.id) != null && tile.getTransition(Direction.RIGHT.id).getOwnerId() == playerId) {
                     stabilityFinder(tile, Direction.RIGHT.id);
                 }
                 horzFinal.add(tile); // Adds stone to final stability set and never consider this stability direction of this stone again
@@ -72,10 +70,10 @@ public class StabilityHeuristic {
 
             for (Tile tile : vertStbl) {  // Extending vertically stable stones
                 // In case there is a neighbour in this stability direction, find the arrival direction and add neighbour to temporary memory
-                if (tile.getTransition(Direction.UP.id) != null && tile.getTransition(Direction.UP.id).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.UP.id) != null && tile.getTransition(Direction.UP.id).getOwnerId() == playerId) {
                     stabilityFinder(tile, Direction.UP.id);
                 }
-                if (tile.getTransition(Direction.DOWN.id) != null && tile.getTransition(Direction.DOWN.id).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.DOWN.id) != null && tile.getTransition(Direction.DOWN.id).getOwnerId() == playerId) {
                     stabilityFinder(tile, Direction.DOWN.id);
                 }
                 vertFinal.add(tile); // Adds stone to final stability set and never consider this stability direction of this stone again
@@ -83,10 +81,10 @@ public class StabilityHeuristic {
 
             for (Tile tile : diagStbl) {  // Extending diagonally stable stones
                 // In case there is a neighbour in this stability direction, find the arrival direction and add neighbour to temporary memory
-                if (tile.getTransition(Direction.UP_RIGHT.id) != null && tile.getTransition(Direction.UP_RIGHT.id).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.UP_RIGHT.id) != null && tile.getTransition(Direction.UP_RIGHT.id).getOwnerId() == playerId) {
                     stabilityFinder(tile, Direction.UP_RIGHT.id);
                 }
-                if (tile.getTransition(Direction.DOWN_LEFT.id) != null && tile.getTransition(Direction.DOWN_LEFT.id).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.DOWN_LEFT.id) != null && tile.getTransition(Direction.DOWN_LEFT.id).getOwnerId() == playerId) {
                     stabilityFinder(tile, Direction.DOWN_LEFT.id);
                 }
                 diagFinal.add(tile);    // Adds stone to final stability set and never consider this stability direction of this stone again
@@ -94,10 +92,10 @@ public class StabilityHeuristic {
 
             for (Tile tile : indiagStbl) {    // Extending indiagonally stable stones
                 // In case there is a neighbour in this stability direction, find the arrival direction and add neighbour to temporary memory
-                if (tile.getTransition(Direction.UP_LEFT.id) != null && tile.getTransition(Direction.UP_LEFT.id).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.UP_LEFT.id) != null && tile.getTransition(Direction.UP_LEFT.id).getOwnerId() == playerId) {
                     stabilityFinder(tile, Direction.UP_LEFT.id);
                 }
-                if (tile.getTransition(Direction.DOWN_RIGHT.id) != null && tile.getTransition(Direction.DOWN_RIGHT.id).getOwner() == state.getPlayerFromNumber(playerNr)) {
+                if (tile.getTransition(Direction.DOWN_RIGHT.id) != null && tile.getTransition(Direction.DOWN_RIGHT.id).getOwnerId() == playerId) {
                     stabilityFinder(tile, Direction.DOWN_RIGHT.id);
                 }
                 indiagFinal.add(tile);  // Adds stone to final stability set and never consider this stability direction of this stone again

@@ -22,7 +22,7 @@ public class BombMove extends Move {
      * @param x      the x coordinate
      * @param y      the y coordinate
      */
-    public BombMove(GameState state, Player player, int x, int y) {
+    public BombMove(GameState state, int player, int x, int y) {
         super(state, player, x, y);
         this.type = Type.BOMB;
     }
@@ -35,8 +35,8 @@ public class BombMove extends Move {
      * @return true if the move is legal, false otherwise
      */
     public boolean isLegal() {
-        if (state.getMap().getTileAt(xPos, yPos).getProperty() == Tile.Property.HOLE) return false;
-        return player.getBombCount() != 0;
+        if (this.state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.HOLE) return false;
+        return this.state.getPlayerFromId(this.playerId).getBombCount() != 0;
     }
 
 
@@ -86,7 +86,7 @@ public class BombMove extends Move {
         bombSet.forEach(Tile::bombTile);
 
         // Subtract 1 bomb from player's inventory
-        this.player.receiveBomb(-1);
+        this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
     }
 
     @Override

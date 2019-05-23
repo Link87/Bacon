@@ -2,9 +2,7 @@ package bacon;
 
 import org.junit.Test;
 
-import java.util.Objects;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class MapTest {
 
@@ -93,9 +91,9 @@ public class MapTest {
                 assertEquals("Wrong value in tile: " + x + ", " + y, y, tile.y);
                 assertEquals("Wrong value in tile: " + x + ", " + y, properties[y][x], tile.getProperty());
                 if (playerIds[x][y] == 0)
-                    assertNull("Wrong value in tile: " + x + ", " + y, tile.getOwner());
+                    assertEquals("Wrong value in tile: " + x + ", " + y, Player.NULL_PLAYER_ID, tile.getOwnerId());
                 else
-                    assertEquals("Wrong value in tile: " + x + ", " + y, playerIds[x][y], tile.getOwner().number);
+                    assertEquals("Wrong value in tile: " + x + ", " + y, playerIds[x][y], tile.getOwnerId());
             }
         }
 

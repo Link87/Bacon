@@ -14,7 +14,7 @@ public class GameStateTest {
         Game.getGame().readMap(Maps.STARFISH);
 
         var origin = Game.getGame().getCurrentState();
-        origin.setMe(origin.getPlayerFromNumber(1));
+        origin.setMe(0);
 
         var copy = origin.getDeepCopy();
 
@@ -44,24 +44,22 @@ public class GameStateTest {
                                 copy.getMap().getTileAt(x, y).getArrivalDirection(direction));
                 }
 
-                if (origin.getMap().getTileAt(x, y).getOwner() == null) {
-                    assertNull(copy.getMap().getTileAt(x, y).getOwner());
+                if (origin.getMap().getTileAt(x, y).getOwnerId() == Player.NULL_PLAYER_ID) {
+                    assertEquals(Player.NULL_PLAYER_ID, copy.getMap().getTileAt(x, y).getOwnerId());
                 } else {
-                    assertNotSame(origin.getMap().getTileAt(x, y).getOwner(),
-                            copy.getMap().getTileAt(x, y).getOwner());
-                    assertEquals(origin.getMap().getTileAt(x, y).getOwner().getPlayerNumber(),
-                            copy.getMap().getTileAt(x, y).getOwner().getPlayerNumber());
-                    assertEquals(origin.getMap().getTileAt(x, y).getOwner().getOverrideStoneCount(),
-                            copy.getMap().getTileAt(x, y).getOwner().getOverrideStoneCount());
-                    assertEquals(origin.getMap().getTileAt(x, y).getOwner().getBombCount(),
-                            copy.getMap().getTileAt(x, y).getOwner().getBombCount());
-                    assertEquals(origin.getMap().getTileAt(x, y).getOwner().getStoneCount(),
-                            copy.getMap().getTileAt(x, y).getOwner().getStoneCount());
+                    assertNotSame(origin.getPlayerFromId(origin.getMap().getTileAt(x, y).getOwnerId()),
+                            copy.getPlayerFromId(copy.getMap().getTileAt(x, y).getOwnerId()));
+                    assertEquals(origin.getMap().getTileAt(x, y).getOwnerId(),
+                            copy.getMap().getTileAt(x, y).getOwnerId());
+                    assertEquals(origin.getPlayerFromId(origin.getMap().getTileAt(x, y).getOwnerId()).getOverrideStoneCount(),
+                            copy.getPlayerFromId(copy.getMap().getTileAt(x, y).getOwnerId()).getOverrideStoneCount());
+                    assertEquals(origin.getPlayerFromId(origin.getMap().getTileAt(x, y).getOwnerId()).getBombCount(),
+                            copy.getPlayerFromId(copy.getMap().getTileAt(x, y).getOwnerId()).getBombCount());
+                    assertEquals(origin.getPlayerFromId(origin.getMap().getTileAt(x, y).getOwnerId()).getStoneCount(),
+                            copy.getPlayerFromId(copy.getMap().getTileAt(x, y).getOwnerId()).getStoneCount());
 
-                    Set<Tile> tiles = new HashSet<>();
-                    Set<Tile> tilesCopies = new HashSet<>();
-                    origin.getMap().getTileAt(x, y).getOwner().getStonesIterator().forEachRemaining(tiles::add);
-                    copy.getMap().getTileAt(x, y).getOwner().getStonesIterator().forEachRemaining(tilesCopies::add);
+                    Set<Tile> tiles = new HashSet<>(origin.getPlayerFromId(origin.getMap().getTileAt(x, y).getOwnerId()).getStones());
+                    Set<Tile> tilesCopies = new HashSet<>(copy.getPlayerFromId(copy.getMap().getTileAt(x, y).getOwnerId()).getStones());
                     assertEquals(tiles.size(), tilesCopies.size());
                     for (Tile tile1 : tiles) {
                         boolean found = false;

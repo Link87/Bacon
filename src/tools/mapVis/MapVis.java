@@ -64,8 +64,8 @@ public class MapVis extends Application {
     public void start(Stage primaryStage) throws Exception {
         //init some stuff
         game = Game.getGame();
-        game.readMap(asciString);
-        game.getCurrentState().setMe(game.getCurrentState().getPlayerFromNumber(1));
+        game.readMap(asciiString);
+        game.getCurrentState().setMe(1);
         myMap = game.getCurrentState().getMap();
 
         //making the map out of labels in a grid
@@ -106,11 +106,11 @@ public class MapVis extends Application {
         for (int i = 0; i < numberOfPlayers; i++) {
             playerToggle[i] = new RadioButton((i + 1) + "");
             playerToggle[i].setToggleGroup(playerselection);
-            playerToggle[i].setUserData(game.getCurrentState().getPlayerFromNumber(i + 1));
+            playerToggle[i].setUserData(game.getCurrentState().getPlayerFromId(i + 1));
             vBoxSettings.getChildren().add(playerToggle[i]);
         }
 
-        currentPlayer = game.getCurrentState().getPlayerFromNumber(1);
+        currentPlayer = game.getCurrentState().getPlayerFromId(1);
         playerToggle[0].setSelected(true);
 
         playerselection.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
@@ -171,7 +171,7 @@ public class MapVis extends Application {
         for (int i = 0; i < numberOfPlayers; i++) {
             playerChoices.add(i + 1);
         }
-        stoneSwichDialog = new ChoiceDialog<>(currentPlayer.getPlayerNumber(), playerChoices);
+        stoneSwichDialog = new ChoiceDialog<>(currentPlayer.id, playerChoices);
         stoneSwichDialog.setTitle("Chose");
         stoneSwichDialog.setContentText("Chose a Player to switch stones with");
 
@@ -250,10 +250,10 @@ public class MapVis extends Application {
         }
         Move move;
         try {
-            move = MoveFactory.createMove(game.getCurrentState(), currentPlayer, loca.x, loca.y,
+            move = MoveFactory.createMove(game.getCurrentState(), currentPlayer.id, loca.x, loca.y,
                     BonusRequest.fromValue(bonusRequest, game.getCurrentState()));
         } catch (Exception e) {
-            move = new BombMove(game.getCurrentState(), currentPlayer, loca.x, loca.y);
+            move = new BombMove(game.getCurrentState(), currentPlayer.id, loca.x, loca.y);
         }
         if (interactionMode == InteractionModes.GODMODE) {
             switch (moveMode) {
@@ -268,7 +268,7 @@ public class MapVis extends Application {
                 case BOMB:
                     unHover(label);
                     currentPlayer.receiveBomb(1);
-                    move = new BombMove(game.getCurrentState(), currentPlayer, loca.x, loca.y);
+                    move = new BombMove(game.getCurrentState(), currentPlayer.id, loca.x, loca.y);
                     move.doMove();
                     break;
             }
@@ -329,7 +329,7 @@ public class MapVis extends Application {
         for (int x = 0; x < myMap.width; x++) {
             for (int y = 0; y < myMap.height; y++) {
                 try {
-                    Move rm = MoveFactory.createMove(game.getCurrentState(), game.getCurrentState().getPlayerFromNumber(cp), x, y);
+                    Move rm = MoveFactory.createMove(game.getCurrentState(), cp, x, y);
                     if (rm instanceof OverrideMove && rm.isLegal()) {
                         labels[x][y].setStyle("-fx-background-color: green");
                         moves.add(rm);
@@ -354,8 +354,8 @@ public class MapVis extends Application {
             out = "b";
         } else if (tile.getProperty() == Tile.Property.INVERSION) {
             out = "i";
-        } else if (tile.getOwner() != null) {
-            out = tile.getOwner().number + "";
+        } else if (tile.getOwnerId() != Player.NULL_PLAYER_ID) {
+            out = tile.getOwnerId() + "";
         }
         return out;
     }
@@ -376,7 +376,7 @@ public class MapVis extends Application {
         launch(args);
     }
 
-    public static String asciString ="8\n" +
+    private static String asciiString ="8\n" +
             "4\n" +
             "2 3\n" +
             "42 42\n" +

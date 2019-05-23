@@ -10,6 +10,12 @@ public class Config {
     private final String host;
     private final int port;
     private final boolean noPrune;
+    private final boolean moveSorting;
+    private final int beamWidth;
+
+    private static final boolean NO_PRUNE_DEFAULT = false;
+    private static final boolean MOVE_SORTING_DEFAULT = true;
+    private static final int BEAM_WIDTH_DEFAULT = 5;
 
     private Config() {
         this.helpRequested = true;
@@ -17,12 +23,16 @@ public class Config {
         this.host = null;
         this.port = 0;
         this.noPrune = false;
+        this.moveSorting = false;
+        this.beamWidth = 0;
     }
 
-    private Config(String host, int port, boolean noPrune) {
+    private Config(String host, int port, boolean noPrune, boolean moveSorting, int beamWidth) {
         this.host = host;
         this.port = port;
         this.noPrune = noPrune;
+        this.moveSorting = moveSorting;
+        this.beamWidth = beamWidth;
 
         this.helpRequested = false;
 
@@ -33,7 +43,7 @@ public class Config {
      *
      * @return the port number
      */
-    public int getPort() {
+    int getPort() {
         return port;
     }
 
@@ -42,8 +52,18 @@ public class Config {
      *
      * @return the host name
      */
-    public String getHost() {
+    String getHost() {
         return host;
+    }
+
+    /**
+     * Returns whether the user asked for a help text.
+     * When <code>true</code>, the other values are undefined and may be set arbitrarily!
+     *
+     * @return <code>true</code> if help should be displayed, <code>false</code> otherwise
+     */
+    boolean isHelpRequested() {
+        return helpRequested;
     }
 
     /**
@@ -55,14 +75,12 @@ public class Config {
         return !noPrune;
     }
 
-    /**
-     * Returns whether the user asked for a help text.
-     * When <code>true</code>, the other values are undefined and may be set arbitrarily!
-     *
-     * @return <code>true</code> if help should be displayed, <code>false</code> otherwise
-     */
-    public boolean isHelpRequested() {
-        return helpRequested;
+    public boolean isMoveSortingEnabled() {
+        return moveSorting;
+    }
+
+    public int getBeamWidth() {
+        return beamWidth;
     }
 
     /**
@@ -81,7 +99,9 @@ public class Config {
         private Config parseArgs(String[] args) throws IllegalArgumentException {
             String host = null;
             int port = -1;
-            boolean noPrune = false;
+            boolean noPrune = NO_PRUNE_DEFAULT;
+            boolean moveSorting = MOVE_SORTING_DEFAULT;
+            int beamWidth = BEAM_WIDTH_DEFAULT;
 
             // the type of token that is expected to follow -- state machine lite
             State expect = State.EXPECT_ARG;
@@ -133,7 +153,7 @@ public class Config {
             // host and port have to be both present
             if (host == null || port == -1)
                 throw new IllegalArgumentException();
-            return new Config(host, port, noPrune);
+            return new Config(host, port, noPrune, moveSorting, beamWidth);
         }
 
         /**

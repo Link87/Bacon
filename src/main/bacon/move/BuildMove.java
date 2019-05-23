@@ -19,7 +19,7 @@ public class BuildMove extends Move {
      * @param x      the x coordinate
      * @param y      the y coordinate
      */
-    BuildMove(GameState state, Player player, int x, int y) {
+    BuildMove(GameState state, int player, int x, int y) {
         super(state, player, x, y);
     }
 
@@ -60,12 +60,12 @@ public class BuildMove extends Move {
                 if (surrounding[i] != null && surrounding[i].getTransition(direction) != null && surrounding[i].getTransition(direction) != tile) { // If the next tile isn't
                     searchDirections[i] = Direction.oppositeOf(surrounding[i].getArrivalDirection(direction));        // a hole or the origin tile, update direction
                     surrounding[i] = surrounding[i].getTransition(direction);                   // increment the farthest tile in this direction.
-                    if (this.player.equals(surrounding[i].getOwner()) && steps > 1)
+                    if (this.playerId == surrounding[i].getOwnerId() && steps > 1)
                         return true;     // If this next tile happens to be ours AND there was someone else's stone in between (step>1), the move is legal
-                    else if (this.player.equals(surrounding[i].getOwner()) && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
+                    else if (this.playerId == surrounding[i].getOwnerId() && steps == 1) {          // If, on the other hand, there WASN'T someone else's stone in between, we can stop searching in this direction,
                         surrounding[i] = null;                                                  // so set this tile to null and increment emptyOrHoleCount
                         emptyOrHoleCount++;
-                    } else if (surrounding[i].getOwner() == null && surrounding[i].getProperty() != Tile.Property.EXPANSION) {
+                    } else if (surrounding[i].getOwnerId() == Player.NULL_PLAYER_ID && surrounding[i].getProperty() != Tile.Property.EXPANSION) {
                         surrounding[i] = null;  // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         emptyOrHoleCount++;
                     }
@@ -88,12 +88,12 @@ public class BuildMove extends Move {
 
         assert changeData != null : "Move has to be done before undo!";
 
-        for (int i = 0; i < changeData.length; i++) {
-            changeData[i].tile.setOwner(changeData[i].ogPlayer);
-            changeData[i].tile.setProperty(changeData[i].wasProp);
+        for (ChangeData datum : changeData) {
+            datum.tile.setOwnerId(datum.ogPlayerId);
+            datum.tile.setProperty(datum.wasProp);
 
-            if (changeData[i].wasProp == Tile.Property.EXPANSION) {
-                Game.getGame().getCurrentState().getMap().addExpansionStone(changeData[i].tile); // adds expansion stone back to expansion stone tracker in Map
+            if (datum.wasProp == Tile.Property.EXPANSION) {
+                this.state.getMap().addExpansionStone(datum.tile); // adds expansion stone back to expansion stone tracker in Map
             }
         }
 
@@ -129,13 +129,13 @@ public class BuildMove extends Move {
                     last = last.getTransition(oldDirection);
                     if (last == originTile) break;
 
-                    if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION)
+                    if (last.getOwnerId() == Player.NULL_PLAYER_ID && last.getProperty() != Tile.Property.EXPANSION)
                         // If this next tile is unoccupied AND not an expansion field (i.e. empty), we can stop searching in this direction
                         break;
-                    else if (this.player.equals(last.getOwner()) && path.size() == 0)
+                    else if (this.playerId == last.getOwnerId() && path.size() == 0)
                         // If on the first step we hit our own stone, we can stop searching in this direction
                         break;
-                    else if (this.player.equals(last.getOwner()) && path.size() > 0) {
+                    else if (this.playerId == last.getOwnerId() && path.size() > 0) {
                         // If on other steps we hit our own stone, we get to overturn all stones on the way
                         // and then we can stop searching in this direction
                         turnOver.addAll(path);
@@ -151,24 +151,22 @@ public class BuildMove extends Move {
         changeData = new ChangeData[turnOver.size() + 1];
         int index = 0;
         for (Tile tile : turnOver) {
-            boolean isExpansion = (tile.getProperty() == Tile.Property.EXPANSION);
-            changeData[index] = new ChangeData(tile, tile.getOwner(), tile.getProperty());
+            changeData[index] = new ChangeData(tile, tile.getOwnerId(), tile.getProperty());
             index++;
         }
 
-        boolean isExpansion = (originTile.getProperty() == Tile.Property.EXPANSION);
-        changeData[index] = new ChangeData(originTile, originTile.getOwner(), originTile.getProperty());
+        changeData[index] = new ChangeData(originTile, originTile.getOwnerId(), originTile.getProperty());
 
         // now actually turn all stones over
         for (Tile t : turnOver) {
             if (t.getProperty() == Tile.Property.EXPANSION) {
-                Game.getGame().getCurrentState().getMap().removeExpansionStone(t); // Removes expansion stones from expansion stone tracker in Map
+                this.state.getMap().removeExpansionStone(t); // Removes expansion stones from expansion stone tracker in Map
             }
             t.setProperty(Tile.Property.DEFAULT);
-            t.setOwner(this.player);
+            t.setOwnerId(this.playerId);
         }
 
         // new stone is placed on the map
-        originTile.setOwner(this.player);
+        originTile.setOwnerId(this.playerId);
     }
 }

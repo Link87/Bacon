@@ -16,13 +16,13 @@ public class BonusRequest {
     }
 
     public final Type type;
-    private Player other;
+    private int other;
 
     public BonusRequest(Type type) {
-        this(type, null);
+        this(type, Player.NULL_PLAYER_ID);
     }
 
-    private BonusRequest(Type type, Player other) {
+    private BonusRequest(Type type, int other) {
         this.type = type;
         this.other = other;
     }
@@ -37,7 +37,7 @@ public class BonusRequest {
     public static BonusRequest fromValue(int value, GameState state) {
         if (value > 0 && value <= state.getTotalPlayerCount()) {
             var request = new BonusRequest(Type.SWITCH_STONES);
-            request.other = state.getPlayerFromNumber(value);
+            request.other = value;
             return request;
         } else if (value == 20)
             return new BonusRequest(Type.BOMB_BONUS);
@@ -51,7 +51,7 @@ public class BonusRequest {
      *
      * @return Player to switch tiles with or <code>null</code>
      */
-    Player getOtherPlayer() {
+    int getOtherPlayerId() {
         return other;
     }
 
@@ -61,7 +61,7 @@ public class BonusRequest {
      * @param other Player to switch tiles with
      * @return BonusRequest for switching tiles with given player
      */
-    public static BonusRequest switchWith(Player other) {
+    public static BonusRequest switchWith(int other) {
         return new BonusRequest(Type.SWITCH_STONES, other);
     }
 
@@ -74,13 +74,13 @@ public class BonusRequest {
             return false;
 
         if (this.type == Type.SWITCH_STONES)
-            return ((BonusRequest) obj).type == Type.SWITCH_STONES && this.other.equals(((BonusRequest) obj).other);
+            return ((BonusRequest) obj).type == Type.SWITCH_STONES && this.other == ((BonusRequest) obj).other;
         return this.type == ((BonusRequest) obj).type;
     }
 
     @Override
     public int hashCode() {
-        return 31 * (31 + type.hashCode()) + ((other == null) ? 0 : other.hashCode());
+        return 31 * (31 + type.hashCode()) + other;
     }
 
     /**
@@ -90,14 +90,12 @@ public class BonusRequest {
      */
     public byte toValue() {
         switch (type) {
-            case NONE:
-                return 0;
             case BOMB_BONUS:
                 return 20;
             case OVERRIDE_BONUS:
                 return 21;
             case SWITCH_STONES:
-                return (byte) other.number;
+                return (byte) other;
             default:
                 return 0;
         }

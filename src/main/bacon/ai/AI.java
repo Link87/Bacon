@@ -48,7 +48,7 @@ public class AI {
             root.evaluateNode();
             bestMove = root.getBestMove();
         } else {
-            Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe().number);
+            Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());
             double evalValue;
             double curBestVal = -Double.MAX_VALUE;
             for (BombMove move : moves) {

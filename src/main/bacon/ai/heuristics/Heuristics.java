@@ -38,19 +38,19 @@ public class Heuristics {
      * Calculates the mobility heuristics of this certain given game state and player
      *
      * @param state    GameState to be examined
-     * @param playerNr Number of player in turn
+     * @param playerId Number of player in turn
      * @return a real number as mobility heuristics
      */
-    public static int mobility(GameState state, int playerNr) {
+    public static int mobility(GameState state, int playerId) {
         int mobility;
 
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
         }
 
-        mobility = LegalMoves.getLegalRegularMoves(state, playerNr).size();
+        mobility = LegalMoves.getLegalRegularMoves(state, playerId).size();
         //TODO: Weight regular move mobility against override move mobility
-        mobility += LegalMoves.getLegalOverrideMoves(state, playerNr).size();
+        mobility += LegalMoves.getLegalOverrideMoves(state, playerId).size();
 
         return mobility;
     }
@@ -59,12 +59,12 @@ public class Heuristics {
      * Calculates the clustering heuristics of this certain given game state and player.
      *
      * @param state    GameState to be examined
-     * @param playerNr number of player in turn
+     * @param playerId number of player in turn
      * @return a real number as clustering heuristics
      */
-    public static double clustering(GameState state, int playerNr) {
+    public static double clustering(GameState state, int playerId) {
         // TODO: Scale clustering heuristic depending on number of free tiles
-        int playerStoneCount = state.getPlayerFromNumber(playerNr).getStoneCount();
+        int playerStoneCount = state.getPlayerFromId(playerId).getStoneCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
 
@@ -74,12 +74,12 @@ public class Heuristics {
         int[] rivalStoneCount = new int[totalPlayer]; // the total number of stones of each rival
 
         for (int i = 0; i < totalPlayer; i++) { // calculates global variables of the current state
-            rivalBombCount[i] = state.getPlayerFromNumber(i + 1).getBombCount();
-            rivalStoneCount[i] = state.getPlayerFromNumber(i + 1).getStoneCount();
+            rivalBombCount[i] = state.getPlayerFromId(i + 1).getBombCount();
+            rivalStoneCount[i] = state.getPlayerFromId(i + 1).getStoneCount();
         }
 
         for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
-            if (i + 1 == playerNr) {
+            if (i + 1 == playerId) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             } else {
                 rivalry[i] = (rivalBombCount[i] * (pow(2 * bombRadius + 1, 2))) / ((totalPlayer - 1) * (abs(rivalStoneCount[i] - playerStoneCount) + 1));
@@ -125,11 +125,11 @@ public class Heuristics {
 
             for (Tile t : bombSet) {   // we examine each tile within the bomb diameter for ownership
                 // and assign collateral damage to each rival in case our stone is bombed
-                if (t.getOwner() != null) {
-                    bombedStoneCount[t.getOwner().getPlayerNumber() - 1]++;
+                if (t.getOwnerId() != Player.NULL_PLAYER_ID) {
+                    bombedStoneCount[t.getOwnerId() - 1]++;
                 }
             }
-            bombedStoneCount[playerNr - 1]--;              //this line removes the target itself from collateral damage
+            bombedStoneCount[playerId - 1]--;              //this line removes the target itself from collateral damage
 
             for (int i = 0; i < totalPlayer; i++) {                   // This for-loop sums collateral damage over all rivals
                 clusteringSum += bombedStoneCount[i] * rivalry[i];    // to get the clustering factor of a player's stone,
@@ -150,11 +150,11 @@ public class Heuristics {
      * Calculates the bomb bonus heuristics of this certain given game state and player.
      *
      * @param state    GameState to be examined
-     * @param playerNr number of player in turn
+     * @param playerId number of player in turn
      * @return a real number as bonus heuristics
      */
-    public static double bonusBomb(GameState state, int playerNr) {
-        int bombCount = state.getPlayerFromNumber(playerNr).getBombCount();
+    public static double bonusBomb(GameState state, int playerId) {
+        int bombCount = state.getPlayerFromId(playerId).getBombCount();
         int bombRadius = state.getBombRadius();
 
         return 20 * (pow(2 * bombRadius + 1, 2)) * (pow(bombCount, 0.7));
@@ -164,11 +164,11 @@ public class Heuristics {
      * Calculates the override bonus heuristics of this certain given game state and player.
      *
      * @param state    GameState to be examined
-     * @param playerNr number of player in turn
+     * @param playerId number of player in turn
      * @return a real number as bonus heuristics
      */
-    public static double bonusOverride(GameState state, int playerNr) {
-        int overrideStoneCount = state.getPlayerFromNumber(playerNr).getOverrideStoneCount();
+    public static double bonusOverride(GameState state, int playerId) {
+        int overrideStoneCount = state.getPlayerFromId(playerId).getOverrideStoneCount();
         double mapHeight = state.getMap().height;
         double mapWidth = state.getMap().width;
 
@@ -184,7 +184,7 @@ public class Heuristics {
      * @return a real number as clustering heuristics (the only heuristics that matters in Bombing Phase)
      */
     public static double bombingPhaseHeuristic(GameState state, BombMove move) {
-        int playerStoneCount = move.getPlayer().getStoneCount();
+        int playerStoneCount = state.getPlayerFromId(move.getPlayerId()).getStoneCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
 
@@ -194,19 +194,19 @@ public class Heuristics {
         int[] rivalStoneCount = new int[totalPlayer]; // the total number of stones of each rival
 
         for (int i = 0; i < totalPlayer; i++) { // calculates global variables of the current state
-            rivalBombCount[i] = state.getPlayerFromNumber(i + 1).getBombCount();
-            rivalStoneCount[i] = state.getPlayerFromNumber(i + 1).getStoneCount();
+            rivalBombCount[i] = state.getPlayerFromId(i + 1).getBombCount();
+            rivalStoneCount[i] = state.getPlayerFromId(i + 1).getStoneCount();
         }
 
-        assert rivalBombCount[move.getPlayer().number - 1] > 0 :
+        assert rivalBombCount[move.getPlayerId() - 1] > 0 :
                 "bombingPhaseHeuristic is a move heuristic: cannot make a move without bombs";
 
         for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
-            if (i + 1 == move.getPlayer().number) {
+            if (i + 1 == move.getPlayerId()) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             } else {
-                rivalry[i] = (rivalBombCount[move.getPlayer().number - 1] * (pow(2 * bombRadius + 1, 2))) /
-                        (abs(rivalStoneCount[i] - playerStoneCount) + rivalBombCount[move.getPlayer().number - 1] * pow(2 * bombRadius + 1, 2));
+                rivalry[i] = (rivalBombCount[move.getPlayerId() - 1] * (pow(2 * bombRadius + 1, 2))) /
+                        (abs(rivalStoneCount[i] - playerStoneCount) + rivalBombCount[move.getPlayerId() - 1] * pow(2 * bombRadius + 1, 2));
             }
         }
 
@@ -247,8 +247,8 @@ public class Heuristics {
 
         for (Tile t : bombSet) {   // we examine each tile within the bomb radius for ownership
             // and assign damage to each rival in case our stone is bombed
-            if (t.getOwner() != null) {
-                bombedStoneCount[t.getOwner().getPlayerNumber() - 1]++;
+            if (t.getOwnerId() != Player.NULL_PLAYER_ID) {
+                bombedStoneCount[t.getOwnerId() - 1]++;
             }
         }
 

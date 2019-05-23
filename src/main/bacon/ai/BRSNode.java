@@ -241,9 +241,9 @@ public class BRSNode {
     private Set<? extends BuildMove> getMaxMoves() {
         // Assign either regular moves or override moves to legalMoves since we are considering either one or the other
         Set<? extends BuildMove> legalMoves;
-        legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe().getPlayerNumber());
+        legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe());
         if (legalMoves.isEmpty()) // regular moves are preferred, only if the search turns up empty do we consider override moves
-            legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe().getPlayerNumber());
+            legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe());
 
         return legalMoves;
     }
@@ -260,12 +260,12 @@ public class BRSNode {
         legalRegularMoves = new HashSet<>();
         legalOverrideMoves = new HashSet<>();
         for (int i = 1; i <= state.getTotalPlayerCount(); i++) { // Add all regular moves of other players to storage (definition of BRS)
-            if (i == state.getMe().number) continue;
+            if (i == state.getMe()) continue;
             legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
         }
         if (legalRegularMoves.isEmpty()) { // If no regular moves exist, add all override moves of other players to storage instead
             for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-                if (i == state.getMe().number) continue;
+                if (i == state.getMe()) continue;
                 legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
             }
         }
@@ -286,12 +286,12 @@ public class BRSNode {
      */
     private double evaluateCurrentState(Move.Type type) {
         if (type == Move.Type.REGULAR) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe().number)
-                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe().number)
-                    + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe().number)
-                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe().number);
+            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
+                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe())
+                    + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
+                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe());
         } else if (type == Move.Type.OVERRIDE) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe().number);
+            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe());
         }
 
         throw new IllegalStateException("Cannot evaluate bomb heuristic in brs tree. I shouldn't be here...");

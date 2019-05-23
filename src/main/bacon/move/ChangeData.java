@@ -1,17 +1,16 @@
 package bacon.move;
 
-import bacon.Player;
 import bacon.Tile;
 
 class ChangeData {
 
-    Tile tile;
-    Player ogPlayer;
-    Tile.Property wasProp;
+    final Tile tile;
+    final int ogPlayerId;
+    final Tile.Property wasProp;
 
-    public ChangeData(Tile tile, Player ogPlayer, Tile.Property wasProp) {
+    ChangeData(Tile tile, int ogPlayerId, Tile.Property wasProp) {
         this.tile = tile;
-        this.ogPlayer = ogPlayer;
+        this.ogPlayerId = ogPlayerId;
         this.wasProp= wasProp;
     }
 }
