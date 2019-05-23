@@ -6,7 +6,6 @@ import bacon.Tile;
 import java.util.HashSet;
 import java.util.Set;
 
-
 /**
  * Contains the stability heuristic.
  */

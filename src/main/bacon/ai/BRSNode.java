@@ -29,24 +29,25 @@ public class BRSNode {
     private final Move.Type type;
     private double value;
 
-    private static boolean pruning;
+    private static boolean enablePruning;
     private double alpha;
     private double beta;
 
     /**
      * External call constructor for game tree root
      *
-     * @param depth     maximum depth to be searched
-     * @param branching maximum branching factor at each node
-     * @param prune     set to true if alpha-beta pruning should be applied
+     * @param depth           maximum depth to be searched
+     * @param branchingFactor maximum branching factor at each node
+     * @param enablePruning   set to true if alpha-beta pruning should be applied
      */
-    public BRSNode(int depth, int branching, boolean prune) {
+    public BRSNode(int depth, int branchingFactor, boolean enablePruning) {
+        BRSNode.searchDepth = depth;
+        BRSNode.branchingFactor = branchingFactor;
+        BRSNode.enablePruning = enablePruning;
+
         this.layer = 0;
-        searchDepth = depth;
-        branchingFactor = branching;
         this.isMaxNode = true;
         this.type = null;
-        pruning = prune;
         this.alpha = -Double.MAX_VALUE;
         this.beta = Double.MAX_VALUE;
 
@@ -91,7 +92,7 @@ public class BRSNode {
         List<BuildMove> beam = computeBeam();
 
         // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
-        this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE ;
+        this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
 
         // no move is available, return value of current game state directly
         if (beam == null) {
@@ -101,7 +102,7 @@ public class BRSNode {
         }
 
         // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
-        else if (this.layer < searchDepth - 1) {
+        else if (this.layer < BRSNode.searchDepth - 1) {
             Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : beam) {
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta);
@@ -116,7 +117,7 @@ public class BRSNode {
                         this.bestMove = move;
 
                         this.alpha = this.value;
-                        if (pruning && this.beta <= this.alpha) {
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             break;
                         }
                     }
@@ -126,7 +127,7 @@ public class BRSNode {
                         this.bestMove = move;
 
                         this.beta = this.value;
-                        if (pruning && this.beta <= this.alpha) {
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             break;
                         }
                     }
@@ -169,8 +170,7 @@ public class BRSNode {
                 this.isMaxNode = false;
                 legalMoves = getMinMoves();
             }
-        }
-        else {
+        } else {
             legalMoves = getMinMoves();
             if (legalMoves.isEmpty()) {
                 this.isMaxNode = true;

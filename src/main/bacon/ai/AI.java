@@ -1,5 +1,6 @@
 package bacon.ai;
 
+import bacon.Config;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
@@ -33,17 +34,17 @@ public class AI {
      *
      * @param timeout          the time the ai has for its computation
      * @param depth            the maximum search depth the ai is allowed to do
-     * @param enablePruning    true if the tree should be pruned
+     * @param cfg              config containing settings for search algorithms
      * @param currentGameState current Game State
      * @return the next move
      */
-    public Move requestMove(int timeout, int depth, boolean enablePruning, GameState currentGameState) {
+    public Move requestMove(int timeout, int depth, Config cfg, GameState currentGameState) {
 
         Statistics.getStatistics().init();
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, enablePruning);
+            BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, cfg.isPruningEnabled());
             root.evaluateNode();
             bestMove = root.getBestMove();
         } else {

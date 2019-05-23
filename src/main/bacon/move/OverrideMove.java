@@ -54,7 +54,7 @@ public class OverrideMove extends BuildMove {
         super.doMove();
 
         if (tile.getProperty() == Tile.Property.EXPANSION) {
-            Game.getGame().getCurrentState().getMap().removeExpansionStone(tile); // removes this tile from expansion stone tracker in Map
+            this.state.getMap().removeExpansionStone(tile); // removes this tile from expansion stone tracker in Map
             tile.setProperty(Tile.Property.DEFAULT);    // the tile we placed our override stone on could be an expansion field
         }
 

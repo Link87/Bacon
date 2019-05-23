@@ -15,7 +15,7 @@ public class Map {
     private int totalTiles;
 
     /**
-     * The tiles that has expansion stone on them
+     * The tiles that have expansion stone on them
      */
     private static Set<Tile> expansionTiles;
 
@@ -243,7 +243,7 @@ public class Map {
         return tiles[x][y];
     }
 
-    public int getTotalTiles() {
+    public int getTotalTileCount() {
         return totalTiles;
     }
 
@@ -252,7 +252,7 @@ public class Map {
      *
      * @return number of occupied tiles
      */
-    public int getOccupiedTiles() {
+    public int getOccupiedTileCount() {
         return occupiedTiles;
     }
 

@@ -51,7 +51,7 @@ public class Game {
     void startGame(Config cfg) {
 
         try (var connection = new ServerConnection(cfg.getHost(), cfg.getPort())) {
-            LOGGER.log(Level.INFO, "Established connection to server. Sending group number.");
+            LOGGER.log(Level.INFO, "Established connection to server. Sending group number ({0}).", GROUP_NUMBER);
 
             // send group number to server
             connection.sendMessage(new Message(Message.Type.GROUP_NUMBER, new byte[]{GROUP_NUMBER}));
@@ -85,7 +85,7 @@ public class Game {
 
             if (msg.getType() == Message.Type.MOVE_REQUEST) {
                 var buffer = ByteBuffer.wrap(msg.getBinaryContent());
-                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), cfg.isPruningEnabled(), this.getCurrentState());
+                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), cfg, this.getCurrentState());
                 connection.sendMessage(new Message(Message.Type.MOVE_RESPONSE, move.encodeBinary()));
                 // Manual gc is usually bad practice, but we have lots of spare time after here
                 // TODO maybe skip GC when we directly have a second turn

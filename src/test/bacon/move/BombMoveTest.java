@@ -3,7 +3,6 @@ package bacon.move;
 import bacon.Game;
 import bacon.Maps;
 import bacon.Tile;
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

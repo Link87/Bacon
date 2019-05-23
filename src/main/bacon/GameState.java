@@ -1,7 +1,5 @@
 package bacon;
 
-import java.util.Iterator;
-
 /**
  * Instances of this class contain stateful information about the game.
  * Queries for stateless information are redirected to the Game singleton
@@ -108,7 +106,7 @@ public class GameState {
      *
      * @return the total non-hole tile count
      */
-    public int getTotalTileCount() { return this.map.getTotalTiles(); }
+    public int getTotalTileCount() { return this.map.getTotalTileCount(); }
 
     /**
      * Returns the amount of occupied tiles on the map, including expansion tiles.
@@ -116,7 +114,7 @@ public class GameState {
      *
      * @return the occupied tile count
      */
-    public int getOccupiedTileCount() { return this.map.getOccupiedTiles(); }
+    public int getOccupiedTileCount() { return this.map.getOccupiedTileCount(); }
 
     /**
      * Returns the map this game is played on.

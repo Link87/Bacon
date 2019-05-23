@@ -1,9 +1,6 @@
 package bacon.ai.heuristics;
 
-import bacon.Direction;
-import bacon.GamePhase;
-import bacon.GameState;
-import bacon.Tile;
+import bacon.*;
 import bacon.move.BombMove;
 
 import java.util.ArrayList;
@@ -101,9 +98,9 @@ public class Heuristics {
             // set of already examined tiles
             Set<Tile> bombSet = new HashSet<>();
             // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-            var currentTiles = new ArrayList<Tile>();
+            List<Tile> currentTiles = new ArrayList<>();
             // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-            var nextTiles = new ArrayList<Tile>();
+            List<Tile> nextTiles = new ArrayList<>();
 
             bombSet.add(stone);
             currentTiles.add(stone);
@@ -223,9 +220,9 @@ public class Heuristics {
         // set of already examined tiles
         Set<Tile> bombSet = new HashSet<>();
         // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-        var currentTiles = new ArrayList<Tile>();
+        List<Tile> currentTiles = new ArrayList<>();
         // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-        var nextTiles = new ArrayList<Tile>();
+        List<Tile> nextTiles = new ArrayList<>();
 
         bombSet.add(state.getMap().getTileAt(move.getX(), move.getY()));
         currentTiles.add(state.getMap().getTileAt(move.getX(), move.getY()));

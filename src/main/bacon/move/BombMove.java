@@ -1,9 +1,12 @@
 package bacon.move;
 
-import bacon.*;
+import bacon.Direction;
+import bacon.GameState;
+import bacon.Tile;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -56,9 +59,9 @@ public class BombMove extends Move {
         // set of already examined tiles
         Set<Tile> bombSet = new HashSet<>();
         // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-        var currentTiles = new ArrayList<Tile>();
+        List<Tile> currentTiles = new ArrayList<>();
         // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-        var nextTiles = new ArrayList<Tile>();
+        List<Tile> nextTiles = new ArrayList<>();
 
         bombSet.add(tile);
         currentTiles.add(tile);

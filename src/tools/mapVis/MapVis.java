@@ -210,7 +210,7 @@ public class MapVis extends Application {
         String[] colors = {"red","orange","yellow","lime","lightgreen","lightblue","pink","brown"};
 
         for (int i = 0; i < 8; i++) {
-            Tile other = target.getTransition(Direction.values()[i]);
+            Tile other = target.getTransition(i);
             if (other != null) {
                 labels[other.x][other.y].setStyle("-fx-background-color: "+colors[i]);
             }
@@ -223,7 +223,7 @@ public class MapVis extends Application {
         Coords loca = xyFromLabel(label);
         Tile target = myMap.getTileAt(loca.x, loca.y);
         for (int i = 0; i < 8; i++) {
-            Tile other = target.getTransition(Direction.values()[i]);
+            Tile other = target.getTransition(i);
             if (other != null) {
                 labels[other.x][other.y].setStyle("-fx-background-color: white");
             }
@@ -361,7 +361,7 @@ public class MapVis extends Application {
     }
 
     //this is bad but it gets the job done
-    public Coords xyFromLabel(Label lab) {
+    private Coords xyFromLabel(Label lab) {
         for (int y = 0; y < myMap.height; y++) {
             for (int x = 0; x < myMap.width; x++) {
                 if (lab.equals(labels[x][y])) {
@@ -554,7 +554,7 @@ class Coords {
     int x;
     int y;
 
-    public Coords(int x, int y) {
+    Coords(int x, int y) {
         this.x = x;
         this.y = y;
     }

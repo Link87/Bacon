@@ -16,7 +16,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class BRSTest {
 
@@ -30,7 +31,7 @@ public class BRSTest {
         root.evaluateNode();
         Move bestMove = root.getBestMove();
 
-        assertTrue("BRS returns no move", bestMove != null);
+        assertNotNull("BRS returns no move", bestMove);
         System.out.println("Best Move: " + "(" + bestMove.getX() + "," + bestMove.getY() + ")");
 
         System.out.println(Game.getGame().getCurrentState().getMap().toString());
@@ -50,14 +51,12 @@ public class BRSTest {
             root.evaluateNode();
             Move bestMove = root.getBestMove();
 
-            assertTrue("BRS returns no move", bestMove != null);
+            assertNotNull("BRS returns no move", bestMove);
             System.out.println("Player 1 Best Move: " + "(" + bestMove.getX() + "," + bestMove.getY() + ")");
             assertTrue("BRS returns illegal move", bestMove.isLegal());
 
-            if (bestMove != null) {
-                bestMove.doMove();
-                System.out.println(Game.getGame().getCurrentState().getMap().toString());
-            }
+            bestMove.doMove();
+            System.out.println(Game.getGame().getCurrentState().getMap().toString());
 
             for (int j = 2; j < 4; j++) {
                 Set<RegularMove> move = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), j);
