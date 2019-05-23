@@ -68,7 +68,7 @@ public enum Direction {
     /**
      * Integer value that represents an invalid direction.
      */
-    public static final int NO_DIRECTION_NO = -1;
+    public static final int NULL_DIRECTION_ID = -1;
 
     static {
         opposite.put(UP, DOWN);

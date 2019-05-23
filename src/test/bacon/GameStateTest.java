@@ -39,7 +39,7 @@ public class GameStateTest {
 
                 for (int direction = 0; direction < Direction.values().length; direction++) {
                     if (origin.getMap().getTileAt(x, y).getTransition(direction) == null)
-                        assertEquals(Direction.NO_DIRECTION_NO, copy.getMap().getTileAt(x, y).getArrivalDirection(direction));
+                        assertEquals(Direction.NULL_DIRECTION_ID, copy.getMap().getTileAt(x, y).getArrivalDirection(direction));
                     else assertEquals(origin.getMap().getTileAt(x, y).getArrivalDirection(direction),
                                 copy.getMap().getTileAt(x, y).getArrivalDirection(direction));
                 }

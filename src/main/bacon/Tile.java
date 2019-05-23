@@ -23,7 +23,7 @@ public class Tile {
      * Direction in which the according transition arrives at the other tile.
      * The direction is defined by the array index, as defined in {@link Direction}.
      * <p>
-     * If no transition is possible in a given direction, the array element is set to <code>-1</code>.
+     * If no transition is possible in a given direction, the array element is set to <code>Direction.NULL_DIRECTION_ID</code>.
      */
     private final int[] arrivals;
 
@@ -52,7 +52,7 @@ public class Tile {
 
         this.transitions = new Tile[Direction.values().length];
         this.arrivals = new int[Direction.values().length];
-        Arrays.fill(this.arrivals, Direction.NO_DIRECTION_NO);
+        Arrays.fill(this.arrivals, Direction.NULL_DIRECTION_ID);
     }
 
     /**
@@ -109,12 +109,12 @@ public class Tile {
             if (neighbor == null) continue;
             for (int neighborDirection = 0; neighborDirection < Direction.values().length; neighborDirection++) {
                 Tile t = neighbor.getTransition(neighborDirection);
-                if (t == this) neighbor.setTransition(null, neighborDirection, Direction.NO_DIRECTION_NO);
+                if (t == this) neighbor.setTransition(null, neighborDirection, Direction.NULL_DIRECTION_ID);
             }
         }
         //remove transitions from bombed tile to neighbors
         for (int direction = 0; direction < Direction.values().length; direction++) {
-            this.setTransition(null, direction, Direction.NO_DIRECTION_NO);
+            this.setTransition(null, direction, Direction.NULL_DIRECTION_ID);
         }
 
     }
@@ -134,7 +134,7 @@ public class Tile {
      * Returns the direction in which the transition arrives. Returns <code>null</code> if no transition is present.
      *
      * @param direction {@link Direction} in which the transition starts on this tile
-     * @return the arriving direction or <code>null</code> if no transition is present in the given direction
+     * @return the arriving direction or <code>Direction.NULL_DIRECTION_ID</code> if no transition is present in the given direction
      */
     public int getArrivalDirection(int direction) {
         return this.arrivals[direction];
