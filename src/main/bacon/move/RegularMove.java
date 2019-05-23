@@ -45,7 +45,7 @@ public class RegularMove extends BuildMove {
                     return false;
                 break;
             case CHOICE:
-                if (this.request == null || this.request.type != BonusRequest.Type.SWITCH_STONES)
+                if (this.request == null || this.request.type != BonusRequest.Type.CHOOSE_PLAYER)
                     return false;
                 break;
             default:

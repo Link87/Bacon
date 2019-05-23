@@ -57,7 +57,7 @@ public class LegalMoves {
                             // also handle tile property
                             if (steps > 0 && last.getProperty() == Tile.Property.CHOICE) {
                                 for (int i = 1; i <= Game.getGame().getTotalPlayerCount(); i++) {
-                                    legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, BonusRequest.fromValue(i, state)));
+                                    legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(i)));
                                 }
                             } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
                                 legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));

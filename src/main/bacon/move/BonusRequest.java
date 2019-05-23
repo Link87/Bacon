@@ -12,7 +12,7 @@ public class BonusRequest {
         NONE,
         BOMB_BONUS,
         OVERRIDE_BONUS,
-        SWITCH_STONES
+        CHOOSE_PLAYER
     }
 
     public final Type type;
@@ -20,6 +20,15 @@ public class BonusRequest {
 
     public BonusRequest(Type type) {
         this(type, Player.NULL_PLAYER_ID);
+    }
+
+    /**
+     * Create a new BonusRequest for switching tiles with the given player-
+     *
+     * @param other Player to switch tiles with
+     */
+    public BonusRequest(int other) {
+        this(Type.CHOOSE_PLAYER, other);
     }
 
     private BonusRequest(Type type, int other) {
@@ -36,7 +45,7 @@ public class BonusRequest {
      */
     public static BonusRequest fromValue(int value, GameState state) {
         if (value > 0 && value <= state.getTotalPlayerCount()) {
-            var request = new BonusRequest(Type.SWITCH_STONES);
+            var request = new BonusRequest(Type.CHOOSE_PLAYER);
             request.other = value;
             return request;
         } else if (value == 20)
@@ -55,16 +64,6 @@ public class BonusRequest {
         return other;
     }
 
-    /**
-     * Create a new BonusRequest for switching tiles with the given player-
-     *
-     * @param other Player to switch tiles with
-     * @return BonusRequest for switching tiles with given player
-     */
-    public static BonusRequest switchWith(int other) {
-        return new BonusRequest(Type.SWITCH_STONES, other);
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this)
@@ -73,8 +72,8 @@ public class BonusRequest {
         if (obj == null || obj.getClass() != this.getClass())
             return false;
 
-        if (this.type == Type.SWITCH_STONES)
-            return ((BonusRequest) obj).type == Type.SWITCH_STONES && this.other == ((BonusRequest) obj).other;
+        if (this.type == Type.CHOOSE_PLAYER)
+            return ((BonusRequest) obj).type == Type.CHOOSE_PLAYER && this.other == ((BonusRequest) obj).other;
         return this.type == ((BonusRequest) obj).type;
     }
 
@@ -94,7 +93,7 @@ public class BonusRequest {
                 return 20;
             case OVERRIDE_BONUS:
                 return 21;
-            case SWITCH_STONES:
+            case CHOOSE_PLAYER:
                 return (byte) other;
             default:
                 return 0;
