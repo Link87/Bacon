@@ -49,7 +49,6 @@ public class GameState {
         for (int i = 0; i < playersCopy.length; i++) {
             playersCopy[i] = this.players[i].shallowCopy();
             for (Tile stone : this.players[i].getStones()) {
-                mapCopy.getTileAt(stone.x, stone.y).setOwnerId(playersCopy[i].id);
                 playersCopy[i].addStone(mapCopy.getTileAt(stone.x, stone.y));
             }
         }
