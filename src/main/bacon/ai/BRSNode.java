@@ -4,6 +4,7 @@ import bacon.Game;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
 import bacon.ai.heuristics.LegalMoves;
+import bacon.ai.heuristics.PancakeWatchdog;
 import bacon.ai.heuristics.StabilityHeuristic;
 import bacon.move.*;
 
@@ -23,6 +24,7 @@ public class BRSNode {
     private BuildMove bestMove;
     private boolean isMaxNode;
     private GameState state;
+    private PancakeWatchdog watchdog;
     /**
      * Type of move that lead to this node
      */
@@ -40,7 +42,7 @@ public class BRSNode {
      * @param branchingFactor maximum branching factor at each node
      * @param enablePruning   set to true if alpha-beta pruning should be applied
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning) {
+    public BRSNode(int depth, int branchingFactor, boolean enablePruning, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
@@ -51,6 +53,7 @@ public class BRSNode {
         this.alpha = -Double.MAX_VALUE;
         this.beta = Double.MAX_VALUE;
 
+        this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
     }
 
@@ -63,13 +66,14 @@ public class BRSNode {
      * @param alpha     alpha value
      * @param beta      beta value
      */
-    private BRSNode(int layer, boolean isMaxNode, Move.Type type, double alpha, double beta) {
+    private BRSNode(int layer, boolean isMaxNode, Move.Type type, double alpha, double beta, PancakeWatchdog watchdog) {
         this.layer = layer;
         this.isMaxNode = isMaxNode;
         this.type = type;
         this.alpha = alpha;
         this.beta = beta;
 
+        this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
     }
 
@@ -98,14 +102,13 @@ public class BRSNode {
         if (beam == null) {
             Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
-
         }
 
         // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
         else if (this.layer < BRSNode.searchDepth - 1) {
             Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : beam) {
-                BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta);
+                BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta, this.watchdog);
                 move.doMove();
                 childNode.evaluateNode();
                 move.undoMove();
@@ -132,6 +135,9 @@ public class BRSNode {
                         }
                     }
                 }
+
+                if (this.watchdog.isPancake())
+                    return;
             }
 
         }
@@ -241,9 +247,11 @@ public class BRSNode {
     private Set<? extends BuildMove> getMaxMoves() {
         // Assign either regular moves or override moves to legalMoves since we are considering either one or the other
         Set<? extends BuildMove> legalMoves;
-        legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe());
+        legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe(), this.watchdog);
+        if (this.watchdog.isPancake())
+            return Collections.emptySet();
         if (legalMoves.isEmpty()) // regular moves are preferred, only if the search turns up empty do we consider override moves
-            legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe());
+            legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe(), this.watchdog);
 
         return legalMoves;
     }
@@ -261,12 +269,16 @@ public class BRSNode {
         legalOverrideMoves = new HashSet<>();
         for (int i = 1; i <= state.getTotalPlayerCount(); i++) { // Add all regular moves of other players to storage (definition of BRS)
             if (i == state.getMe()) continue;
-            legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
+            legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i, this.watchdog));
+            if (this.watchdog.isPancake())
+                return Collections.emptySet();
         }
         if (legalRegularMoves.isEmpty()) { // If no regular moves exist, add all override moves of other players to storage instead
             for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                 if (i == state.getMe()) continue;
-                legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
+                legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i, this.watchdog));
+                if (this.watchdog.isPancake())
+                    return Collections.emptySet();
             }
         }
 
@@ -287,7 +299,7 @@ public class BRSNode {
     private double evaluateCurrentState(Move.Type type) {
         if (type == Move.Type.REGULAR) {
             return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
-                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe())
+                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe(), this.watchdog)
                     + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
                     + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe());
         } else if (type == Move.Type.OVERRIDE) {

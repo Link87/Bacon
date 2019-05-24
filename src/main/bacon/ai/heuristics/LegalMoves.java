@@ -23,7 +23,7 @@ public class LegalMoves {
      * @param playerId number of the current player in turn
      * @return legal regular moves in the given board state
      */
-    public static Set<RegularMove> getLegalRegularMoves(GameState state, int playerId) {
+    public static Set<RegularMove> getLegalRegularMoves(GameState state, int playerId, PancakeWatchdog watchdog) {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
@@ -73,6 +73,9 @@ public class LegalMoves {
                         steps++; // increment step counter only if last isn't self-neighboring
                 }
             }
+
+            if (watchdog.isPancake())
+                return Collections.emptySet();
         }
 
         return legalMoves;
@@ -86,7 +89,7 @@ public class LegalMoves {
      * @param playerId number of the current player in turn
      * @return legal override moves in the given board state
      */
-    public static Set<OverrideMove> getLegalOverrideMoves(GameState state, int playerId) {
+    public static Set<OverrideMove> getLegalOverrideMoves(GameState state, int playerId, PancakeWatchdog watchdog) {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
@@ -122,6 +125,9 @@ public class LegalMoves {
                     last = last.getTransition(oldDirection);
                 }
             }
+
+            if (watchdog.isPancake())
+                return Collections.emptySet();
         }
 
         // adds independent expansion moves to possible override moves

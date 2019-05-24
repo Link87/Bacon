@@ -41,17 +41,17 @@ public class LegalMoveTest {
         }
 
         //Regular Moves
-        Set<? extends Move> evaluatedMoves1 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 1);
+        Set<? extends Move> evaluatedMoves1 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 1, new PancakeWatchdog(0));
         for (Move mv : evaluatedMoves1) {
             assertTrue("Player 1: Illegal Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles1.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
-        Set<? extends Move> evaluatedMoves2 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 2);
+        Set<? extends Move> evaluatedMoves2 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 2, new PancakeWatchdog(0));
         for (Move mv : evaluatedMoves2) {
             assertTrue("Player 2: Illegal Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles2.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
-        Set<? extends Move> evaluatedMoves3 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 3);
+        Set<? extends Move> evaluatedMoves3 = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 3, new PancakeWatchdog(0));
         for (Move mv : evaluatedMoves3) {
             assertTrue("Player 3: Illegal Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles3.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
@@ -74,17 +74,17 @@ public class LegalMoveTest {
             legalTiles3.add(map.getTileAt(x33[i], y33[i]));
         }
 
-        evaluatedMoves1 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 1);
+        evaluatedMoves1 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 1, new PancakeWatchdog(0));
         for (Move mv : evaluatedMoves1) {
             assertTrue("Player 1: Illegal Override Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles1.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
-        evaluatedMoves2 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 2);
+        evaluatedMoves2 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 2, new PancakeWatchdog(0));
         for (Move mv : evaluatedMoves2) {
             assertTrue("Player 2: Illegal Override Move at: (" + mv.getX() + "," + mv.getY()  + ")", legalTiles2.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
 
-        evaluatedMoves3 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 3);
+        evaluatedMoves3 = LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 3, new PancakeWatchdog(0));
         for (Move mv : evaluatedMoves3) {
             assertTrue("Player 3: Illegal Override Move at: (" + mv.getX() + "," + mv.getY() + ")", legalTiles3.contains(map.getTileAt(mv.getX(), mv.getY())));
         }

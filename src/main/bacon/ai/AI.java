@@ -5,6 +5,7 @@ import bacon.GamePhase;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
 import bacon.ai.heuristics.LegalMoves;
+import bacon.ai.heuristics.PancakeWatchdog;
 import bacon.move.BombMove;
 import bacon.move.Move;
 
@@ -44,9 +45,16 @@ public class AI {
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, cfg.isPruningEnabled());
-            root.evaluateNode();
-            bestMove = root.getBestMove();
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
+            while (true) {
+                BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, cfg.isPruningEnabled(), watchdog);
+                root.evaluateNode();
+                bestMove = root.getBestMove();
+                if (watchdog.isTriggered()) {
+                    LOGGER.log(Level.WARNING, "Pancake triggered!");
+                    break;
+                }
+            }
         } else {
             Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());
             double evalValue;

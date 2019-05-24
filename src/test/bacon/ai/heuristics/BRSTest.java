@@ -20,7 +20,7 @@ public class BRSTest {
         Game.getGame().readMap(Maps.EXAMPLE_CERTAIN);
         Game.getGame().getCurrentState().setMe(1);
 
-        BRSNode root = new BRSNode(4, 20, false);
+        BRSNode root = new BRSNode(4, 20, false, new PancakeWatchdog(0));
         root.evaluateNode();
         Move bestMove = root.getBestMove();
 
@@ -40,7 +40,7 @@ public class BRSTest {
         Player me = Game.getGame().getCurrentState().getPlayerFromId(1);
 
         for (int i = 0; i < 10; i++) {
-            BRSNode root = new BRSNode(6, 5, true);
+            BRSNode root = new BRSNode(6, 5, true, new PancakeWatchdog(0));
             root.evaluateNode();
             Move bestMove = root.getBestMove();
 
@@ -52,7 +52,7 @@ public class BRSTest {
             System.out.println(Game.getGame().getCurrentState().getMap().toString());
 
             for (int j = 2; j < 4; j++) {
-                Set<RegularMove> move = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), j);
+                Set<RegularMove> move = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), j, new PancakeWatchdog(0));
                 int size = move.size();
                 int index = (int) (Math.random() * (size));
 
