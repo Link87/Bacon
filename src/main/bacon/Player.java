@@ -1,9 +1,6 @@
 package bacon;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 
 /**
  * A Player class which contains player data and performs player actions.
@@ -11,9 +8,14 @@ import java.util.WeakHashMap;
 public class Player {
 
     /**
+     * Integer representation of an invalid or <code>null</code> player instance.
+     */
+    public static final int NULL_PLAYER_ID = 0;
+
+    /**
      * The index of the player.
      */
-    public final int number;
+    public final int id;
     private int overrideStoneCount;
     private int bombCount;
     private boolean disqualified;
@@ -22,18 +24,18 @@ public class Player {
     /**
      * Creates a new Player instance.
      *
-     * @param number             index of the player
+     * @param id                 index of the player
      * @param overrideStoneCount amount of override stones the player has
      * @param bombCount          amount o bombs the player has
      */
-    public Player(int number, int overrideStoneCount, int bombCount) {
-        this.number = number;
+    public Player(int id, int overrideStoneCount, int bombCount) {
+        this.id = id;
         this.overrideStoneCount = overrideStoneCount;
         this.bombCount = bombCount;
         this.disqualified = false;
         // Create a set that only hold weak references to its contents
         // This may break the invariants of all set methods, if not handled carefully!
-        this.stones = Collections.newSetFromMap(new WeakHashMap<>());
+        this.stones = new HashSet<>();
     }
 
     /**
@@ -43,18 +45,9 @@ public class Player {
      * @return a shallow copy
      */
     Player shallowCopy() {
-        Player copy = new Player(this.number, this.overrideStoneCount, this.bombCount);
+        Player copy = new Player(this.id, this.overrideStoneCount, this.bombCount);
         copy.disqualified = this.disqualified;
         return copy;
-    }
-
-    /**
-     * Returns the number of the player.
-     *
-     * @return number of player
-     */
-    public int getPlayerNumber() {
-        return this.number;
     }
 
     /**
@@ -114,12 +107,12 @@ public class Player {
     }
 
     /**
-     * Returns an iterator over all tiles owned by the player.
+     * Returns the tiles owned by the player.
      *
-     * @return an iterator containing all of the players tiles
+     * @return a set containing all of the players tiles
      */
-    public Iterator<Tile> getStonesIterator() {
-        return this.stones.iterator();
+    public Set<Tile> getStones() {
+        return Collections.unmodifiableSet(this.stones);
     }
 
     /**
@@ -162,11 +155,11 @@ public class Player {
         if (obj == null || obj.getClass() != this.getClass())
             return false;
 
-        return this.number == ((Player) obj).number;
+        return this.id == ((Player) obj).id;
     }
 
     @Override
     public int hashCode() {
-        return this.number;
+        return this.id;
     }
 }

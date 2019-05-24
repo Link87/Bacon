@@ -1,7 +1,6 @@
 package bacon;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A tile on the map. A Tile may have a special {@link Property}.
@@ -15,20 +14,19 @@ public class Tile {
      * Neighbouring tiles in each direction. May also contains extraneous transitions.
      * The direction is defined by the array index, as defined in {@link Direction}.
      * <p>
-     * If no transition is possible in a given direction, the WeakReferences point to <code>null</code>.
-     * The WeakReference objects itself are never null.
+     * If no transition is possible in a given direction, the value is set to <code>null</code>.
      */
-    private final ArrayList<WeakReference<Tile>> transitions;
+    private final Tile[] transitions;
 
     /**
      * Direction in which the according transition arrives at the other tile.
      * The direction is defined by the array index, as defined in {@link Direction}.
      * <p>
-     * If no transition is possible in a given direction, the array element is set to  <code>null</code>.
+     * If no transition is possible in a given direction, the array element is set to <code>Direction.NULL_DIRECTION_ID</code>.
      */
-    private final Direction[] arrivals;
+    private final int[] arrivals;
 
-    private WeakReference<Player> owner;
+    private int ownerId;
     private Property property;
 
     public final int x;
@@ -37,41 +35,40 @@ public class Tile {
     /**
      * Creates a new Tile at the given position. If the owner is set, the property has to be set to <code>DEFAULT</code>.
      *
-     * @param owner    {@link Player} that owns the stone on this Tile. Set to <code>null</code> if there is no stone on this Tile.
+     * @param ownerId  number of {@link Player} that owns the stone on this Tile.
+     *                 Set to <code>Player.NULL_PLAYER_ID</code> if there is no stone on this Tile.
      * @param property Special {@link Property} that this Tile has
      * @param x        horizontal coordinate of this Tile
      * @param y        vertical coordinate of this Tile
      */
-    public Tile(Player owner, Property property, int x, int y) {
-        this.owner = new WeakReference<>(owner);
+    public Tile(int ownerId, Property property, int x, int y) {
+        this.ownerId = ownerId;
         this.property = property;
 
-        assert this.owner.get() == null || property == Property.DEFAULT : "Only default state can define initial owner";
+        assert this.ownerId == Player.NULL_PLAYER_ID || property == Property.DEFAULT : "Only default state can define initial owner";
 
         this.x = x;
         this.y = y;
 
-        this.transitions = new ArrayList<>(Direction.values().length);
-        for (int i = 0; i < Direction.values().length; i++)
-            this.transitions.add(new WeakReference<>(null));
-        this.arrivals = new Direction[Direction.values().length];
+        this.transitions = new Tile[Direction.values().length];
+        this.arrivals = new int[Direction.values().length];
+        Arrays.fill(this.arrivals, Direction.NULL_DIRECTION_ID);
     }
 
     /**
-     * Sets the owner of this Tile. Use <code>null</code> to remove any ownership.
-     * Also updates the player.
+     * Sets the owner of this Tile and updates the players stones.
      *
-     * @param owner new owner of this Tile. <code>null</code> resets ownership
+     * @param ownerId id of new owner of this Tile.
      */
-    public void setOwner(Player owner) {
-        if (this.owner.get() != null) {
-            this.owner.get().removeStone(this);
+    public void setOwnerId(int ownerId) {
+        if (this.ownerId != Player.NULL_PLAYER_ID) {
+            Game.getGame().getCurrentState().getPlayerFromId(this.ownerId).removeStone(this);
         }
-        this.owner = new WeakReference<>(owner);
+        if (ownerId != Player.NULL_PLAYER_ID) {
+            Game.getGame().getCurrentState().getPlayerFromId(ownerId).addStone(this);
+        }
+        this.ownerId = ownerId;
 
-        if (this.owner.get() != null) {
-            this.owner.get().addStone(this);
-        }
     }
 
     /**
@@ -91,9 +88,9 @@ public class Tile {
      * @param direction Direction in which the transition is applied
      * @param arrival   Direction in which the transition arrives at the other tile
      */
-    void setTransition(Tile other, Direction direction, Direction arrival) {
-        this.transitions.set(direction.ordinal(), new WeakReference<>(other));
-        this.arrivals[direction.ordinal()] = arrival;
+    void setTransition(Tile other, int direction, int arrival) {
+        this.transitions[direction] = other;
+        this.arrivals[direction] = arrival;
     }
 
 
@@ -103,20 +100,20 @@ public class Tile {
      */
     public void bombTile() {
         setProperty(Property.HOLE);
-        setOwner(null);
+        setOwnerId(Player.NULL_PLAYER_ID);
 
         //remove transition from neighbors to bombed tile
-        for (Direction direction : Direction.values()) {
+        for (int direction = 0; direction < Direction.values().length; direction++) {
             Tile neighbor = this.getTransition(direction);
             if (neighbor == null) continue;
-            for (Direction neighborDirection : Direction.values()) {
+            for (int neighborDirection = 0; neighborDirection < Direction.values().length; neighborDirection++) {
                 Tile t = neighbor.getTransition(neighborDirection);
-                if (t == this) neighbor.setTransition(null, neighborDirection, null);
+                if (t == this) neighbor.setTransition(null, neighborDirection, Direction.NULL_DIRECTION_ID);
             }
         }
         //remove transitions from bombed tile to neighbors
-        for (Direction direction : Direction.values()) {
-            this.setTransition(null, direction, null);
+        for (int direction = 0; direction < Direction.values().length; direction++) {
+            this.setTransition(null, direction, Direction.NULL_DIRECTION_ID);
         }
 
     }
@@ -128,27 +125,27 @@ public class Tile {
      * @param direction {@link Direction} in which the transition is applied
      * @return the Tile the transition points to or <code>null</code> if no transition is present
      */
-    public Tile getTransition(Direction direction) {
-        return this.transitions.get(direction.ordinal()).get();
+    public Tile getTransition(int direction) {
+        return this.transitions[direction];
     }
 
     /**
      * Returns the direction in which the transition arrives. Returns <code>null</code> if no transition is present.
      *
      * @param direction {@link Direction} in which the transition starts on this tile
-     * @return the arriving direction or <code>null</code> if no transition is present in the given direction
+     * @return the arriving direction or <code>Direction.NULL_DIRECTION_ID</code> if no transition is present in the given direction
      */
-    public Direction getArrivalDirection(Direction direction) {
-        return this.arrivals[direction.ordinal()];
+    public int getArrivalDirection(int direction) {
+        return this.arrivals[direction];
     }
 
     /**
-     * Returns the owner of this Tile.
+     * Returns the id of the owner of this Tile.
      *
-     * @return the owner of this Tile
+     * @return the id of the owner of this Tile or <code>Player.NULL_PLAYER_ID</code> if tile is unoccupied
      */
-    public Player getOwner() {
-        return this.owner.get();
+    public int getOwnerId() {
+        return this.ownerId;
     }
 
     /**

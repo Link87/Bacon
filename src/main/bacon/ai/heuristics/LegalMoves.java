@@ -5,7 +5,6 @@ import bacon.move.*;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -21,27 +20,24 @@ public class LegalMoves {
      * CAUTION: PLAYER ARGUMENT MUST REFER TO A PLAYER OF THE GIVEN STATE
      *
      * @param state    Game State to be examined
-     * @param playerNr number of the current player in turn
+     * @param playerId number of the current player in turn
      * @return legal regular moves in the given board state
      */
-    public static Set<RegularMove> getLegalRegularMoves(GameState state, int playerNr) {
+    public static Set<RegularMove> getLegalRegularMoves(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
 
-        if (state.getPlayerFromNumber(playerNr).isDisqualified())
+        if (state.getPlayerFromId(playerId).isDisqualified())
             return Collections.emptySet();
 
         Set<RegularMove> legalMoves = new HashSet<>();
-        Player player = state.getPlayerFromNumber(playerNr);
-        Iterator<Tile> stoneIterator = player.getStonesIterator();
 
-        while (stoneIterator.hasNext()) { // iterates over all of the player's stones
-            Tile tile = stoneIterator.next();
+        for (Tile tile : state.getPlayerFromId(playerId).getStones()) { // iterates over all of the player's stones
 
-            for (Direction direction : Direction.values()) {
+            for (int direction = 0; direction < Direction.values().length; direction++) {
                 int steps = 0; //counts steps from our own stone currently under consideration
-                var searchDirection = direction;
+                int searchDirection = direction;
                 Tile last = tile;
 
                 while (true) {
@@ -50,30 +46,31 @@ public class LegalMoves {
                         break;
                     else {
                         // determine new search direction, is opposite to arrival direction
-                        Direction helper = searchDirection;
-                        searchDirection = last.getArrivalDirection(searchDirection).opposite();
+                        int helper = searchDirection;
+                        searchDirection = Direction.oppositeOf(last.getArrivalDirection(searchDirection));
                         last = last.getTransition(helper);
 
-                        if (last.getOwner() == player) { // we can stop searching if we find a tile occupied by the same player
+                        if (last.getOwnerId() == playerId) { // we can stop searching if we find a tile occupied by the same player
                             break;
-                        } else if (last.getOwner() == null && last.getProperty() != Tile.Property.EXPANSION) {
+                        } else if (last.getOwnerId() == Player.NULL_PLAYER_ID && last.getProperty() != Tile.Property.EXPANSION) {
                             // checks if the move actually captures any tile
                             // also handle tile property
                             if (steps > 0 && last.getProperty() == Tile.Property.CHOICE) {
                                 for (int i = 1; i <= Game.getGame().getTotalPlayerCount(); i++) {
-                                    legalMoves.add((RegularMove) MoveFactory.createMove(state, player, last.x, last.y, BonusRequest.fromValue(i, state)));
+                                    legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(i)));
                                 }
                             } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
-                                legalMoves.add((RegularMove) MoveFactory.createMove(state, player, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));
-                                legalMoves.add((RegularMove) MoveFactory.createMove(state, player, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
+                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));
+                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
                             } else if (steps > 0) {
-                                legalMoves.add((RegularMove) MoveFactory.createMove(state, player, last.x, last.y));
+                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y));
                             }
                             break;
                         }
                     }
 
-                    if (last != last.getTransition(searchDirection)) steps++; // increment step counter only if last isn't self-neighboring
+                    if (last != last.getTransition(searchDirection))
+                        steps++; // increment step counter only if last isn't self-neighboring
                 }
             }
         }
@@ -86,45 +83,42 @@ public class LegalMoves {
      * CAUTION: PLAYER ARGUMENT MUST REFER TO A PLAYER OF THE GIVEN STATE
      *
      * @param state    Game State to be examined
-     * @param playerNr number of the current player in turn
+     * @param playerId number of the current player in turn
      * @return legal override moves in the given board state
      */
-    public static Set<OverrideMove> getLegalOverrideMoves(GameState state, int playerNr) {
+    public static Set<OverrideMove> getLegalOverrideMoves(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
 
-        if (state.getPlayerFromNumber(playerNr).isDisqualified())
+        if (state.getPlayerFromId(playerId).isDisqualified())
             return Collections.emptySet();
 
         Set<OverrideMove> legalMoves = new HashSet<>();
-        Player player = state.getPlayerFromNumber(playerNr);
-        if(player.getOverrideStoneCount()<=0) return legalMoves;
-        Iterator<Tile> stoneIterator = player.getStonesIterator();
+        if (state.getPlayerFromId(playerId).getOverrideStoneCount() <= 0) return legalMoves;
 
-        while (stoneIterator.hasNext()) { // iterates over all of the player's stones
-            Tile ogTile = stoneIterator.next();
+        for (Tile ogTile : state.getPlayerFromId(playerId).getStones()) { // iterates over all of the player's stones
 
-            for (Direction ogDirection : Direction.values()) {
-                Direction searchDirection = ogDirection;
+            for (int ogDirection = 0; ogDirection < Direction.values().length; ogDirection++) {
+                int searchDirection = ogDirection;
                 Tile last = ogTile;
 
                 while (true) {
                     Tile next = last.getTransition(searchDirection);
-                    if(next == null ||
-                            (next.getOwner() == null && next.getProperty()!= Tile.Property.EXPANSION)){
+                    if (next == null ||
+                            (next.getOwnerId() == Player.NULL_PLAYER_ID && next.getProperty() != Tile.Property.EXPANSION)) {
                         //next is hole or unowned
                         break;
                     }
-                    if(next != ogTile.getTransition(ogDirection) && next != ogTile){
+                    if (next != ogTile.getTransition(ogDirection) && next != ogTile) {
                         //next is not right next to og in search direction or og
-                        legalMoves.add((OverrideMove) MoveFactory.createMove(state,player,next.x,next.y));
+                        legalMoves.add((OverrideMove) MoveFactory.createMove(state, playerId, next.x, next.y));
                     }
-                    if(next.getOwner()==player){
+                    if (next.getOwnerId() == playerId) {
                         break;
                     }
-                    Direction oldDirection = searchDirection;
-                    searchDirection = last.getArrivalDirection(searchDirection).opposite();
+                    int oldDirection = searchDirection;
+                    searchDirection = Direction.oppositeOf(last.getArrivalDirection(searchDirection));
                     last = last.getTransition(oldDirection);
                 }
             }
@@ -132,7 +126,7 @@ public class LegalMoves {
 
         // adds independent expansion moves to possible override moves
         state.getMap().getExpansionTiles().forEach(expansion ->
-                legalMoves.add((OverrideMove) MoveFactory.createMove(state, player, expansion.x, expansion.y)));
+                legalMoves.add((OverrideMove) MoveFactory.createMove(state, playerId, expansion.x, expansion.y)));
 
         return legalMoves;
     }
@@ -140,24 +134,24 @@ public class LegalMoves {
     /**
      * Returns all legal moves possible from a certain given board state and player in the second phase.
      *
-     * @param state Game State to be examined
-     * @param playerNo number of the current player in turn
+     * @param state    Game State to be examined
+     * @param playerId number of the current player in turn
      * @return legal bomb moves in the given board state
      */
-    public static Set<BombMove> getLegalBombMoves(GameState state, int playerNo) {
+    public static Set<BombMove> getLegalBombMoves(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_TWO) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
 
-        if (state.getPlayerFromNumber(playerNo).isDisqualified())
+        if (state.getPlayerFromId(playerId).isDisqualified())
             return Collections.emptySet();
 
-        Set<BombMove> legalMoves= new HashSet<>();
+        Set<BombMove> legalMoves = new HashSet<>();
         for (int x = 0; x < state.getMap().width; x++) {
             for (int y = 0; y < state.getMap().height; y++) { // Going through the whole map
                 Tile tile = state.getMap().getTileAt(x, y);
                 if (tile.getProperty() != Tile.Property.HOLE) { // Only if tile is not a hole, it's legal to bomb it
-                     legalMoves.add((BombMove) MoveFactory.createMove(state, state.getPlayerFromNumber(playerNo), tile.x, tile.y));
+                    legalMoves.add((BombMove) MoveFactory.createMove(state, playerId, tile.x, tile.y));
                 }
             }
         }

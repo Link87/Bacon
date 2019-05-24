@@ -64,6 +64,6 @@ public class HeuristicsTest {
         GameState state =  Game.getGame().getCurrentState();
         state.setGamePhase(GamePhase.PHASE_TWO);
         assertEquals("Bombing Phase heuristic error", 2.0,
-                Heuristics.bombingPhaseHeuristic(state, (BombMove) MoveFactory.createMove(state, state.getPlayerFromNumber(1), 7, 7)), 0.01);
+                Heuristics.bombingPhaseHeuristic(state, (BombMove) MoveFactory.createMove(state, 1, 7, 7)), 0.01);
     }
 }

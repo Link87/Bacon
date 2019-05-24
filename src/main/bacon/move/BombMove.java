@@ -1,9 +1,12 @@
 package bacon.move;
 
-import bacon.*;
+import bacon.Direction;
+import bacon.GameState;
+import bacon.Tile;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -19,7 +22,7 @@ public class BombMove extends Move {
      * @param x      the x coordinate
      * @param y      the y coordinate
      */
-    public BombMove(GameState state, Player player, int x, int y) {
+    public BombMove(GameState state, int player, int x, int y) {
         super(state, player, x, y);
         this.type = Type.BOMB;
     }
@@ -32,8 +35,8 @@ public class BombMove extends Move {
      * @return true if the move is legal, false otherwise
      */
     public boolean isLegal() {
-        if (state.getMap().getTileAt(xPos, yPos).getProperty() == Tile.Property.HOLE) return false;
-        return player.getBombCount() != 0;
+        if (this.state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.HOLE) return false;
+        return this.state.getPlayerFromId(this.playerId).getBombCount() != 0;
     }
 
 
@@ -56,9 +59,9 @@ public class BombMove extends Move {
         // set of already examined tiles
         Set<Tile> bombSet = new HashSet<>();
         // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-        var currentTiles = new ArrayList<Tile>();
+        List<Tile> currentTiles = new ArrayList<>();
         // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-        var nextTiles = new ArrayList<Tile>();
+        List<Tile> nextTiles = new ArrayList<>();
 
         bombSet.add(tile);
         currentTiles.add(tile);
@@ -66,7 +69,7 @@ public class BombMove extends Move {
         //searches for all neighbours that need to be bombed out
         for (int i = 0; i < radius; i++) {
             for (Tile t : currentTiles) {
-                for (Direction direction : Direction.values()) {
+                for (int direction = 0; direction < Direction.values().length; direction++) {
                     if (t.getTransition(direction) != null) {
                         if (!bombSet.contains(t.getTransition(direction))) {
                             bombSet.add(t.getTransition(direction));
@@ -83,7 +86,7 @@ public class BombMove extends Move {
         bombSet.forEach(Tile::bombTile);
 
         // Subtract 1 bomb from player's inventory
-        this.player.receiveBomb(-1);
+        this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
     }
 
     @Override

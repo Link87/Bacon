@@ -16,17 +16,17 @@ public class MoveFactory {
      * @param request a special bonus the player asks for, applicable for choice and bonus fields
      * @throws IllegalArgumentException when the illegal data is provided
      */
-    public static Move createMove(GameState state, Player player, int x, int y, BonusRequest request) {
+    public static Move createMove(GameState state, int player, int x, int y, BonusRequest request) {
         Tile tile = state.getMap().getTileAt(x, y);
-        Player owner = tile.getOwner();
+        int owner = tile.getOwnerId();
         Tile.Property tileProperty = tile.getProperty();
 
-        assert !player.isDisqualified() : "Player has already been disqualified";
+        assert !Game.getGame().getCurrentState().getPlayerFromId(player).isDisqualified() : "Player has already been disqualified";
 
         assert x >= 0 && y >= 0 && x < state.getMap().width && y < state.getMap().height : "Coordinate out of bounds";
 
         if (state.getGamePhase() == GamePhase.PHASE_ONE) {
-            if (owner == null && tileProperty != Tile.Property.EXPANSION)
+            if (owner == Player.NULL_PLAYER_ID && tileProperty != Tile.Property.EXPANSION)
                 return new RegularMove(state, player, x, y, request);
             else return new OverrideMove(state, player, x, y);
         } else if (state.getGamePhase() == GamePhase.PHASE_TWO)
@@ -38,7 +38,7 @@ public class MoveFactory {
         throw new IllegalArgumentException("Default Illegal Move");
     }
 
-    public static Move createMove(GameState state, Player player, int x, int y) {
+    public static Move createMove(GameState state, int player, int x, int y) {
         return createMove(state, player, x, y, null);
     }
 
@@ -55,8 +55,8 @@ public class MoveFactory {
 
         int x = buffer.getShort();
         int y = buffer.getShort();
-        int special = buffer.get();
-        var player = state.getPlayerFromNumber(buffer.get());
+        byte special = buffer.get();
+        byte player = buffer.get();
 
         return MoveFactory.createMove(state, player, x, y, BonusRequest.fromValue(special, state));
     }

@@ -51,7 +51,7 @@ public class Game {
     void startGame(Config cfg) {
 
         try (var connection = new ServerConnection(cfg.getHost(), cfg.getPort())) {
-            LOGGER.log(Level.INFO, "Established connection to server. Sending group number.");
+            LOGGER.log(Level.INFO, "Established connection to server. Sending group number ({0}).", GROUP_NUMBER);
 
             // send group number to server
             connection.sendMessage(new Message(Message.Type.GROUP_NUMBER, new byte[]{GROUP_NUMBER}));
@@ -85,7 +85,7 @@ public class Game {
 
             if (msg.getType() == Message.Type.MOVE_REQUEST) {
                 var buffer = ByteBuffer.wrap(msg.getBinaryContent());
-                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), cfg.isPruningEnabled(), this.getCurrentState());
+                var move = AI.getAI().requestMove(buffer.getInt(), buffer.get(), cfg, this.getCurrentState());
                 connection.sendMessage(new Message(Message.Type.MOVE_RESPONSE, move.encodeBinary()));
                 // Manual gc is usually bad practice, but we have lots of spare time after here
                 // TODO maybe skip GC when we directly have a second turn
@@ -114,7 +114,7 @@ public class Game {
             case PLAYER_NUMBER:
                 byte me = msg.getBinaryContent()[0];
                 LOGGER.log(Level.INFO, "We are player number {0}.", me);
-                currentGameState.setMe(getCurrentState().getPlayerFromNumber(me));
+                currentGameState.setMe(me);
                 break;
             case MOVE_ANNOUNCE:
                 // Server announces move of a player
@@ -124,11 +124,11 @@ public class Game {
                 // Disqualify player -- quit when *we* where disqualified
                 byte disqualified = msg.getBinaryContent()[0];
                 LOGGER.log(Level.INFO, "Player {0} is disqualified.", disqualified);
-                if (currentGameState.getMe().number == disqualified) {
+                if (currentGameState.getMe() == disqualified) {
                     currentGameState.setGamePhase(GamePhase.ENDED);
                     LOGGER.log(Level.SEVERE, "I have been disqualified \uD83D\uDE14");
                 }
-                getCurrentState().getPlayerFromNumber(disqualified).disqualify();
+                getCurrentState().getPlayerFromId(disqualified).disqualify();
                 break;
             case FIRST_PHASE_END:
                 // Phase one of the game ends
@@ -189,10 +189,10 @@ public class Game {
 
         if (move.isLegal()) {
             LOGGER.log(Level.FINE, "Move #{0}: Received legal move by player {1} on ({2}, {3}).",
-                    new Object[]{ moveCount, move.getPlayer().number, move.getX(), move.getY() });
+                    new Object[]{ moveCount, move.getPlayerId(), move.getX(), move.getY() });
             move.doMove();
         } else LOGGER.log(Level.SEVERE, "Move #{0}: Can't execute move by player {1} on ({2}, {3}): is illegal!",
-                new Object[]{ moveCount, move.getPlayer().number, move.getX(), move.getY() });
+                new Object[]{ moveCount, move.getPlayerId(), move.getX(), move.getY() });
 
         moveCount++;
     }

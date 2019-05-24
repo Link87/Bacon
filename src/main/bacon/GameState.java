@@ -1,7 +1,5 @@
 package bacon;
 
-import java.util.Iterator;
-
 /**
  * Instances of this class contain stateful information about the game.
  * Queries for stateless information are redirected to the Game singleton
@@ -9,12 +7,12 @@ import java.util.Iterator;
 public class GameState {
 
     /**
-     * Contains players in order, where index is number - 1.
+     * Contains players in order, where index is id - 1.
      */
     private Player[] players;
     private Map map;
     private GamePhase currentPhase;
-    private Player me;
+    private int me;
 
     /**
      * constructor for when no information is known
@@ -27,9 +25,9 @@ public class GameState {
      * @param players      Array of Player that participate in the game
      * @param map          map on which the game is played
      * @param currentPhase the current GamePhase
-     * @param me           the Player that uses the AI, has to be contained in the players array
+     * @param me           id of the Player that uses the AI
      */
-    private GameState(Player[] players, Map map, GamePhase currentPhase, Player me) {
+    private GameState(Player[] players, Map map, GamePhase currentPhase, int me) {
         this.players = players;
         this.map = map;
         this.currentPhase = currentPhase;
@@ -50,29 +48,24 @@ public class GameState {
         //every Player gets the tiles he owns correctly assigned
         for (int i = 0; i < playersCopy.length; i++) {
             playersCopy[i] = this.players[i].shallowCopy();
-            Iterator<Tile> itr = this.players[i].getStonesIterator();
-            while (itr.hasNext()) {
-                Tile stone = itr.next();
-                mapCopy.getTileAt(stone.x, stone.y).setOwner(playersCopy[i]);
+            for (Tile stone : this.players[i].getStones()) {
                 playersCopy[i].addStone(mapCopy.getTileAt(stone.x, stone.y));
             }
         }
 
-        Player meCopy = playersCopy[this.me.getPlayerNumber() - 1];
-
-        return new GameState(playersCopy, mapCopy, this.currentPhase, meCopy);
+        return new GameState(playersCopy, mapCopy, this.currentPhase, this.me - 1);
     }
 
     /**
      * This method finds the current player for a given player number.
      *
-     * @param nr number of the player to search for
+     * @param id number of the player to search for
      * @return the player that corresponds to the given number
      * @throws ArrayIndexOutOfBoundsException when player number is illegal
      */
-    public Player getPlayerFromNumber(int nr) {
+    public Player getPlayerFromId(int id) {
         // the player array is 0-based
-        return players[nr - 1];
+        return players[id - 1];
     }
 
     /**
@@ -110,7 +103,7 @@ public class GameState {
      *
      * @return the total non-hole tile count
      */
-    public int getTotalTileCount() { return this.map.getTotalTiles(); }
+    public int getTotalTileCount() { return this.map.getTotalTileCount(); }
 
     /**
      * Returns the amount of occupied tiles on the map, including expansion tiles.
@@ -118,7 +111,7 @@ public class GameState {
      *
      * @return the occupied tile count
      */
-    public int getOccupiedTileCount() { return this.map.getOccupiedTiles(); }
+    public int getOccupiedTileCount() { return this.map.getOccupiedTileCount(); }
 
     /**
      * Returns the map this game is played on.
@@ -129,7 +122,7 @@ public class GameState {
         return map;
     }
 
-    public Player getMe() {
+    public int getMe() {
         return me;
     }
 
@@ -145,7 +138,7 @@ public class GameState {
         this.currentPhase = currentPhase;
     }
 
-    public void setMe(Player me) {
+    public void setMe(int me) {
         this.me = me;
     }
 

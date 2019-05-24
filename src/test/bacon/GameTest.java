@@ -70,8 +70,8 @@ public class GameTest {
     private void assertExampleData() {
         var state = Game.getGame().getCurrentState();
         assertEquals(3, state.getTotalPlayerCount());
-        assertEquals(6, state.getPlayerFromNumber(1).getOverrideStoneCount());
-        assertEquals(4, state.getPlayerFromNumber(1).getBombCount());
+        assertEquals(6, state.getPlayerFromId(1).getOverrideStoneCount());
+        assertEquals(4, state.getPlayerFromId(1).getBombCount());
         assertEquals(2, state.getBombRadius());
         assertEquals(15, state.getMap().height);
         assertEquals(15, state.getMap().width);

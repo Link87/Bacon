@@ -1,6 +1,5 @@
 package bacon;
 
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,7 +15,7 @@ public class Map {
     private int totalTiles;
 
     /**
-     * The tiles that has expansion stone on them
+     * The tiles that have expansion stone on them
      */
     private static Set<Tile> expansionTiles;
 
@@ -57,7 +56,7 @@ public class Map {
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
                 Tile original = this.getTileAt(x, y);
-                copyTiles[x][y] = new Tile(original.getOwner(), original.getProperty(), original.x, original.y);
+                copyTiles[x][y] = new Tile(original.getOwnerId(), original.getProperty(), original.x, original.y);
             }
         }
 
@@ -66,7 +65,7 @@ public class Map {
                 Tile original = this.getTileAt(x, y);
 
                 Tile currentTile = copyTiles[x][y];
-                for (Direction direction : Direction.values()) {
+                for (int direction = 0; direction < Direction.values().length; direction++) {
                     if (original.getTransition(direction) != null) {
                         int xOfTrans = original.getTransition(direction).x;
                         int yOfTrans = original.getTransition(direction).y;
@@ -89,7 +88,7 @@ public class Map {
      * @param tile2      Second Tile of the transition
      * @param direction2 Direction in which the transition applies on the second tile
      */
-    private void addTransition(Tile tile1, Direction direction1, Tile tile2, Direction direction2) {
+    private void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
         tile1.setTransition(tile2, direction1, direction2);
         tile2.setTransition(tile1, direction2, direction1);
     }
@@ -121,15 +120,16 @@ public class Map {
                 totalCount++;
                 if (symbol == '0') {
                     //Tile is empty
-                    tiles[w][h] = new Tile(null, Tile.Property.DEFAULT, w, h);
+                    tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.DEFAULT, w, h);
                 } else if (symbol <= '8' && symbol > '0') {
                     //Tile has a Stone (an owner)
-                    tiles[w][h] = new Tile(Game.getGame().getCurrentState().getPlayerFromNumber(Character.getNumericValue(symbol)), Tile.Property.DEFAULT, w, h);
-                    Game.getGame().getCurrentState().getPlayerFromNumber(Character.getNumericValue(symbol)).addStone(tiles[w][h]);
+                    int playerId = Character.getNumericValue(symbol);
+                    tiles[w][h] = new Tile(playerId, Tile.Property.DEFAULT, w, h);
+                    Game.getGame().getCurrentState().getPlayerFromId(playerId).addStone(tiles[w][h]);
                     occupiedCount++;
                 } else if (symbol != '-') {
                     //Tile is not a hole --> Tile has Property
-                    tiles[w][h] = new Tile(null, Tile.Property.fromChar(symbol), w, h);
+                    tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.fromChar(symbol), w, h);
 
                     if (symbol == 'x') {
                         occupiedCount++;
@@ -137,10 +137,9 @@ public class Map {
                     }
                 } else {
                     //Tile is a hole
-                    tiles[w][h] = new Tile(null, Tile.Property.HOLE, w, h);
+                    tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.HOLE, w, h);
                     totalCount--;
                 }
-
             }
         }
 
@@ -152,31 +151,31 @@ public class Map {
                 }
                 if (y != 0) {
                     if (tiles[x][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP, Direction.DOWN);
+                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP.id, Direction.UP.opposite().id);
                     }
                     if (x != 0 && tiles[x - 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT, Direction.DOWN_RIGHT);
+                        tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT.id, Direction.UP_LEFT.opposite().id);
                     }
                     if (x != width - 1 && tiles[x + 1][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT, Direction.DOWN_LEFT);
+                        tiles[x][y].setTransition(tiles[x + 1][y - 1], Direction.UP_RIGHT.id, Direction.UP_RIGHT.opposite().id);
                     }
                 }
                 if (y != height - 1) {
                     if (tiles[x][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN, Direction.UP);
+                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN.id, Direction.DOWN.opposite().id);
                     }
                     if (x != 0 && tiles[x - 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT, Direction.UP_RIGHT);
+                        tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT.id, Direction.DOWN_LEFT.opposite().id);
                     }
                     if (x != width - 1 && tiles[x + 1][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT, Direction.UP_LEFT);
+                        tiles[x][y].setTransition(tiles[x + 1][y + 1], Direction.DOWN_RIGHT.id, Direction.DOWN_RIGHT.opposite().id);
                     }
                 }
                 if (x != width - 1 && tiles[x + 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT, Direction.LEFT);
+                    tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT.id, Direction.RIGHT.opposite().id);
                 }
                 if (x != 0 && tiles[x - 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT, Direction.RIGHT);
+                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT.id, Direction.LEFT.opposite().id);
                 }
 
             }
@@ -188,9 +187,9 @@ public class Map {
         for (int l = height; l < lines.length; l++) {
             String[] elements = lines[l].split(" ");
             map.addTransition(tiles[Integer.parseInt(elements[0])][Integer.parseInt(elements[1])],
-                    Direction.values()[Integer.parseInt(elements[2])],
+                    Integer.parseInt(elements[2]),
                     tiles[Integer.parseInt(elements[4])][Integer.parseInt(elements[5])],
-                    Direction.values()[Integer.parseInt(elements[6])]
+                    Integer.parseInt(elements[6])
             );
         }
 
@@ -208,8 +207,8 @@ public class Map {
             for (int x = 0; x < width; x++) {
                 switch (getTileAt(x, y).getProperty()) {
                     case DEFAULT:
-                        if (getTileAt(x, y).getOwner() == null) builder.append("0 ");
-                        else builder.append(getTileAt(x, y).getOwner().number).append(" ");
+                        if (getTileAt(x, y).getOwnerId() == Player.NULL_PLAYER_ID) builder.append("0 ");
+                        else builder.append(getTileAt(x, y).getOwnerId()).append(" ");
                         break;
                     case HOLE:
                         builder.append("- ");
@@ -245,7 +244,7 @@ public class Map {
         return tiles[x][y];
     }
 
-    public int getTotalTiles() {
+    public int getTotalTileCount() {
         return totalTiles;
     }
 
@@ -254,7 +253,7 @@ public class Map {
      *
      * @return number of occupied tiles
      */
-    public int getOccupiedTiles() {
+    public int getOccupiedTileCount() {
         return occupiedTiles;
     }
 

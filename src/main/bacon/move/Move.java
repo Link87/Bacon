@@ -1,7 +1,6 @@
 package bacon.move;
 
 import bacon.GameState;
-import bacon.Player;
 
 import java.nio.ByteBuffer;
 
@@ -10,7 +9,7 @@ import java.nio.ByteBuffer;
  */
 public abstract class Move {
     GameState state;
-    Player player;
+    int playerId;
     int xPos;
     int yPos;
     Type type;
@@ -20,14 +19,14 @@ public abstract class Move {
     /**
      * Creates a new move from the given values.
      *
-     * @param state  the game state on which the move operates
-     * @param player the player of the move
-     * @param x      the x coordinate
-     * @param y      the y coordinate
+     * @param state    the game state on which the move operates
+     * @param playerId the id of the player of the move
+     * @param x        the x coordinate
+     * @param y        the y coordinate
      */
-    Move(GameState state, Player player, int x, int y) {
+    Move(GameState state, int playerId, int x, int y) {
         this.state = state;
-        this.player = player;
+        this.playerId = playerId;
         this.xPos = x;
         this.yPos = y;
     }
@@ -64,12 +63,12 @@ public abstract class Move {
     }
 
     /**
-     * Returns the player of this move.
+     * Returns the player id of this move.
      *
-     * @return the player of this move
+     * @return the id of the player of this move
      */
-    public Player getPlayer() {
-        return player;
+    public int getPlayerId() {
+        return playerId;
     }
 
     public Type getType() {
@@ -121,7 +120,7 @@ public abstract class Move {
 
         Move other = (Move) obj;
         return this.xPos == other.xPos && this.yPos == other.yPos &&
-                this.type == other.type && this.player.equals(other.player);
+                this.type == other.type && this.playerId == other.playerId;
     }
 
     @Override
@@ -129,7 +128,7 @@ public abstract class Move {
         final int prime = 31;
         int result = prime * (this.xPos * 50 + this.yPos);
         result += prime * result + this.type.hashCode();
-        result += prime * result + this.player.hashCode();
+        result += prime * result + this.playerId;
         return result;
     }
 
