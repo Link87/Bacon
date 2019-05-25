@@ -75,9 +75,8 @@ public class LegalMoves {
             }
 
             if (watchdog.isPancake())
-                return Collections.emptySet();
+                return legalMoves;
         }
-
         return legalMoves;
     }
 
@@ -126,8 +125,7 @@ public class LegalMoves {
                 }
             }
 
-            if (watchdog.isPancake())
-                return Collections.emptySet();
+            if (watchdog.isPancake()) break; 
         }
 
         // adds independent expansion moves to possible override moves
