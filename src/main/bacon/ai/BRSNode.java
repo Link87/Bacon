@@ -88,14 +88,16 @@ public class BRSNode {
      * moves can be done.
      */
     public void evaluateNode() {
-        // computes the best moves and orders them in a list as the beam for the beam search
-        List<BuildMove> beam = computeBeam();
+        List<? extends BuildMove> moves = null;
+        if (BRSNode.branchingFactor > 0)
+            moves = getBeamMoves(getLegalMoves());
+        else moves = getOrderedMoves(getLegalMoves());
 
         // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
         this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
 
         // no move is available, return value of current game state directly
-        if (beam == null) {
+        if (moves.isEmpty()) {
             Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
 
@@ -104,7 +106,7 @@ public class BRSNode {
         // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
         else if (this.layer < BRSNode.searchDepth - 1) {
             Statistics.getStatistics().enterState(this.layer);
-            for (BuildMove move : beam) {
+            for (BuildMove move : moves) {
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta);
                 move.doMove();
                 childNode.evaluateNode();
@@ -139,7 +141,7 @@ public class BRSNode {
         // in this case a node is one layer above leaf nodes, i.e. we only need to return the value of the first beam entry
         else {
             Statistics.getStatistics().enterMeasuredState(this.layer);
-            BuildMove leafMove = beam.get(0);
+            BuildMove leafMove = moves.get(0);
             this.value = leafMove.getValue();
             this.bestMove = leafMove;
 
@@ -155,13 +157,12 @@ public class BRSNode {
     }
 
     /**
-     * Computes the n best moves, where n is the branching factor (beam width), and orders them in a list.
-     * All other moves are discarded.
+     * Gets the legal Moves that are possible for the max or min player, depending on the <code>isMaxNode</code> flag.
+     * If no move is possible for one of them, the flag is switched and moves are returned from the other player.
      *
-     * @return the n best moves, ordered
+     * @return a set containing valid moves, empty when no valid moves are possible for neither of the players
      */
-    private List<BuildMove> computeBeam() {
-
+    private Set<? extends BuildMove> getLegalMoves() {
         // saves legal moves temporary storage
         Set<? extends BuildMove> legalMoves;
         if (isMaxNode) {
@@ -178,9 +179,36 @@ public class BRSNode {
             }
         }
 
-        // return null if no build moves are possible => first phase ends
+        // return empty immutable set if no build moves are possible => first phase ends
         if (legalMoves.isEmpty())
-            return null;
+            return Collections.emptySet();
+        return legalMoves;
+    }
+
+    private List<BuildMove> getOrderedMoves(Set<? extends BuildMove> legalMoves) {
+        List<BuildMove> orderedMoves = new ArrayList<>(legalMoves);
+        // rate every move
+        for (BuildMove move : orderedMoves) {
+            move.doMove();
+            move.setValue(evaluateCurrentState(move.getType()));
+            move.undoMove();
+        }
+
+        // order moves by value
+        if (isMaxNode)
+            orderedMoves.sort(Comparator.comparing(Move::getValue).reversed());
+        else orderedMoves.sort(Comparator.comparing(Move::getValue));
+
+        return orderedMoves;
+    }
+
+    /**
+     * Computes the n best moves, where n is the branching factor (beam width), and orders them in a list.
+     * All other moves are discarded.
+     *
+     * @return the n best moves, ordered
+     */
+    private List<BuildMove> getBeamMoves(Set<? extends BuildMove> legalMoves) {
 
         // beamWidth is usually just the branching factor unless very few legal moves were found
         int beamWidth = Math.min(branchingFactor, legalMoves.size());
