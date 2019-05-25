@@ -18,8 +18,6 @@ public class AI {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
-    private static final int BRANCHING_FACTOR = 5;
-
     private static final AI INSTANCE = new AI();
 
     private AI() {
@@ -44,7 +42,7 @@ public class AI {
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, cfg.isPruningEnabled());
+            BRSNode root = new BRSNode(depth, cfg.getBeamWidth(), cfg.isPruningEnabled(), cfg.isMoveSortingEnabled());
             root.evaluateNode();
             bestMove = root.getBestMove();
         } else {

@@ -30,6 +30,7 @@ public class BRSNode {
     private double value;
 
     private static boolean enablePruning;
+    private static boolean enableSorting;
     private double alpha;
     private double beta;
 
@@ -40,10 +41,11 @@ public class BRSNode {
      * @param branchingFactor maximum branching factor at each node
      * @param enablePruning   set to true if alpha-beta pruning should be applied
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning) {
+    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
+        BRSNode.enableSorting = enableSorting;
 
         this.layer = 0;
         this.isMaxNode = true;
@@ -88,23 +90,25 @@ public class BRSNode {
      * moves can be done.
      */
     public void evaluateNode() {
-        List<? extends BuildMove> moves = null;
-        if (BRSNode.branchingFactor > 0)
-            moves = getBeamMoves(getLegalMoves());
-        else moves = getOrderedMoves(getLegalMoves());
+
+        Set<? extends BuildMove> legalMoves = getLegalMoves();
 
         // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
         this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
 
         // no move is available, return value of current game state directly
-        if (moves.isEmpty()) {
+        if (legalMoves.isEmpty()) {
             Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
+        } else if (this.layer < BRSNode.searchDepth - 1) {
+            // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
 
-        }
+            List<? extends BuildMove> moves = null;
+            if (BRSNode.enableSorting && BRSNode.branchingFactor > 0)
+                moves = getBeamMoves(legalMoves);
+            else if (BRSNode.enableSorting)
+                moves = getOrderedMoves(legalMoves);
 
-        // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
-        else if (this.layer < BRSNode.searchDepth - 1) {
             Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : moves) {
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta);
@@ -136,24 +140,36 @@ public class BRSNode {
                 }
             }
 
-        }
-
-        // in this case a node is one layer above leaf nodes, i.e. we only need to return the value of the first beam entry
-        else {
+        } else {
             Statistics.getStatistics().enterMeasuredState(this.layer);
-            BuildMove leafMove = moves.get(0);
-            this.value = leafMove.getValue();
-            this.bestMove = leafMove;
+            for (BuildMove move : legalMoves) {
+                move.doMove();
+                move.setValue(evaluateCurrentState(move.getType()));
+                move.undoMove();
 
-            // updates the value of alpha and beta
-            if (this.isMaxNode) {
-                this.alpha = Math.max(this.alpha, this.value);
-            } else {
-                this.beta = Math.min(this.beta, this.value);
+                // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
+                if (this.isMaxNode) {
+                    if (move.getValue() > this.value) {
+                        this.value = move.getValue();
+                        this.bestMove = move;
+                        this.alpha = Math.max(this.alpha, this.value);
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            break;
+                        }
+                    }
+                } else {
+                    if (move.getValue() < this.value) {
+                        this.value = move.getValue();
+                        this.bestMove = move;
+                        this.beta = Math.min(this.beta, this.value);
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            break;
+                        }
+                    }
+                }
             }
             Statistics.getStatistics().leaveMeasuredState();
         }
-
     }
 
     /**

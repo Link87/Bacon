@@ -20,7 +20,7 @@ public class BRSTest {
         Game.getGame().readMap(Maps.EXAMPLE_CERTAIN);
         Game.getGame().getCurrentState().setMe(1);
 
-        BRSNode root = new BRSNode(4, 20, false);
+        BRSNode root = new BRSNode(4, 20, false, true);
         root.evaluateNode();
         Move bestMove = root.getBestMove();
 
@@ -40,7 +40,7 @@ public class BRSTest {
         Player me = Game.getGame().getCurrentState().getPlayerFromId(1);
 
         for (int i = 0; i < 10; i++) {
-            BRSNode root = new BRSNode(6, 5, true);
+            BRSNode root = new BRSNode(6, 5, true, true);
             root.evaluateNode();
             Move bestMove = root.getBestMove();
 
