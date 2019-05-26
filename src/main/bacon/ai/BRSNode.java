@@ -12,10 +12,10 @@ import java.lang.Math;
 
 public class BRSNode {
 
-    private final double STABILITY_SCALAR = 1;
-    private final double CLUSTERING_SCALAR = 1;
-    private final double MOBILITY_SCALAR = 1;
-    private final double BONUS_SCALAR = 100;
+    private static final double STABILITY_SCALAR = 1;
+    private static final double CLUSTERING_SCALAR = 1;
+    private static final double MOBILITY_SCALAR = 1;
+    private static final double BONUS_SCALAR = 100;
 
     private final int layer;
     private static int searchDepth;

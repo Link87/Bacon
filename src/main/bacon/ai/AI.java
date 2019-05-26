@@ -4,6 +4,7 @@ import bacon.Config;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
+import bacon.ai.heuristics.IterationHeuristic;
 import bacon.ai.heuristics.LegalMoves;
 import bacon.move.BombMove;
 import bacon.move.Move;
@@ -44,9 +45,12 @@ public class AI {
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            BRSNode root = new BRSNode(depth, BRANCHING_FACTOR, cfg.isPruningEnabled());
-            root.evaluateNode();
-            bestMove = root.getBestMove();
+            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
+            while(iterationHeuristic.doIteration()) {
+                BRSNode root = new BRSNode(iterationHeuristic.getDepth(), BRANCHING_FACTOR, cfg.isPruningEnabled());
+                root.evaluateNode();
+                bestMove = root.getBestMove();
+            }
         } else {
             Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());
             double evalValue;
