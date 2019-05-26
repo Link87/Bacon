@@ -143,8 +143,8 @@ public class BRSNode {
             }
 
         } else {
-            Statistics.getStatistics().enterMeasuredState(this.layer);
             for (BuildMove move : legalMoves) {
+                Statistics.getStatistics().enterMeasuredState(this.layer);
                 move.doMove();
                 move.setValue(evaluateCurrentState(move.getType()));
                 move.undoMove();
@@ -156,6 +156,7 @@ public class BRSNode {
                         this.bestMove = move;
                         this.alpha = Math.max(this.alpha, this.value);
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            Statistics.getStatistics().leaveMeasuredState();
                             break;
                         }
                     }
@@ -165,12 +166,13 @@ public class BRSNode {
                         this.bestMove = move;
                         this.beta = Math.min(this.beta, this.value);
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            Statistics.getStatistics().leaveMeasuredState();
                             break;
                         }
                     }
                 }
+                Statistics.getStatistics().leaveMeasuredState();
             }
-            Statistics.getStatistics().leaveMeasuredState();
         }
     }
 
