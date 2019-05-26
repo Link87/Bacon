@@ -45,7 +45,7 @@ public class AI {
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth, true);
+            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
             while(iterationHeuristic.doIteration()) {
                 BRSNode root = new BRSNode(iterationHeuristic.getDepth(), BRANCHING_FACTOR, cfg.isPruningEnabled());
                 root.evaluateNode();

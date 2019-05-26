@@ -5,11 +5,15 @@ package bacon.ai.heuristics;
  */
 public class IterationHeuristic {
 
+    /**
+     * Time limit factor below which a new iteration is done.
+     */
+    private static final double THRESHOLD_FACTOR = 0.2;
+
     private final boolean useTimeLimit;
 
     private long startTimeStamp;
     private int timeLimit;
-    private final boolean useIterativeDeepening;
 
     private int maxDepth;
     private int currentDepth;
@@ -19,22 +23,19 @@ public class IterationHeuristic {
      *
      * @param timeLimit the time limit in ms that applies or zero if no time limit is set
      * @param maxDepth the maximum search depth or zero if depth is not set
-     * @param useIterativeDeepening <code>true</code> when iterative deepening is enabled, this is ignored on depth limited runs
      */
-    public IterationHeuristic(int timeLimit, int maxDepth, boolean useIterativeDeepening) {
+    public IterationHeuristic(int timeLimit, int maxDepth) {
         assert timeLimit == 0 || maxDepth == 0 : "Either time limit or maximum search depth have to be zero";
         if (timeLimit == 0) {
             // depth is set
             this.useTimeLimit = false;
             this.maxDepth = maxDepth;
             this.currentDepth = 0;
-            this.useIterativeDeepening = false;
         } else {
             // time limit is set: start timer
             this.useTimeLimit = true;
             this.startTimeStamp = System.nanoTime();
             this.timeLimit = timeLimit;
-            this.useIterativeDeepening = useIterativeDeepening;
         }
     }
 
@@ -47,8 +48,7 @@ public class IterationHeuristic {
 
         if (this.useTimeLimit) {
             this.currentDepth += 1;
-            long time = System.nanoTime();
-            return (time - this.startTimeStamp) / 1000000.0 <= this.timeLimit * 0.2;
+            return (System.nanoTime() - this.startTimeStamp) / 1000000.0 <= this.timeLimit * THRESHOLD_FACTOR;
         } else {
             if (this.currentDepth == 0) {
                 this.currentDepth = this.maxDepth;
