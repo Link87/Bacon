@@ -125,6 +125,16 @@ public class Config {
                             case "--no-prune":
                                 noPrune = true;
                                 break;
+                            case "--no-sort":
+                                moveSorting = false;
+                                break;
+                            case "--beam":
+                            case "-b":
+                                expect = State.EXPECT_BEAM_WIDTH;
+                                break;
+                            case "--no-beam":
+                                beamWidth = 0;
+                                break;
                             default:
                                 throw new IllegalArgumentException();
                         }
@@ -147,6 +157,17 @@ public class Config {
                         host = arg;
                         expect = State.EXPECT_ARG;
                         break;
+                    case EXPECT_BEAM_WIDTH:
+                        // read beam width and expect another argument to follow
+                        if (arg.charAt(0) == '-')
+                            throw new IllegalArgumentException();
+                        try {
+                            beamWidth = Integer.parseInt(arg);
+                        } catch (NumberFormatException nfe) {
+                            throw new IllegalArgumentException();
+                        }
+                        expect = State.EXPECT_ARG;
+                        break;
                 }
             }
 
@@ -162,7 +183,8 @@ public class Config {
         private enum State {
             EXPECT_ARG,
             EXPECT_HOST,
-            EXPECT_PORT
+            EXPECT_PORT,
+            EXPECT_BEAM_WIDTH,
         }
     }
 }
