@@ -41,6 +41,7 @@ public class BRSNode {
      * @param depth           maximum depth to be searched
      * @param branchingFactor maximum branching factor at each node
      * @param enablePruning   set to true if alpha-beta pruning should be applied
+     * @param watchdog        Watchdog timer that triggers when time is running out
      */
     public BRSNode(int depth, int branchingFactor, boolean enablePruning, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
@@ -65,6 +66,7 @@ public class BRSNode {
      * @param type      type of move (regular or override) that led to this node
      * @param alpha     alpha value
      * @param beta      beta value
+     * @param watchdog        Watchdog timer that triggers when time is running out
      */
     private BRSNode(int layer, boolean isMaxNode, Move.Type type, double alpha, double beta, PancakeWatchdog watchdog) {
         this.layer = layer;
@@ -249,7 +251,7 @@ public class BRSNode {
         Set<? extends BuildMove> legalMoves;
         legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe(), this.watchdog);
         if (this.watchdog.isPancake())
-            return Collections.emptySet();
+            return legalMoves;
         if (legalMoves.isEmpty()) // regular moves are preferred, only if the search turns up empty do we consider override moves
             legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe(), this.watchdog);
 
@@ -271,14 +273,14 @@ public class BRSNode {
             if (i == state.getMe()) continue;
             legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i, this.watchdog));
             if (this.watchdog.isPancake())
-                return Collections.emptySet();
+                return legalRegularMoves;
         }
         if (legalRegularMoves.isEmpty()) { // If no regular moves exist, add all override moves of other players to storage instead
             for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                 if (i == state.getMe()) continue;
                 legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i, this.watchdog));
                 if (this.watchdog.isPancake())
-                    return Collections.emptySet();
+                    return legalOverrideMoves;
             }
         }
 
