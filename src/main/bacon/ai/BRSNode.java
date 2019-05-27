@@ -108,6 +108,8 @@ public class BRSNode {
                 moves = getBeamMoves(legalMoves);
             else if (BRSNode.enableSorting)
                 moves = getOrderedMoves(legalMoves);
+            else
+                moves = new ArrayList<>(legalMoves);
 
             Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : moves) {
