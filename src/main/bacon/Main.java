@@ -1,6 +1,7 @@
 package bacon;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.logging.*;
 
 public class Main {
@@ -18,20 +19,20 @@ public class Main {
                 System.exit(0);
             }
 
-            // Replace all present root logger handler with our own ConsoleHandler
-            LOGGER.setLevel(Level.FINE);
-            Arrays.stream(Logger.getLogger("").getHandlers()).forEach(value -> Logger.getLogger("").removeHandler(value));
-            DualConsoleHandler handler = new DualConsoleHandler(new PrivacyFormatter(), config.isErrEnabled());
-            handler.setLevel(Level.ALL);
-            LOGGER.addHandler(handler);
-
         } catch (IllegalArgumentException iae) {
             System.err.println("Sorry, I don't understand that.");
             printHelp();
             System.exit(1);
         }
 
-        System.out.println("\n" +
+        // Replace all present root logger handler with our own ConsoleHandler
+        LOGGER.setLevel(Level.FINE);
+        Arrays.stream(Logger.getLogger("").getHandlers()).forEach(value -> Logger.getLogger("").removeHandler(value));
+        DualConsoleHandler handler = new DualConsoleHandler(new PrivacyFormatter(), config.isErrEnabled());
+        handler.setLevel(Level.ALL);
+        LOGGER.addHandler(handler);
+
+        LOGGER.log(Level.INFO, "\n" +
                 "                                                                       \n" +
                 " ,,                                                                    \n" +
                 "*MM                                                      db      `7MMF'\n" +
@@ -44,6 +45,12 @@ public class Main {
                 "                                                                       \n" +
                 " welcome to our secrets...\n" +
                 "                                                                       \n");
+
+        LOGGER.log(Level.INFO, "Going to connect to {0}:{1}", new Object[]{config.getHost(), config.getPort()});
+        LOGGER.log(Level.INFO, "Alpha-Beta-Pruning enabled: {0}", config.isPruningEnabled());
+        LOGGER.log(Level.INFO, "Move-Sorting enabled: {0}", config.isMoveSortingEnabled());
+        LOGGER.log(Level.INFO, "Amount of kittens that were harmed during development: {0}", 0);
+        LOGGER.log(Level.INFO, "Tears dropped because of Sebatian Thomas: {0}", new Random().nextInt(900000) + 100000);
 
         Game.getGame().startGame(config);
 
