@@ -30,15 +30,15 @@ public class HeuristicsTest {
         Game.getGame().readMap(Maps.EXAMPLE_MOBILITY);
 
         System.out.println("Regular Moves");
-        for(RegularMove mv : LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 1, new PancakeWatchdog(0))) {
+        for(RegularMove mv : LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), 1)) {
             System.out.println("(" + mv.getX() + "," + mv.getY() + ")");
         }
         System.out.println("Override Moves");
-        for(OverrideMove mv: LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 1, new PancakeWatchdog(0))){
+        for(OverrideMove mv: LegalMoves.getLegalOverrideMoves(Game.getGame().getCurrentState(), 1)){
             System.out.println("("+ mv.getX() + "," + mv.getY() + ")");
         }
 
-        assertEquals("Mobility Heuristic Error", 19, Heuristics.mobility(Game.getGame().getCurrentState(), 1, new PancakeWatchdog(0)));
+        assertEquals("Mobility Heuristic Error", 19, Heuristics.mobility(Game.getGame().getCurrentState(), 1));
     }
 
     //TODO Fix implement in map getTotalTile count and update the expected clustering value
