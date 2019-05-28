@@ -54,10 +54,15 @@ public class Main {
      */
     private static void printHelp() {
         String nl = System.getProperty("line.separator");
-        String helpInfo = "usage: bacon [--help] [-s | --server <server> -p | --port <port>] [--no-prune]" + nl +
+        String helpInfo =
+                "usage: bacon [--help] [-s <server> | --server <server> -p <port> | --port <port>] [--no-prune]" + nl +
+                "             [--no-sort] [-b <width> | --beam <width> | --no-beam]" + nl +
                 "-s, --server <host>\t server to connect with (mandatory)" + nl +
-                "-p, --port <port>\t port to connect to (mandatory)" + nl +
-                "--no-prune        \t disable pruning (optional)" + nl +
+                "-p, --port <port>  \t port to connect to (mandatory)" + nl +
+                "    --no-prune     \t disable pruning (optional)" + nl +
+                "    --no-sort      \t disable move sorting (optional)" + nl +
+                "-b, --beam <width> \t set beam width or disable beam search with 0 (optional)" + nl +
+                "    --no-beam      \t disable beam search, same as '-b 0' (optional)" + nl +
                 "    --help         \t displays this help text" + nl;
 
         System.out.println(helpInfo);

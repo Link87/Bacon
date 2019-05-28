@@ -32,6 +32,7 @@ public class BRSNode {
     private double value;
 
     private static boolean enablePruning;
+    private static boolean enableSorting;
     private double alpha;
     private double beta;
 
@@ -40,13 +41,15 @@ public class BRSNode {
      *
      * @param depth           maximum depth to be searched
      * @param branchingFactor maximum branching factor at each node
-     * @param enablePruning   set to true if alpha-beta pruning should be applied
+     * @param enablePruning   set to <code>true</code> if alpha-beta pruning should be applied
+     * @param enableSorting   set to <code>true</code> when move sorting should be used
      * @param watchdog        Watchdog timer that triggers when time is running out
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning, PancakeWatchdog watchdog) {
+    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
+        BRSNode.enableSorting = enableSorting;
 
         this.layer = 0;
         this.isMaxNode = true;
@@ -66,7 +69,7 @@ public class BRSNode {
      * @param type      type of move (regular or override) that led to this node
      * @param alpha     alpha value
      * @param beta      beta value
-     * @param watchdog        Watchdog timer that triggers when time is running out
+     * @param watchdog  Watchdog timer that triggers when time is running out
      */
     private BRSNode(int layer, boolean isMaxNode, Move.Type type, double alpha, double beta, PancakeWatchdog watchdog) {
         this.layer = layer;
@@ -94,26 +97,36 @@ public class BRSNode {
      * moves can be done.
      */
     public void evaluateNode() {
-        // computes the best moves and orders them in a list as the beam for the beam search
-        List<BuildMove> beam = computeBeam();
+
+        Set<? extends BuildMove> legalMoves = getLegalMoves();
 
         // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
         this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
 
         // no move is available, return value of current game state directly
-        if (beam == null) {
+        if (legalMoves.isEmpty()) {
             Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
-        }
+        } else if (this.layer < BRSNode.searchDepth - 1) {
+            // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
 
-        // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
-        else if (this.layer < BRSNode.searchDepth - 1) {
+            List<? extends BuildMove> moves;
+            if (BRSNode.enableSorting && BRSNode.branchingFactor > 0)
+                moves = getBeamMoves(legalMoves);
+            else if (BRSNode.enableSorting)
+                moves = getOrderedMoves(legalMoves);
+            else
+                moves = new ArrayList<>(legalMoves);
+
             Statistics.getStatistics().enterState(this.layer);
-            for (BuildMove move : beam) {
-                if(this.watchdog.isPancake()){
-                    bestMove=null;
+
+            for (BuildMove move : moves) {
+
+                if (this.watchdog.isPancake()) {
+                    bestMove = null;
                     break;
                 }
+
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta, this.watchdog);
                 move.doMove();
                 childNode.evaluateNode();
@@ -146,37 +159,48 @@ public class BRSNode {
                     return;
             }
 
-        }
+        } else {
+            for (BuildMove move : legalMoves) {
+                Statistics.getStatistics().enterMeasuredState(this.layer);
+                move.doMove();
+                move.setValue(evaluateCurrentState(move.getType()));
+                move.undoMove();
 
-        // in this case a node is one layer above leaf nodes, i.e. we only need to return the value of the first beam entry
-        else {
-            Statistics.getStatistics().enterMeasuredState(this.layer);
-            BuildMove leafMove = beam.get(0);
-            //dis not best ting
-            if(leafMove!=null) {
-                this.value = leafMove.getValue();
+                // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
+                if (this.isMaxNode) {
+                    if (move.getValue() > this.value) {
+                        this.value = move.getValue();
+                        this.bestMove = move;
+                        this.alpha = Math.max(this.alpha, this.value);
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            Statistics.getStatistics().leaveMeasuredState();
+                            break;
+                        }
+                    }
+                } else {
+                    if (move.getValue() < this.value) {
+                        this.value = move.getValue();
+                        this.bestMove = move;
+                        this.beta = Math.min(this.beta, this.value);
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            Statistics.getStatistics().leaveMeasuredState();
+                            break;
+                        }
+                    }
+                }
+                Statistics.getStatistics().leaveMeasuredState();
+
             }
-            this.bestMove = leafMove;
-
-            // updates the value of alpha and beta
-            if (this.isMaxNode) {
-                this.alpha = Math.max(this.alpha, this.value);
-            } else {
-                this.beta = Math.min(this.beta, this.value);
-            }
-            Statistics.getStatistics().leaveMeasuredState();
         }
-
     }
 
     /**
-     * Computes the n best moves, where n is the branching factor (beam width), and orders them in a list.
-     * All other moves are discarded.
+     * Gets the legal Moves that are possible for the max or min player, depending on the <code>isMaxNode</code> flag.
+     * If no move is possible for one of them, the flag is switched and moves are returned from the other player.
      *
-     * @return the n best moves, ordered
+     * @return a set containing valid moves, empty when no valid moves are possible for neither of the players
      */
-    private List<BuildMove> computeBeam() {
-
+    private Set<? extends BuildMove> getLegalMoves() {
         // saves legal moves temporary storage
         Set<? extends BuildMove> legalMoves;
         if (isMaxNode) {
@@ -193,9 +217,36 @@ public class BRSNode {
             }
         }
 
-        // return null if no build moves are possible => first phase ends
+        // return empty immutable set if no build moves are possible => first phase ends
         if (legalMoves.isEmpty())
-            return null;
+            return Collections.emptySet();
+        return legalMoves;
+    }
+
+    private List<BuildMove> getOrderedMoves(Set<? extends BuildMove> legalMoves) {
+        List<BuildMove> orderedMoves = new ArrayList<>(legalMoves);
+        // rate every move
+        for (BuildMove move : orderedMoves) {
+            move.doMove();
+            move.setValue(evaluateCurrentState(move.getType()));
+            move.undoMove();
+        }
+
+        // order moves by value
+        if (isMaxNode)
+            orderedMoves.sort(Comparator.comparing(Move::getValue).reversed());
+        else orderedMoves.sort(Comparator.comparing(Move::getValue));
+
+        return orderedMoves;
+    }
+
+    /**
+     * Computes the n best moves, where n is the branching factor (beam width), and orders them in a list.
+     * All other moves are discarded.
+     *
+     * @return the n best moves, ordered
+     */
+    private List<BuildMove> getBeamMoves(Set<? extends BuildMove> legalMoves) {
 
         // beamWidth is usually just the branching factor unless very few legal moves were found
         int beamWidth = Math.min(branchingFactor, legalMoves.size());
@@ -210,7 +261,7 @@ public class BRSNode {
             // check if tile belongs to the n best moves (until now)
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
-                if(this.watchdog.isPancake()) break;
+                if (this.watchdog.isPancake()) break;
                 move.doMove();
                 double eval = evaluateCurrentState(move.getType());
                 move.undoMove();
@@ -236,8 +287,7 @@ public class BRSNode {
 
             return Arrays.asList(beam);
 
-        }
-        else {
+        } else {
             // "all" other players (since we're doing BRS)
             BuildMove[] worstMoves = new BuildMove[beamWidth];
             double[] values = new double[beamWidth];
@@ -246,7 +296,7 @@ public class BRSNode {
             // check if tile belongs to the n best moves (until now)
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
-                if(this.watchdog.isPancake()) break;
+                if (this.watchdog.isPancake()) break;
                 move.doMove();
                 double eval = evaluateCurrentState(move.getType());
                 move.undoMove();

@@ -20,8 +20,6 @@ public class AI {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
-    private static final int BRANCHING_FACTOR = 5;
-
     private static final AI INSTANCE = new AI();
 
     private AI() {
@@ -48,10 +46,11 @@ public class AI {
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
             PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
             IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
-            while(iterationHeuristic.doIteration()) {
-                BRSNode root = new BRSNode(iterationHeuristic.getDepth(), BRANCHING_FACTOR, cfg.isPruningEnabled(), watchdog);
+            while (iterationHeuristic.doIteration()) {
+                BRSNode root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                        cfg.isMoveSortingEnabled(), watchdog);
                 root.evaluateNode();
-                if(root.getBestMove()!=null) {
+                if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
                 }
                 if (watchdog.isTriggered()) {
@@ -64,7 +63,6 @@ public class AI {
             double evalValue;
             double curBestVal = -Double.MAX_VALUE;
             for (BombMove move : moves) {
-                long stateTimestamp = System.nanoTime();
                 Statistics.getStatistics().enterMeasuredState(0);
                 evalValue = Heuristics.bombingPhaseHeuristic(currentGameState, move);
                 if (evalValue > curBestVal) {
@@ -78,8 +76,8 @@ public class AI {
         }
 
         LOGGER.log(Level.INFO, "Visited {0} states with {1} leaves: {2}.",
-                new Object[] {Statistics.getStatistics().getTotalStateCount(), Statistics.getStatistics().getLeafCount(),
-                Statistics.getStatistics().getStateCounts().values().stream().map(String::valueOf).collect(Collectors.joining("|"))});
+                new Object[]{Statistics.getStatistics().getTotalStateCount(), Statistics.getStatistics().getLeafCount(),
+                        Statistics.getStatistics().getStateCounts().values().stream().map(String::valueOf).collect(Collectors.joining("|"))});
 
         long totalTimeNanos = Statistics.getStatistics().getElapsedNanos();
         IntSummaryStatistics stats = Statistics.getStatistics().getStateMeasurementResults();
