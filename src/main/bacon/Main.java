@@ -7,15 +7,7 @@ public class Main {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
-
     public static void main(String[] args) {
-
-        // Replace all present root logger handler with our own ConsoleHandler
-        LOGGER.setLevel(Level.FINE);
-        Arrays.stream(Logger.getLogger("").getHandlers()).forEach(value -> Logger.getLogger("").removeHandler(value));
-        DualConsoleHandler handler = new DualConsoleHandler(new PrivacyFormatter());
-        handler.setLevel(Level.ALL);
-        LOGGER.addHandler(handler);
 
         Config config = null;
         try {
@@ -25,6 +17,13 @@ public class Main {
                 printHelp();
                 System.exit(0);
             }
+
+            // Replace all present root logger handler with our own ConsoleHandler
+            LOGGER.setLevel(Level.FINE);
+            Arrays.stream(Logger.getLogger("").getHandlers()).forEach(value -> Logger.getLogger("").removeHandler(value));
+            DualConsoleHandler handler = new DualConsoleHandler(new PrivacyFormatter(), config.isErrEnabled());
+            handler.setLevel(Level.ALL);
+            LOGGER.addHandler(handler);
 
         } catch (IllegalArgumentException iae) {
             System.err.println("Sorry, I don't understand that.");
@@ -80,20 +79,22 @@ public class Main {
     public static class DualConsoleHandler extends StreamHandler {
 
         private final ConsoleHandler stderrHandler = new ConsoleHandler();
+        private final boolean printToErr;
 
-        DualConsoleHandler(Formatter fmt) {
+        DualConsoleHandler(Formatter fmt, boolean printToErr) {
             super(System.out, fmt);
-            stderrHandler.setFormatter(fmt);
+            this.printToErr = printToErr;
+            this.stderrHandler.setFormatter(fmt);
         }
 
         @Override
         public void publish(LogRecord record) {
-            if (record.getLevel().intValue() <= Level.INFO.intValue()) {
+            if (this.printToErr && record.getLevel().intValue() > Level.INFO.intValue()) {
+                this.stderrHandler.publish(record);
+                this.stderrHandler.flush();
+            } else {
                 super.publish(record);
                 super.flush();
-            } else {
-                stderrHandler.publish(record);
-                stderrHandler.flush();
             }
         }
     }

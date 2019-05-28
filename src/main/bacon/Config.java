@@ -12,27 +12,31 @@ public class Config {
     private final boolean noPrune;
     private final boolean moveSorting;
     private final int beamWidth;
+    private final boolean enableErr;
 
     private static final boolean NO_PRUNE_DEFAULT = false;
     private static final boolean MOVE_SORTING_DEFAULT = true;
     private static final int BEAM_WIDTH_DEFAULT = 5;
+    private static final boolean ENABLE_ERR_DEFAULT = false;
 
     private Config() {
         this.helpRequested = true;
 
         this.host = null;
         this.port = 0;
-        this.noPrune = false;
-        this.moveSorting = false;
-        this.beamWidth = 0;
+        this.noPrune = NO_PRUNE_DEFAULT;
+        this.moveSorting = MOVE_SORTING_DEFAULT;
+        this.beamWidth = BEAM_WIDTH_DEFAULT;
+        this.enableErr = ENABLE_ERR_DEFAULT;
     }
 
-    private Config(String host, int port, boolean noPrune, boolean moveSorting, int beamWidth) {
+    private Config(String host, int port, boolean noPrune, boolean moveSorting, int beamWidth, boolean enableErr) {
         this.host = host;
         this.port = port;
         this.noPrune = noPrune;
         this.moveSorting = moveSorting;
         this.beamWidth = beamWidth;
+        this.enableErr = enableErr;
 
         this.helpRequested = false;
 
@@ -84,6 +88,15 @@ public class Config {
     }
 
     /**
+     * Returns whether to use the stderr stream for error logging.
+     *
+     * @return <code>true</code> if errors and warnings should be printed to stderr, <code>false</code> otherwise
+     */
+    public boolean isErrEnabled() {
+        return enableErr;
+    }
+
+    /**
      * Parses the arguments and returns the config.
      *
      * @param args array containing the command line arguments
@@ -102,6 +115,7 @@ public class Config {
             boolean noPrune = NO_PRUNE_DEFAULT;
             boolean moveSorting = MOVE_SORTING_DEFAULT;
             int beamWidth = BEAM_WIDTH_DEFAULT;
+            boolean enableErr = ENABLE_ERR_DEFAULT;
 
             // the type of token that is expected to follow -- state machine lite
             State expect = State.EXPECT_ARG;
@@ -124,6 +138,9 @@ public class Config {
                                 break;
                             case "--no-prune":
                                 noPrune = true;
+                                break;
+                            case "--err":
+                                enableErr = true;
                                 break;
                             default:
                                 throw new IllegalArgumentException();
@@ -153,7 +170,7 @@ public class Config {
             // host and port have to be both present
             if (host == null || port == -1)
                 throw new IllegalArgumentException();
-            return new Config(host, port, noPrune, moveSorting, beamWidth);
+            return new Config(host, port, noPrune, moveSorting, beamWidth, enableErr);
         }
 
         /**
