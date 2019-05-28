@@ -51,7 +51,9 @@ public class AI {
             while(iterationHeuristic.doIteration()) {
                 BRSNode root = new BRSNode(iterationHeuristic.getDepth(), BRANCHING_FACTOR, cfg.isPruningEnabled(), watchdog);
                 root.evaluateNode();
-                bestMove = root.getBestMove();
+                if(root.getBestMove()!=null) {
+                    bestMove = root.getBestMove();
+                }
                 if (watchdog.isTriggered()) {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
                     break;

@@ -110,6 +110,10 @@ public class BRSNode {
         else if (this.layer < BRSNode.searchDepth - 1) {
             Statistics.getStatistics().enterState(this.layer);
             for (BuildMove move : beam) {
+                if(this.watchdog.isPancake()){
+                    bestMove=null;
+                    break;
+                }
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta, this.watchdog);
                 move.doMove();
                 childNode.evaluateNode();
@@ -148,7 +152,10 @@ public class BRSNode {
         else {
             Statistics.getStatistics().enterMeasuredState(this.layer);
             BuildMove leafMove = beam.get(0);
-            this.value = leafMove.getValue();
+            //dis not best ting
+            if(leafMove!=null) {
+                this.value = leafMove.getValue();
+            }
             this.bestMove = leafMove;
 
             // updates the value of alpha and beta
@@ -203,6 +210,7 @@ public class BRSNode {
             // check if tile belongs to the n best moves (until now)
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
+                if(this.watchdog.isPancake()) break;
                 move.doMove();
                 double eval = evaluateCurrentState(move.getType());
                 move.undoMove();
@@ -238,6 +246,7 @@ public class BRSNode {
             // check if tile belongs to the n best moves (until now)
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
+                if(this.watchdog.isPancake()) break;
                 move.doMove();
                 double eval = evaluateCurrentState(move.getType());
                 move.undoMove();
@@ -275,11 +284,11 @@ public class BRSNode {
     private Set<? extends BuildMove> getMaxMoves() {
         // Assign either regular moves or override moves to legalMoves since we are considering either one or the other
         Set<? extends BuildMove> legalMoves;
-        legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe(), this.watchdog);
+        legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe());
         if (this.watchdog.isPancake())
             return legalMoves;
         if (legalMoves.isEmpty()) // regular moves are preferred, only if the search turns up empty do we consider override moves
-            legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe(), this.watchdog);
+            legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe());
 
         return legalMoves;
     }
@@ -297,14 +306,14 @@ public class BRSNode {
         legalOverrideMoves = new HashSet<>();
         for (int i = 1; i <= state.getTotalPlayerCount(); i++) { // Add all regular moves of other players to storage (definition of BRS)
             if (i == state.getMe()) continue;
-            legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i, this.watchdog));
+            legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
             if (this.watchdog.isPancake())
                 return legalRegularMoves;
         }
         if (legalRegularMoves.isEmpty()) { // If no regular moves exist, add all override moves of other players to storage instead
             for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                 if (i == state.getMe()) continue;
-                legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i, this.watchdog));
+                legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
                 if (this.watchdog.isPancake())
                     return legalOverrideMoves;
             }
@@ -327,7 +336,7 @@ public class BRSNode {
     private double evaluateCurrentState(Move.Type type) {
         if (type == Move.Type.REGULAR) {
             return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
-                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe(), this.watchdog)
+                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe())
                     + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
                     + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe());
         } else if (type == Move.Type.OVERRIDE) {

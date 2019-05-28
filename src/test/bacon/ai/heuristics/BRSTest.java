@@ -52,7 +52,7 @@ public class BRSTest {
             System.out.println(Game.getGame().getCurrentState().getMap().toString());
 
             for (int j = 2; j < 4; j++) {
-                Set<RegularMove> move = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), j, new PancakeWatchdog(0));
+                Set<RegularMove> move = LegalMoves.getLegalRegularMoves(Game.getGame().getCurrentState(), j);
                 int size = move.size();
                 int index = (int) (Math.random() * (size));
 
