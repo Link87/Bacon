@@ -1,7 +1,6 @@
 package bacon;
 
 import java.util.Arrays;
-import java.util.Random;
 import java.util.logging.*;
 
 public class Main {
@@ -44,13 +43,13 @@ public class Main {
                 " P^YbmdP'  `Moo9^Yo.YMbmd'   `Ybmd9'.JMML  JMML.db .AMA.   .AMMA..JMML.\n" +
                 "                                                                       \n" +
                 " welcome to our secrets...\n" +
-                "                                                                       \n");
+                "                                                                       \n" +
+                "🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓\n");
 
         LOGGER.log(Level.INFO, "Going to connect to {0}:{1}", new Object[]{config.getHost(), config.getPort()});
         LOGGER.log(Level.INFO, "Alpha-Beta-Pruning enabled: {0}", config.isPruningEnabled());
         LOGGER.log(Level.INFO, "Move-Sorting enabled: {0}", config.isMoveSortingEnabled());
-        LOGGER.log(Level.INFO, "Amount of kittens that were harmed during development: {0}", 0);
-        LOGGER.log(Level.INFO, "Tears dropped because of Sebatian Thomas: {0}", new Random().nextInt(900000) + 100000);
+        LOGGER.log(Level.INFO, "Number of kittens that were harmed during development: {0}", 0);
 
         Game.getGame().startGame(config);
 
