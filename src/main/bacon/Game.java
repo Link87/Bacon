@@ -9,7 +9,10 @@ import bacon.net.ServerConnection;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -139,6 +142,7 @@ public class Game {
                 // Phase two of the game ends
                 LOGGER.log(Level.INFO, "Game ends.");
                 currentGameState.setGamePhase(GamePhase.ENDED);
+                printSummary();
                 break;
             default:
                 LOGGER.log(Level.SEVERE, "Received an invalid message type: {0}!", msg.getType());
@@ -195,6 +199,26 @@ public class Game {
                 new Object[]{ moveCount, move.getPlayerId(), move.getX(), move.getY() });
 
         moveCount++;
+    }
+
+    private void printSummary() {
+
+        List<Player> players = new ArrayList<>(this.playerCount);
+        for (int i = 1; i <= getTotalPlayerCount(); i++) {
+           players.add(currentGameState.getPlayerFromId(i));
+        }
+        players.sort(Comparator.comparing((Player p) -> p.getStones().size()).reversed());
+
+        if (players.get(0).id == currentGameState.getMe())
+            LOGGER.log(Level.INFO, "I have won! 🎉🎉🎉");
+        else LOGGER.log(Level.INFO, "I have not won! \uD83D\uDE14");
+
+        LOGGER.log(Level.INFO, "The game results are:");
+        String[] suffixes = {"st", "nd", "rd", "th", "th", "th", "th", "th"};
+        for (int i = 1; i <= getTotalPlayerCount(); i++) {
+            LOGGER.log(Level.INFO, "{0}: Player {1} owns {2} tiles.",
+                    new Object[]{i + suffixes[i - 1], players.get(i - 1).id, players.get(i - 1).getStones().size()});
+        }
     }
 
     /**
