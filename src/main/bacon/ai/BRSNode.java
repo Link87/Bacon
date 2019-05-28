@@ -123,7 +123,7 @@ public class BRSNode {
             for (BuildMove move : moves) {
 
                 if (this.watchdog.isPancake()) {
-                    bestMove = null;
+                    this.bestMove = null;
                     break;
                 }
 
@@ -154,13 +154,11 @@ public class BRSNode {
                         }
                     }
                 }
-
-                if (this.watchdog.isPancake())
-                    return;
             }
 
         } else {
             for (BuildMove move : legalMoves) {
+
                 Statistics.getStatistics().enterMeasuredState(this.layer);
                 move.doMove();
                 move.setValue(evaluateCurrentState(move.getType()));
@@ -189,6 +187,10 @@ public class BRSNode {
                     }
                 }
                 Statistics.getStatistics().leaveMeasuredState();
+
+                if (this.watchdog.isPancake()) {
+                    break;
+                }
 
             }
         }
@@ -261,7 +263,6 @@ public class BRSNode {
             // check if tile belongs to the n best moves (until now)
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
-                if (this.watchdog.isPancake()) break;
                 move.doMove();
                 double eval = evaluateCurrentState(move.getType());
                 move.undoMove();
@@ -283,6 +284,8 @@ public class BRSNode {
                 }
 
                 move.setValue(eval);
+
+                if (this.watchdog.isPancake()) break;
             }
 
             return Arrays.asList(beam);
@@ -296,7 +299,6 @@ public class BRSNode {
             // check if tile belongs to the n best moves (until now)
             // doing some kind of insertion sort
             for (BuildMove move : legalMoves) {
-                if (this.watchdog.isPancake()) break;
                 move.doMove();
                 double eval = evaluateCurrentState(move.getType());
                 move.undoMove();
@@ -318,6 +320,8 @@ public class BRSNode {
                 }
 
                 move.setValue(eval);
+
+                if (this.watchdog.isPancake()) break;
             }
 
             return Arrays.asList(worstMoves);
@@ -335,8 +339,7 @@ public class BRSNode {
         // Assign either regular moves or override moves to legalMoves since we are considering either one or the other
         Set<? extends BuildMove> legalMoves;
         legalMoves = LegalMoves.getLegalRegularMoves(state, state.getMe());
-        if (this.watchdog.isPancake())
-            return legalMoves;
+
         if (legalMoves.isEmpty()) // regular moves are preferred, only if the search turns up empty do we consider override moves
             legalMoves = LegalMoves.getLegalOverrideMoves(state, state.getMe());
 
@@ -357,15 +360,12 @@ public class BRSNode {
         for (int i = 1; i <= state.getTotalPlayerCount(); i++) { // Add all regular moves of other players to storage (definition of BRS)
             if (i == state.getMe()) continue;
             legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
-            if (this.watchdog.isPancake())
-                return legalRegularMoves;
+
         }
         if (legalRegularMoves.isEmpty()) { // If no regular moves exist, add all override moves of other players to storage instead
             for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                 if (i == state.getMe()) continue;
                 legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
-                if (this.watchdog.isPancake())
-                    return legalOverrideMoves;
             }
         }
 
