@@ -4,7 +4,7 @@
 
 ## Usage
 
-You will need [Java 11](https://jdk.java.net/12/) and [Ant](https://ant.apache.org/) to be installed.
+You will need [Java](https://jdk.java.net/12/) (11 at least) and [Ant](https://ant.apache.org/) to be installed.
 
 To build the project, run
 
@@ -15,12 +15,21 @@ ant build
 This creates the `bacon.jar` file in `bin/jar`. You can execute the Jar file directly by using
 
 ```bash
-ant run -Dserver=<server> -Dport=<port>
+ant run -Dserver=<server> -Dport=<port> -Dargs=<arguments>
 ```
 
-or use `java -jar` and pass the server and port via `-s/--server` and `-p/--port`.
+where `-Dargs` can be used to pass arbitrary arguments to the client. The following arguments are understood:
 
-You can also pass arbitrary arguments in Ant with `-Dargs='<your arguments>'`.
+- `-s, --server <host>` server to connect with (mandatory)
+- `-p, --port <port>` port to connect to (mandatory)
+- `--no-prune` disable alpha-beta-pruning
+- `--no-sort` disable move sorting entirely
+- `-b, --beam <width>` set beam width for forward pruning
+- `--no-beam` disable beam search, same as `-b 0`
+- `-err` write errors and warnings to `stderr`
+- `--help` display the help text
+
+`-Dserver` and `-Dport` are just short hand for the same-called client arguments.
 
 ## Tests
 
