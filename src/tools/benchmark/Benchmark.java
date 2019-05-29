@@ -124,6 +124,12 @@ public class Benchmark {
 
     private static void adjustSettings(String[] args) {
 
+        for (String s:args) {
+            if (s.equals("-argsF")){
+                Benchmark.argsF="";
+            }
+        }
+
         for (int i = 0; i < args.length; i++) {
             if (args[i].contains("-constr")) {
                 Benchmark.constraint = args[i + 1];
