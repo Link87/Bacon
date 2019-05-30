@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static benchmark.Data.playerCountFromFile;
 
@@ -246,7 +249,12 @@ public class Benchmark {
                     System.out.println("Could not start Server!");
                     System.exit(-1);
                 }
-                Thread readerThread = new Thread(createServerOutputHandler(server.getInputStream(), gameStatistic));
+
+                final Lock connectLock = new ReentrantLock();
+                final Condition aiConnected  = connectLock.newCondition();
+                PassableBoolean aiConBool = new PassableBoolean(false);
+
+                Thread readerThread = new Thread(createServerOutputHandler(server.getInputStream(), gameStatistic, connectLock,aiConnected, aiConBool));
                 readerThread.start();
 
                 //run the ais
@@ -258,6 +266,15 @@ public class Benchmark {
                     } else {
                         runAi(port, Benchmark.fillerAI, Benchmark.argsF);
                     }
+
+                    //wait for the ai to connect (this is not busy waiting btw.)
+                    connectLock.lock();
+                    while (!aiConBool.value){
+                        aiConnected.await();
+                    }
+                    aiConBool.value=false;
+                    connectLock.unlock();
+
                 }
 
                 //wait for reading (and setting up gamestatistic) to end
@@ -286,8 +303,6 @@ public class Benchmark {
         } else if (name.contains("exe")) {
             try {
                 Process ai = new ProcessBuilder("src/tools/benchmark/binary/win/ai.exe", optionalArgs, "-p " + port).start();
-                //the read command blocks this thread until ai has started printing -> is ready
-                ai.getInputStream().read();
                 ai.getInputStream().close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -300,7 +315,6 @@ public class Benchmark {
             //TODO instead of relying on Ant Target jar in InteliJ config, compile and jar in init (but this turns out to be harder than it seems)
             Process javaAI = new ProcessBuilder("cmd.exe", "/c", "java -jar " + aiPath + " --server localhost --port " + port + " " + optionalArgs).start();
             //the read command blocks this thread until ai has started printing -> is ready
-            javaAI.getInputStream().read();
             if (saveAiLogs) {
                 Thread logSaver = new Thread(createAiOutputLogger(javaAI.getInputStream(), port - 7776, aiPath));
                 logSaver.start();
@@ -314,7 +328,7 @@ public class Benchmark {
         }
     }
 
-    private static Runnable createServerOutputHandler(final InputStream serverTalk, GameStatistic gameStatistic) {
+    private static Runnable createServerOutputHandler(final InputStream serverTalk, GameStatistic gameStatistic,Lock lock,Condition aiConnected, PassableBoolean aiConBool) {
         final Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -328,6 +342,12 @@ public class Benchmark {
                             String line = stringBuilder.toString().substring(0, stringBuilder.toString().length() - 1);
 //                            System.out.println(line);
                             gameStatistic.handleServerLine(line);
+                            if(line.contains("Client connected")){
+                                lock.lock();
+                                aiConBool.value=true;
+                                aiConnected.signal();
+                                lock.unlock();
+                            }
                             stringBuilder.setLength(0);
                         } else {
                             stringBuilder.append((char) data);
@@ -376,5 +396,11 @@ public class Benchmark {
         };
         return runnable;
     }
+}
 
+class PassableBoolean{
+    public boolean value;
+    public PassableBoolean(Boolean value){
+        this.value=value;
+    }
 }
