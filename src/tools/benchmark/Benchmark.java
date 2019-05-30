@@ -128,7 +128,7 @@ public class Benchmark {
     private static void adjustSettings(String[] args) {
 
         for (String s:args) {
-            if (s.equals("-argsF")){
+            if (s.equals("-filler")){
                 Benchmark.argsF="";
             }
         }
