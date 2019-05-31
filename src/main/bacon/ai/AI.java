@@ -40,6 +40,8 @@ public class AI {
      */
     public Move requestMove(int timeout, int depth, Config cfg, GameState currentGameState) {
 
+        LOGGER.log(Level.INFO,"Time limit "+timeout+"ms.");
+        
         Statistics.getStatistics().init();
 
         Move bestMove = null;
