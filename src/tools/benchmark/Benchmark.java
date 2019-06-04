@@ -164,7 +164,7 @@ public class Benchmark {
                 i++;
             } else if (args[i].equals("-placeRivalFar")) {
                 Benchmark.rivalFarPlaced = true;
-            } else if (args[i].equals("-saveAiLog")) {
+            } else if (args[i].equals("-saveAiLogs")) {
                 Benchmark.saveAiLogs = true;
             } else if (args[i].equals("-noSaveResult")) {
                 Benchmark.saveResult = false;
@@ -268,12 +268,12 @@ public class Benchmark {
                     }
 
                     //wait for the ai to connect (this is not busy waiting btw.)
-                    connectLock.lock();
                     while (!aiConBool.value){
+                        connectLock.lock();
                         aiConnected.await();
+                        connectLock.unlock();
                     }
                     aiConBool.value=false;
-                    connectLock.unlock();
 
                 }
 
@@ -297,9 +297,9 @@ public class Benchmark {
 
     private static void runAi(int port, String name, String optionalArgs) {
         if (name.equals("bacon")) {
-            runJavaAi(port, "bin/jar/bacon.jar", optionalArgs);
+            runJavaAi(port, "bin/jar/bacon.jar", optionalArgs,saveAiLogs);
         } else if (name.contains("jar")) {
-            runJavaAi(port, "src/tools/benchmark/jars/" + name, optionalArgs);
+            runJavaAi(port, "src/tools/benchmark/jars/" + name, optionalArgs,false);
         } else if (name.contains("exe")) {
             try {
                 Process ai = new ProcessBuilder("src/tools/benchmark/binary/win/ai.exe", optionalArgs, "-p " + port).start();
@@ -310,12 +310,12 @@ public class Benchmark {
         }
     }
 
-    private static void runJavaAi(int port, String aiPath, String optionalArgs) {
+    private static void runJavaAi(int port, String aiPath, String optionalArgs, boolean saveLog) {
         try {
             //TODO instead of relying on Ant Target jar in InteliJ config, compile and jar in init (but this turns out to be harder than it seems)
             Process javaAI = new ProcessBuilder("cmd.exe", "/c", "java -jar " + aiPath + " --server localhost --port " + port + " " + optionalArgs).start();
             //the read command blocks this thread until ai has started printing -> is ready
-            if (saveAiLogs) {
+            if (saveLog) {
                 Thread logSaver = new Thread(createAiOutputLogger(javaAI.getInputStream(), port - 7776, aiPath));
                 logSaver.start();
             } else {
