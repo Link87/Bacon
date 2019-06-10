@@ -49,7 +49,7 @@ public class AI {
             PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
             IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
             while (iterationHeuristic.doIteration()) {
-                BRSNode root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                BRSPlusNode root = new BRSPlusNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                         cfg.isMoveSortingEnabled(), watchdog);
                 root.evaluateNode();
                 if (root.getBestMove() != null) {
