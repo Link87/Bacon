@@ -503,6 +503,9 @@ public class BRSPlusNode {
                 move.setValue(evaluateCurrentState(move.getType()));
                 move.undoMove();
                 worstMoves.add(move);
+                if (this.watchdog.isPancake()) {
+                    return worstMoves.subList(0, i + 1);
+                }
             }
 
             worstMoves.sort(new Comparator<BuildMove>() {
