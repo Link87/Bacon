@@ -51,19 +51,21 @@ public class AI {
 
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;
+            BRSNode root;
             while (iterationHeuristic.doIteration()) {
-                BRSNode root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                         cfg.isMoveSortingEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
                 if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
                 } else if (cfg.isAspirationWindowsEnabled()){
-                    BRSNode rootAspWindowFail = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                    root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                             cfg.isMoveSortingEnabled(), -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
-                    rootAspWindowFail.evaluateNode();
-                    if (rootAspWindowFail.getBestMove() != null) {
-                        bestMove = rootAspWindowFail.getBestMove();
+                    root.evaluateNode();
+                    if (root.getBestMove() != null) {
+                        bestMove = root.getBestMove();
                     }
+                    LOGGER.log(Level.WARNING, "Aspiration Window Failure");
                 }
 
                 if(cfg.isAspirationWindowsEnabled()){

@@ -17,28 +17,25 @@ public class BRSNode {
     private static final double CLUSTERING_SCALAR = 1;
     private static final double MOBILITY_SCALAR = 1;
     private static final double BONUS_SCALAR = 100;
-
-    private final int layer;
     private static int searchDepth;
     private static int branchingFactor;
-    private BuildMove bestMove;
-    private boolean isMaxNode;
-    private GameState state;
-    private PancakeWatchdog watchdog;
+    private static boolean enablePruning;
+    private static boolean enableSorting;
+    private static List<Double> stateValues;
+    private static double stateAvg;
+    private static double stateStdv;
+    private final int layer;
     /**
      * Type of move that lead to this node
      */
     private final Move.Type type;
+    private BuildMove bestMove;
+    private boolean isMaxNode;
+    private GameState state;
+    private PancakeWatchdog watchdog;
     private double value;
-
-    private static boolean enablePruning;
-    private static boolean enableSorting;
     private double alpha;
     private double beta;
-
-    private static List<Double> stateValues;
-    private static double stateAvg;
-    private static double stateStdv;
 
     /**
      * External call constructor for game tree root
@@ -101,25 +98,34 @@ public class BRSNode {
     }
 
     public void aspWindow(){
-        double sum = 0;
-        for(Double value: stateValues){
-            sum += value;
-        }
+        if(stateValues.size() != 0) {
+            double sum = 0;
+            for (Double value : stateValues) {
+                sum += value;
+            }
 
-        stateAvg = sum / stateValues.size();
+            stateAvg = sum / stateValues.size();
 
-        double stdvSum = 0;
-        for(Double value: stateValues){
-            stdvSum += (value - stateAvg) * (value - stateAvg);
+            double stdvSum = 0;
+            for (Double value : stateValues) {
+                stdvSum += (value - stateAvg) * (value - stateAvg);
+            }
+            stateStdv = Math.pow((stdvSum / stateValues.size()), 0.5);
+            int i = 0;
         }
-        stateStdv = Math.pow(stdvSum / (stateValues.size()-1),0.5);
     }
 
     public double getAspWindowAlpha() {
+        if(stateValues.size() == 0){
+            return -Double.MAX_VALUE;
+        }
         return stateAvg - stateStdv;
     }
 
     public double getAspWindowBeta() {
+        if(stateValues.size() == 0){
+            return Double.MAX_VALUE;
+        }
         return stateAvg + stateStdv;
     }
 
