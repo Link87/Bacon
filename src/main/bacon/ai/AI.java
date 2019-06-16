@@ -48,13 +48,30 @@ public class AI {
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
             PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
             IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
+
+            double alpha = -Double.MAX_VALUE;
+            double beta = Double.MAX_VALUE;
             while (iterationHeuristic.doIteration()) {
                 BRSNode root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
-                        cfg.isMoveSortingEnabled(), watchdog);
+                        cfg.isMoveSortingEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
                 if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
+                } else if (cfg.isAspirationWindowsEnabled()){
+                    BRSNode rootAspWindowFail = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                            cfg.isMoveSortingEnabled(), -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
+                    rootAspWindowFail.evaluateNode();
+                    if (rootAspWindowFail.getBestMove() != null) {
+                        bestMove = rootAspWindowFail.getBestMove();
+                    }
                 }
+
+                if(cfg.isAspirationWindowsEnabled()){
+                    root.aspWindow();
+                    alpha = root.getAspWindowAlpha();
+                    beta = root.getAspWindowBeta();
+                }
+
                 if (watchdog.isTriggered()) {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
                     break;

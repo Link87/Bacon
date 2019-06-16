@@ -36,6 +36,10 @@ public class BRSNode {
     private double alpha;
     private double beta;
 
+    private static List<Double> stateValues;
+    private static double stateAvg;
+    private static double stateStdv;
+
     /**
      * External call constructor for game tree root
      *
@@ -43,19 +47,24 @@ public class BRSNode {
      * @param branchingFactor maximum branching factor at each node
      * @param enablePruning   set to <code>true</code> if alpha-beta pruning should be applied
      * @param enableSorting   set to <code>true</code> when move sorting should be used
+     * @param alpha           alpha value
+     * @param beta            beta value
      * @param watchdog        Watchdog timer that triggers when time is running out
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, PancakeWatchdog watchdog) {
+    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, double alpha, double beta, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
         BRSNode.enableSorting = enableSorting;
+        BRSNode.stateAvg = 0;
+        BRSNode.stateStdv = 0;
+        BRSNode.stateValues = new ArrayList<>();
 
         this.layer = 0;
         this.isMaxNode = true;
         this.type = null;
-        this.alpha = -Double.MAX_VALUE;
-        this.beta = Double.MAX_VALUE;
+        this.alpha = alpha;
+        this.beta = beta;
 
         this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
@@ -89,6 +98,29 @@ public class BRSNode {
      */
     public BuildMove getBestMove() {
         return bestMove;
+    }
+
+    public void aspWindow(){
+        double sum = 0;
+        for(Double value: stateValues){
+            sum += value;
+        }
+
+        stateAvg = sum / stateValues.size();
+
+        double stdvSum = 0;
+        for(Double value: stateValues){
+            stdvSum += (value - stateAvg) * (value - stateAvg);
+        }
+        stateStdv = Math.pow(stdvSum / (stateValues.size()-1),0.5);
+    }
+
+    public double getAspWindowAlpha() {
+        return stateAvg - stateStdv;
+    }
+
+    public double getAspWindowBeta() {
+        return stateAvg + stateStdv;
     }
 
     /**
@@ -193,6 +225,10 @@ public class BRSNode {
                 }
 
             }
+        }
+
+        if(this.layer == 1){
+            stateValues.add(this.value);
         }
     }
 
