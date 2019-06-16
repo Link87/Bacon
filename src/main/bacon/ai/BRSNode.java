@@ -21,6 +21,9 @@ public class BRSNode {
     private static int branchingFactor;
     private static boolean enablePruning;
     private static boolean enableSorting;
+    /**
+     * Statistics needed for determining aspiration window size for the next BRS-iteration
+     */
     private static List<Double> stateValues;
     private static double stateAvg;
     private static double stateStdv;
@@ -44,8 +47,8 @@ public class BRSNode {
      * @param branchingFactor maximum branching factor at each node
      * @param enablePruning   set to <code>true</code> if alpha-beta pruning should be applied
      * @param enableSorting   set to <code>true</code> when move sorting should be used
-     * @param alpha           alpha value
-     * @param beta            beta value
+     * @param alpha           alpha value passed down from AI
+     * @param beta            beta value passed down from AI
      * @param watchdog        Watchdog timer that triggers when time is running out
      */
     public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, double alpha, double beta, PancakeWatchdog watchdog) {
@@ -97,8 +100,11 @@ public class BRSNode {
         return bestMove;
     }
 
-    public void aspWindow(){
-        if(stateValues.size() != 0) {
+    /**
+     * Analysis of node values of layer 1 nodes (average and standard deviation)
+     */
+    public void aspWindow() {
+        if (stateValues.size() != 0) {
             double sum = 0;
             for (Double value : stateValues) {
                 sum += value;
@@ -111,19 +117,28 @@ public class BRSNode {
                 stdvSum += (value - stateAvg) * (value - stateAvg);
             }
             stateStdv = Math.pow((stdvSum / stateValues.size()), 0.5);
-            int i = 0;
         }
     }
 
+    /**
+     * Aspiration Window value for alpha for the next BRS-iteration; if no nodes were found in layer 1, use default value
+     *
+     * @return alpha value
+     */
     public double getAspWindowAlpha() {
-        if(stateValues.size() == 0){
+        if (stateValues.size() == 0) {
             return -Double.MAX_VALUE;
         }
         return stateAvg - stateStdv;
     }
 
+    /**
+     * Aspiration Window value for beta for the next BRS-iteration; if no nodes were found in layer 1, use default value
+     *
+     * @return beta value
+     */
     public double getAspWindowBeta() {
-        if(stateValues.size() == 0){
+        if (stateValues.size() == 0) {
             return Double.MAX_VALUE;
         }
         return stateAvg + stateStdv;
@@ -233,7 +248,7 @@ public class BRSNode {
             }
         }
 
-        if(this.layer == 1){
+        if (this.layer == 1) {    //Store the layer 1 node values for aspiration window size
             stateValues.add(this.value);
         }
     }
