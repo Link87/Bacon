@@ -17,22 +17,26 @@ public class BRSNode {
     private static final double CLUSTERING_SCALAR = 1;
     private static final double MOBILITY_SCALAR = 1;
     private static final double BONUS_SCALAR = 100;
-
-    private final int layer;
     private static int searchDepth;
     private static int branchingFactor;
-    private BuildMove bestMove;
-    private boolean isMaxNode;
-    private GameState state;
-    private PancakeWatchdog watchdog;
+    private static boolean enablePruning;
+    private static boolean enableSorting;
+    /**
+     * Statistics needed for determining aspiration window size for the next BRS-iteration
+     */
+    private static List<Double> stateValues;
+    private static double stateAvg;
+    private static double stateStdv;
+    private final int layer;
     /**
      * Type of move that lead to this node
      */
     private final Move.Type type;
+    private BuildMove bestMove;
+    private boolean isMaxNode;
+    private GameState state;
+    private PancakeWatchdog watchdog;
     private double value;
-
-    private static boolean enablePruning;
-    private static boolean enableSorting;
     private double alpha;
     private double beta;
 
@@ -43,19 +47,24 @@ public class BRSNode {
      * @param branchingFactor maximum branching factor at each node
      * @param enablePruning   set to <code>true</code> if alpha-beta pruning should be applied
      * @param enableSorting   set to <code>true</code> when move sorting should be used
+     * @param alpha           alpha value passed down from AI
+     * @param beta            beta value passed down from AI
      * @param watchdog        Watchdog timer that triggers when time is running out
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, PancakeWatchdog watchdog) {
+    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, double alpha, double beta, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
         BRSNode.enableSorting = enableSorting;
+        BRSNode.stateAvg = 0;
+        BRSNode.stateStdv = 0;
+        BRSNode.stateValues = new ArrayList<>();
 
         this.layer = 0;
         this.isMaxNode = true;
         this.type = null;
-        this.alpha = -Double.MAX_VALUE;
-        this.beta = Double.MAX_VALUE;
+        this.alpha = alpha;
+        this.beta = beta;
 
         this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
@@ -89,6 +98,50 @@ public class BRSNode {
      */
     public BuildMove getBestMove() {
         return bestMove;
+    }
+
+    /**
+     * Analysis of node values of layer 1 nodes (average and standard deviation)
+     */
+    public void aspWindow() {
+        if (stateValues.size() != 0) {
+            double sum = 0;
+            for (Double value : stateValues) {
+                sum += value;
+            }
+
+            stateAvg = sum / stateValues.size();
+
+            double stdvSum = 0;
+            for (Double value : stateValues) {
+                stdvSum += (value - stateAvg) * (value - stateAvg);
+            }
+            stateStdv = Math.pow((stdvSum / stateValues.size()), 0.5);
+        }
+    }
+
+    /**
+     * Aspiration Window value for alpha for the next BRS-iteration; if no nodes were found in layer 1, use default value
+     *
+     * @return alpha value
+     */
+    public double getAspWindowAlpha() {
+        if (stateValues.size() == 0) {
+            return -Double.MAX_VALUE;
+        }
+        return stateAvg - stateStdv;
+    }
+
+    /**
+     * Aspiration Window value for beta for the next BRS-iteration; if no nodes were found in layer 1, use default value
+     *
+     * @return beta value
+     */
+    public double getAspWindowBeta() {
+        if (stateValues.size() == 0) {
+            return Double.MAX_VALUE;
+        }
+        return stateAvg + stateStdv;
     }
 
     /**
@@ -193,6 +246,10 @@ public class BRSNode {
                 }
 
             }
+        }
+
+        if (this.layer == 1) {    //Store the layer 1 node values for aspiration window size
+            stateValues.add(this.value);
         }
     }
 

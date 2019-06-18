@@ -40,21 +40,40 @@ public class AI {
      */
     public Move requestMove(int timeout, int depth, Config cfg, GameState currentGameState) {
 
-        LOGGER.log(Level.INFO,"Time limit "+timeout+"ms.");
-        
+        LOGGER.log(Level.INFO, "Time limit " + timeout + "ms.");
+
         Statistics.getStatistics().init();
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
             PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
             IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
+
+            double alpha = -Double.MAX_VALUE;
+            double beta = Double.MAX_VALUE;
+            BRSNode root;
             while (iterationHeuristic.doIteration()) {
-                BRSNode root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
-                        cfg.isMoveSortingEnabled(), watchdog);
+                root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                        cfg.isMoveSortingEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
                 if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
+                } else if (cfg.isAspirationWindowsEnabled()) { //aspiration window failure: restart search with default alpha/beta values
+                    root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                            cfg.isMoveSortingEnabled(), -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
+                    root.evaluateNode();
+                    if (root.getBestMove() != null) {
+                        bestMove = root.getBestMove();
+                    }
+                    LOGGER.log(Level.WARNING, "Aspiration Window Failure");
                 }
+
+                if (cfg.isAspirationWindowsEnabled()) { //update aspiration window for next BRS-iteration
+                    root.aspWindow();
+                    alpha = root.getAspWindowAlpha();
+                    beta = root.getAspWindowBeta();
+                }
+
                 if (watchdog.isTriggered()) {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
                     break;
