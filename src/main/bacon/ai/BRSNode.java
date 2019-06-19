@@ -289,6 +289,7 @@ public class BRSNode {
             move.doMove();
             move.setValue(evaluateCurrentState(move.getType()));
             move.undoMove();
+            if(watchdog.isPancake()) break;
         }
 
         // order moves by value
