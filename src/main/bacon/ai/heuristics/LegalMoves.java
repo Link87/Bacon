@@ -28,10 +28,40 @@ public class LegalMoves {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
 
-        if (state.getPlayerFromId(playerId).isDisqualified())
+        int freeTiles = state.getMap().getTotalTileCount()-state.getMap().getOccupiedTileCount();
+
+        if (state.getPlayerFromId(playerId).isDisqualified()||freeTiles==0)
             return Collections.emptySet();
 
         Set<RegularMove> legalMoves = new HashSet<>();
+
+        if(freeTiles<state.getPlayerFromId(playerId).getStoneCount()){
+            for (int y = 0; y < state.getMap().height; y++) {
+                for (int x = 0; x < state.getMap().width; x++) {
+                    Tile tile = state.getMap().getTileAt(x,y);
+                    if(tile.getOwnerId() == Player.NULL_PLAYER_ID && tile.getProperty()!= Tile.Property.HOLE && tile.getProperty()!= Tile.Property.EXPANSION){
+                        RegularMove move = (RegularMove) MoveFactory.createMove(state,playerId,x,y);
+                        if(move.isLegal()){
+                            legalMoves.add(move);
+                        }
+                        move = (RegularMove) MoveFactory.createMove(state,playerId,x,y,new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
+                        if(move.isLegal()){
+                            legalMoves.add(move);
+                            move = (RegularMove) MoveFactory.createMove(state,playerId,x,y,new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+                            legalMoves.add(move);
+                        }
+                        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+                            move = (RegularMove) MoveFactory.createMove(state,playerId,x,y,new BonusRequest(i));
+                            if(move.isLegal()){
+                                legalMoves.add(move);
+                            }
+                        }
+                    }
+                }
+            }
+            return legalMoves;
+        }
+
 
         for (Tile tile : state.getPlayerFromId(playerId).getStones()) { // iterates over all of the player's stones
 

@@ -9,14 +9,16 @@ public class Config {
 
     private final String host;
     private final int port;
-    private final boolean noPrune;
+    private final boolean pruning;
     private final boolean moveSorting;
     private final int beamWidth;
+    private final boolean aspirationWindows;
     private final boolean enableErr;
 
-    private static final boolean NO_PRUNE_DEFAULT = false;
+    private static final boolean PRUNING_DEFAULT = true;
     private static final boolean MOVE_SORTING_DEFAULT = true;
     private static final int BEAM_WIDTH_DEFAULT = 5;
+    private static final boolean ASPIRATION_WINDOWS_DEFAULT = true;
     private static final boolean ENABLE_ERR_DEFAULT = false;
 
     private Config() {
@@ -24,22 +26,35 @@ public class Config {
 
         this.host = null;
         this.port = 0;
-        this.noPrune = NO_PRUNE_DEFAULT;
+        this.pruning = PRUNING_DEFAULT;
         this.moveSorting = MOVE_SORTING_DEFAULT;
         this.beamWidth = BEAM_WIDTH_DEFAULT;
+        this.aspirationWindows = ASPIRATION_WINDOWS_DEFAULT;
         this.enableErr = ENABLE_ERR_DEFAULT;
     }
 
-    private Config(String host, int port, boolean noPrune, boolean moveSorting, int beamWidth, boolean enableErr) {
+    private Config(String host, int port, boolean pruning, boolean moveSorting, int beamWidth, boolean aspirationWindows, boolean enableErr) {
         this.host = host;
         this.port = port;
-        this.noPrune = noPrune;
+        this.pruning = pruning;
         this.moveSorting = moveSorting;
         this.beamWidth = beamWidth;
+        this.aspirationWindows = aspirationWindows;
         this.enableErr = enableErr;
 
         this.helpRequested = false;
 
+    }
+
+    public Config(boolean pruning, boolean moveSorting, int beamWidth, boolean aspirationWindows){
+        this.host = null;
+        this.port = 0;
+        this.pruning = pruning;
+        this.moveSorting = moveSorting;
+        this.beamWidth = beamWidth;
+        this.aspirationWindows = aspirationWindows;
+        this.enableErr = false;
+        this.helpRequested = true;
     }
 
     /**
@@ -76,7 +91,7 @@ public class Config {
      * @return <code>true</code> if pruning should be used, <code>false</code> otherwise
      */
     public boolean isPruningEnabled() {
-        return !noPrune;
+        return pruning;
     }
 
     public boolean isMoveSortingEnabled() {
@@ -88,11 +103,20 @@ public class Config {
     }
 
     /**
+     * Returns whether aspiration windows should be used.
+     *
+     * @return <code>true</code> if aspiration are enabled, <code>false</code> otherwise
+     */
+    public boolean isAspirationWindowsEnabled() {
+        return aspirationWindows;
+    }
+
+    /**
      * Returns whether to use the stderr stream for error logging.
      *
      * @return <code>true</code> if errors and warnings should be printed to stderr, <code>false</code> otherwise
      */
-    public boolean isErrEnabled() {
+    boolean isErrEnabled() {
         return enableErr;
     }
 
@@ -103,7 +127,7 @@ public class Config {
      * @return config with parsed arguments or <code>null</code> when help is requested
      * @throws IllegalArgumentException when invalid arguments are passed
      */
-    public static Config fromArgs(String[] args) throws IllegalArgumentException {
+    static Config fromArgs(String[] args) throws IllegalArgumentException {
         return new Parser().parseArgs(args);
     }
 
@@ -112,10 +136,11 @@ public class Config {
         private Config parseArgs(String[] args) throws IllegalArgumentException {
             String host = null;
             int port = -1;
-            boolean noPrune = NO_PRUNE_DEFAULT;
+            boolean pruning = PRUNING_DEFAULT;
             boolean moveSorting = MOVE_SORTING_DEFAULT;
             int beamWidth = BEAM_WIDTH_DEFAULT;
             boolean enableErr = ENABLE_ERR_DEFAULT;
+            boolean aspiration = ASPIRATION_WINDOWS_DEFAULT;
 
             // the type of token that is expected to follow -- state machine lite
             State expect = State.EXPECT_ARG;
@@ -137,7 +162,7 @@ public class Config {
                                 expect = State.EXPECT_PORT;
                                 break;
                             case "--no-prune":
-                                noPrune = true;
+                                pruning = false;
                                 break;
                             case "--no-sort":
                                 moveSorting = false;
@@ -148,6 +173,12 @@ public class Config {
                                 break;
                             case "--no-beam":
                                 beamWidth = 0;
+                                break;
+                            case "--asp":
+                                aspiration = true;
+                                break;
+                            case "--no-asp":
+                                aspiration = false;
                                 break;
                             case "--err":
                                 enableErr = true;
@@ -191,7 +222,7 @@ public class Config {
             // host and port have to be both present
             if (host == null || port == -1)
                 throw new IllegalArgumentException();
-            return new Config(host, port, noPrune, moveSorting, beamWidth, enableErr);
+            return new Config(host, port, pruning, moveSorting, beamWidth, aspiration, enableErr);
         }
 
         /**
