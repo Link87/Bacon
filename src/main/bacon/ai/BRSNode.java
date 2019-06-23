@@ -154,7 +154,7 @@ public class BRSNode {
         Set<? extends BuildMove> legalMoves = getLegalMoves();
 
         // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
-        this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
+        this.value = this.isMaxNode ? this.alpha : this.beta;
 
         // no move is available, return value of current game state directly
         if (legalMoves.isEmpty()) {
