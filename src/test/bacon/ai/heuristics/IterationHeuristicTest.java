@@ -1,5 +1,6 @@
 package bacon.ai.heuristics;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -7,6 +8,7 @@ import static org.junit.Assert.*;
 public class IterationHeuristicTest {
 
     @Test
+    @Ignore("Needs to be rewritten.")
     public void doIteration() throws InterruptedException{
         IterationHeuristic timeHeuristic = new IterationHeuristic(500, 0);
 
