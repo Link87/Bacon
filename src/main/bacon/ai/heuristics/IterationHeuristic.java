@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 public class IterationHeuristic {
 
     private static final Logger LOGGER = Logger.getGlobal();
+    private static final int MAX_DEPTH = 15;
+    private static final double SAFETY_FACTOR = 0.90;
 
     private final boolean useTimeLimit;
 
@@ -66,26 +68,31 @@ public class IterationHeuristic {
             }
 
             long elapsed = System.nanoTime() - this.iterationTimeStamp;
+            long elapsedSinceStart = System.nanoTime() - this.startTimeStamp;
 
             layerCount.putIfAbsent(this.currentDepth, 0);
-            avgTimes.putIfAbsent(this.currentDepth, 1L); // initial value, works because layerCount is still 0
-            avgTimes.putIfAbsent(this.currentDepth + 1, 1L);
+            avgTimes.putIfAbsent(this.currentDepth, 1_000_000L); // initial value, works because layerCount is still 0
+            if (layerCount.getOrDefault(this.currentDepth + 1, 0) == 0) {
+                avgTimes.put(this.currentDepth + 1, avgTimes.get(this.currentDepth));
+            }
 
-            long estimate = elapsed / avgTimes.get(this.currentDepth) + avgTimes.get(this.currentDepth + 1);
-            LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}, Est: {3}", new Object[]{ this.currentDepth, this.startTimeStamp, this.iterationTimeStamp, estimate});
+            long estimate = (long) ((float) elapsed / avgTimes.get(this.currentDepth) * avgTimes.get(this.currentDepth + 1));
+            boolean doAnother = (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000L * SAFETY_FACTOR >= elapsedSinceStart + estimate && this.currentDepth < MAX_DEPTH;
 
-            long elapsedSinceStart = System.nanoTime() - this.startTimeStamp;
-            boolean doAnother = (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000 >= elapsedSinceStart + estimate;
-            LOGGER.log(Level.FINE, "Limit: {0}, Elapsed(start): {1}", new Object[]{ (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000, elapsedSinceStart});
+            LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}", new Object[]{ this.currentDepth, this.startTimeStamp, this.iterationTimeStamp, estimate});
+            LOGGER.log(Level.FINE, "Limit: {0}, Elapsed(start): {1}, Est: {2}, Elapsed(it): {3}, avg(this): {4}, avg(next): {5}",
+                    new Object[]{ (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000L, elapsedSinceStart,
+                            estimate, elapsed, avgTimes.get(this.currentDepth), avgTimes.get(this.currentDepth + 1)});
 
-            // layer_count' = layer_count + 1
-            layerCount.put(this.currentDepth, layerCount.get(this.currentDepth) + 1);
             // avg' = (layer_count * avg + time) / layer_count'
             avgTimes.put(this.currentDepth, (layerCount.get(this.currentDepth) * avgTimes.get(this.currentDepth) + elapsed) /
                     (layerCount.get(this.currentDepth) + 1));
+            // layer_count' = layer_count + 1
+            layerCount.put(this.currentDepth, layerCount.get(this.currentDepth) + 1);
 
             this.iterationTimeStamp = System.nanoTime();
             this.currentDepth += 1;
+
             return doAnother;
 
         } else {
