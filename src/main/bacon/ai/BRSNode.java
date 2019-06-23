@@ -270,7 +270,8 @@ public class BRSNode {
             else this.value = -Double.MAX_VALUE;
         }
 
-        if (this.layer == 1) {    //Store the layer 1 node values for aspiration window size
+        //Store the layer 1 node values for aspiration window size
+        if (this.layer == 1 && this.value != Double.MAX_VALUE && this.value != -Double.MAX_VALUE) {
             stateValues.add(this.value);
         }
     }
