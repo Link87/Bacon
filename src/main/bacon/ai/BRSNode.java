@@ -132,7 +132,7 @@ public class BRSNode {
         if (stateValues.size() == 0) {
             return -Double.MAX_VALUE;
         }
-        return 2;
+        return this.value -stateStdv;
     }
 
     /**
@@ -144,7 +144,7 @@ public class BRSNode {
         if (stateValues.size() == 0) {
             return Double.MAX_VALUE;
         }
-        return 3;
+        return this.value +stateStdv;
     }
 
     /**
@@ -225,6 +225,8 @@ public class BRSNode {
                 move.doMove();
                 move.setValue(evaluateCurrentState(move.getType()));
                 move.undoMove();
+
+                if (this.layer == 0) stateValues.add(move.getValue());
 
                 // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
                 if (this.isMaxNode) {
