@@ -1,13 +1,11 @@
 package bacon.ai.heuristics;
 
-import java.util.logging.Logger;
-
 public class PancakeWatchdog {
 
     /**
      * Time in ms to abort, before time limit applies. This is used to unwind the tree and return a move.
      */
-    private static final int SAFETY_GAP = 200;
+    static final int SAFETY_GAP = 200;
 
     private final long deadline;
     private final boolean active;

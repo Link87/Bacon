@@ -2,16 +2,15 @@ package bacon.ai.heuristics;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Heuristic that controls the search iterations.
  */
 public class IterationHeuristic {
 
-    /**
-     * Time limit factor below which a new iteration is done.
-     */
-    private static final double DELTA = PancakeWatchdog.SAFETY_GAP;
+    private static final Logger LOGGER = Logger.getGlobal();
 
     private final boolean useTimeLimit;
 
@@ -21,7 +20,7 @@ public class IterationHeuristic {
     private long startTimeStamp;
     private long iterationTimeStamp;
     private int timeLimit;
-    private static Map<Integer, Double> avgTimes = new HashMap<>();
+    private static Map<Integer, Long> avgTimes = new HashMap<>();
     private static Map<Integer, Integer> layerCount = new HashMap<>();
 
     // depth only
@@ -59,19 +58,35 @@ public class IterationHeuristic {
         if (this.useTimeLimit) {
             // time limit => iterative deepening
 
-            if (this.currentDepth > 0) {
-                avgTimes.putIfAbsent(this.currentDepth, 0.0);
-                layerCount.putIfAbsent(this.currentDepth, 0);
-
-                double newTotal = avgTimes.get(this.currentDepth) * layerCount.get(this.currentDepth)
-                        + System.nanoTime() - this.iterationTimeStamp;
-                layerCount.put(this.currentDepth, layerCount.get(this.currentDepth) + 1);
-                avgTimes.put(this.currentDepth, newTotal / layerCount.get(this.currentDepth));
+            if (this.currentDepth == 0) {
+                LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}", new Object[]{ this.currentDepth, this.startTimeStamp, this.iterationTimeStamp});
+                this.iterationTimeStamp = System.nanoTime();
+                this.currentDepth += 1;
+                return true;
             }
+
+            long elapsed = System.nanoTime() - this.iterationTimeStamp;
+
+            layerCount.putIfAbsent(this.currentDepth, 0);
+            avgTimes.putIfAbsent(this.currentDepth, 1L); // initial value, works because layerCount is still 0
+            avgTimes.putIfAbsent(this.currentDepth + 1, 1L);
+
+            long estimate = elapsed / avgTimes.get(this.currentDepth) + avgTimes.get(this.currentDepth + 1);
+            LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}, Est: {3}", new Object[]{ this.currentDepth, this.startTimeStamp, this.iterationTimeStamp, estimate});
+
+            long elapsedSinceStart = System.nanoTime() - this.startTimeStamp;
+            boolean doAnother = (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000 >= elapsedSinceStart + estimate;
+            LOGGER.log(Level.FINE, "Limit: {0}, Elapsed(start): {1}", new Object[]{ (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000, elapsedSinceStart});
+
+            // layer_count' = layer_count + 1
+            layerCount.put(this.currentDepth, layerCount.get(this.currentDepth) + 1);
+            // avg' = (layer_count * avg + time) / layer_count'
+            avgTimes.put(this.currentDepth, (layerCount.get(this.currentDepth) * avgTimes.get(this.currentDepth) + elapsed) /
+                    (layerCount.get(this.currentDepth) + 1));
+
             this.iterationTimeStamp = System.nanoTime();
             this.currentDepth += 1;
-            return (System.nanoTime() - this.startTimeStamp) / 1000000.0 <= this.timeLimit * 0.2;
-
+            return doAnother;
 
         } else {
             // depth limit => directly search on highest depth
