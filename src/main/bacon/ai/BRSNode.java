@@ -129,7 +129,7 @@ public class BRSNode {
         if (stateValues.size() == 0) {
             return -Double.MAX_VALUE;
         }
-        return stateAvg - stateStdv;
+        return this.value - stateStdv;
     }
 
     /**
@@ -141,7 +141,7 @@ public class BRSNode {
         if (stateValues.size() == 0) {
             return Double.MAX_VALUE;
         }
-        return stateAvg + stateStdv;
+        return this.value + stateStdv;
     }
 
     /**

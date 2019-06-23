@@ -17,7 +17,7 @@ public class Config {
 
     private static final boolean PRUNING_DEFAULT = true;
     private static final boolean MOVE_SORTING_DEFAULT = true;
-    private static final int BEAM_WIDTH_DEFAULT = 5;
+    private static final int BEAM_WIDTH_DEFAULT = 0;
     private static final boolean ASPIRATION_WINDOWS_DEFAULT = true;
     private static final boolean ENABLE_ERR_DEFAULT = false;
 
