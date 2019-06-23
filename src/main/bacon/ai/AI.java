@@ -53,21 +53,19 @@ public class AI {
             double beta = Double.MAX_VALUE;
             BRSNode root;
             while (iterationHeuristic.doIteration()) {
-                LOGGER.log(Level.INFO,"Start Depth: "+iterationHeuristic.getDepth());
                 root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                         cfg.isMoveSortingEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
                 if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
-                } else if (cfg.isAspirationWindowsEnabled() && !watchdog.isTriggered()) { //aspiration window failure: restart search with default alpha/beta values
-                    LOGGER.log(Level.WARNING, "Aspiration Window Failure");
-                    LOGGER.log(Level.INFO,"Start Depth: "+iterationHeuristic.getDepth());
+                } else if (cfg.isAspirationWindowsEnabled()) { //aspiration window failure: restart search with default alpha/beta values
                     root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                             cfg.isMoveSortingEnabled(), -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
                     root.evaluateNode();
                     if (root.getBestMove() != null) {
                         bestMove = root.getBestMove();
                     }
+                    LOGGER.log(Level.WARNING, "Aspiration Window Failure");
                 }
 
                 if (cfg.isAspirationWindowsEnabled()) { //update aspiration window for next BRS-iteration

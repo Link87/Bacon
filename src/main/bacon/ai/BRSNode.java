@@ -129,7 +129,7 @@ public class BRSNode {
         if (stateValues.size() == 0) {
             return -Double.MAX_VALUE;
         }
-        return this.value - stateStdv;
+        return stateAvg - stateStdv;
     }
 
     /**
@@ -141,7 +141,7 @@ public class BRSNode {
         if (stateValues.size() == 0) {
             return Double.MAX_VALUE;
         }
-        return this.value + stateStdv;
+        return stateAvg + stateStdv;
     }
 
     /**
@@ -180,10 +180,6 @@ public class BRSNode {
                     break;
                 }
 
-                if (BRSNode.enablePruning && this.beta <= this.alpha) {
-                    break;
-                }
-
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta, this.watchdog);
                 move.doMove();
                 childNode.evaluateNode();
@@ -195,13 +191,20 @@ public class BRSNode {
                         this.value = childNode.value;
                         this.bestMove = move;
 
-                        this.alpha = Math.max(this.alpha, this.value);
+                        this.alpha = this.value;
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            break;
+                        }
                     }
                 } else {
                     if (childNode.value < this.value) {
                         this.value = childNode.value;
+                        this.bestMove = move;
 
-                        this.beta = Math.min(this.beta, this.value);
+                        this.beta = this.value;
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            break;
+                        }
                     }
                 }
             }
@@ -209,16 +212,10 @@ public class BRSNode {
         } else {
             for (BuildMove move : legalMoves) {
 
-                if (BRSNode.enablePruning && this.beta <= this.alpha) {
-                    break;
-                }
-
                 Statistics.getStatistics().enterMeasuredState(this.layer);
                 move.doMove();
                 move.setValue(evaluateCurrentState(move.getType()));
                 move.undoMove();
-
-                if(this.layer == 0) stateValues.add(move.getValue());
 
                 // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
                 if (this.isMaxNode) {
@@ -226,12 +223,20 @@ public class BRSNode {
                         this.value = move.getValue();
                         this.bestMove = move;
                         this.alpha = Math.max(this.alpha, this.value);
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            Statistics.getStatistics().leaveMeasuredState();
+                            break;
+                        }
                     }
                 } else {
                     if (move.getValue() < this.value) {
                         this.value = move.getValue();
-
+                        this.bestMove = move;
                         this.beta = Math.min(this.beta, this.value);
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            Statistics.getStatistics().leaveMeasuredState();
+                            break;
+                        }
                     }
                 }
                 Statistics.getStatistics().leaveMeasuredState();
