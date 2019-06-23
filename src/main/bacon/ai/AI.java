@@ -54,7 +54,7 @@ public class AI {
             BRSNode root;
             while (iterationHeuristic.doIteration()) {
                 root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
-                        cfg.isMoveSortingEnabled(), alpha, beta, watchdog);
+                        cfg.isMoveSortingEnabled(), cfg.isAspirationWindowsEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
                 LOGGER.log(Level.INFO, "Depth " + iterationHeuristic.getDepth() + " Alpha: " + alpha + " Beta: " + beta + " Value: " + root.value);
 
@@ -66,7 +66,7 @@ public class AI {
                 LOGGER.log(Level.INFO,"Start Depth: "+iterationHeuristic.getDepth());
 
                 root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
-                            cfg.isMoveSortingEnabled(), -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
+                            cfg.isMoveSortingEnabled(), false, -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
                     root.evaluateNode();
                     if (root.getBestMove() != null) {
                         bestMove = root.getBestMove();

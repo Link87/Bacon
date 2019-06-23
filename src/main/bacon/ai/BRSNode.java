@@ -21,6 +21,7 @@ public class BRSNode {
     private static int branchingFactor;
     private static boolean enablePruning;
     private static boolean enableSorting;
+    private static boolean aspWindowON;
     /**
      * Statistics needed for determining aspiration window size for the next BRS-iteration
      */
@@ -47,15 +48,17 @@ public class BRSNode {
      * @param branchingFactor maximum branching factor at each node
      * @param enablePruning   set to <code>true</code> if alpha-beta pruning should be applied
      * @param enableSorting   set to <code>true</code> when move sorting should be used
+     * @param aspWindowON     set to <code>true</code> when aspiration window is ON
      * @param alpha           alpha value passed down from AI
      * @param beta            beta value passed down from AI
      * @param watchdog        Watchdog timer that triggers when time is running out
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, double alpha, double beta, PancakeWatchdog watchdog) {
+    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, boolean aspWindowON, double alpha, double beta, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
         BRSNode.enableSorting = enableSorting;
+        BRSNode.aspWindowON = aspWindowON;
         BRSNode.stateAvg = 0;
         BRSNode.stateStdv = 0;
         BRSNode.stateValues = new ArrayList<>();
@@ -129,7 +132,7 @@ public class BRSNode {
         if (stateValues.size() == 0) {
             return -Double.MAX_VALUE;
         }
-        return this.value - stateStdv;
+        return 2;
     }
 
     /**
@@ -141,7 +144,7 @@ public class BRSNode {
         if (stateValues.size() == 0) {
             return Double.MAX_VALUE;
         }
-        return this.value + stateStdv;
+        return 3;
     }
 
     /**
@@ -153,8 +156,12 @@ public class BRSNode {
 
         Set<? extends BuildMove> legalMoves = getLegalMoves();
 
-        // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
-        this.value = this.isMaxNode ? this.alpha : this.beta;
+        // initiates node value depending on whether aspiration window is on
+        if (aspWindowON) this.value = this.isMaxNode ? this.alpha : this.beta;
+        else this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
+
+        // variable keeps track of whether any move within aspiration window is found
+        boolean moveFoundInWindow = false;
 
         // no move is available, return value of current game state directly
         if (legalMoves.isEmpty()) {
@@ -191,6 +198,7 @@ public class BRSNode {
                         this.value = childNode.value;
                         this.bestMove = move;
 
+                        moveFoundInWindow = true;
                         this.alpha = this.value;
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             break;
@@ -201,6 +209,7 @@ public class BRSNode {
                         this.value = childNode.value;
                         this.bestMove = move;
 
+                        moveFoundInWindow = true;
                         this.beta = this.value;
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             break;
@@ -222,6 +231,8 @@ public class BRSNode {
                     if (move.getValue() > this.value) {
                         this.value = move.getValue();
                         this.bestMove = move;
+
+                        moveFoundInWindow = true;
                         this.alpha = Math.max(this.alpha, this.value);
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             Statistics.getStatistics().leaveMeasuredState();
@@ -232,6 +243,8 @@ public class BRSNode {
                     if (move.getValue() < this.value) {
                         this.value = move.getValue();
                         this.bestMove = move;
+
+                        moveFoundInWindow = true;
                         this.beta = Math.min(this.beta, this.value);
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             Statistics.getStatistics().leaveMeasuredState();
@@ -246,6 +259,13 @@ public class BRSNode {
                 }
 
             }
+        }
+
+        // In case aspiration window is on: if there was no move found within the aspiration window, set node value to
+        // +/-infinity such that this node is immediately discarded by its parent node
+        if(aspWindowON && !moveFoundInWindow){
+            if (this.isMaxNode) this.value = Double.MAX_VALUE;
+            else this.value = -Double.MAX_VALUE;
         }
 
         if (this.layer == 1) {    //Store the layer 1 node values for aspiration window size
