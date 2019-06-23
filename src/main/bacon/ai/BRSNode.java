@@ -36,7 +36,7 @@ public class BRSNode {
     private boolean isMaxNode;
     private GameState state;
     private PancakeWatchdog watchdog;
-    private double value;
+    public double value;
     private double alpha;
     private double beta;
 
