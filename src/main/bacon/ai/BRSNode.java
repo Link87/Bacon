@@ -278,7 +278,7 @@ public class BRSNode {
         }
 
         //Store the layer 1 node values for aspiration window size
-        if (this.layer == 1 && this.value > aspWindowAlpha && this.value < aspWindowBeta) {
+        if (this.layer == 1 && this.windowSuccess) {
             stateValues.add(this.value);
         }
     }
