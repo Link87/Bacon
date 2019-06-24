@@ -79,11 +79,6 @@ public class AI {
                     root.aspWindow();
                     alpha = root.getAspWindowAlpha();
                     beta = root.getAspWindowBeta();
-                    if(alpha==beta){
-                        //only one move found in lowest layer (would be AsperationWindowFailure next round)
-                        alpha = -Double.MAX_VALUE;
-                        beta = Double.MAX_VALUE;
-                    }
                 }
 
                 if (watchdog.isTriggered()) {
