@@ -21,24 +21,27 @@ public class BRSNode {
     private static int branchingFactor;
     private static boolean enablePruning;
     private static boolean enableSorting;
-    /**
-     * Statistics needed for determining aspiration window size for the next BRS-iteration
-     */
+    private static boolean aspWindowON;
+    private static double aspWindowAlpha;
+    private static double aspWindowBeta;
+
+    //Statistics needed for determining aspiration window size for the next BRS-iteration
     private static List<Double> stateValues;
     private static double stateAvg;
     private static double stateStdv;
+
     private final int layer;
-    /**
-     * Type of move that lead to this node
-     */
+    //Type of move that lead to this node
     private final Move.Type type;
     private BuildMove bestMove;
     private boolean isMaxNode;
     private GameState state;
     private PancakeWatchdog watchdog;
-    private double value;
-    private double alpha;
-    private double beta;
+    public double value;
+    public double alpha;
+    public double beta;
+    //Variable that keeps track of whether search within aspiration window was successful
+    private boolean windowSuccess;
 
     /**
      * External call constructor for game tree root
@@ -47,15 +50,19 @@ public class BRSNode {
      * @param branchingFactor maximum branching factor at each node
      * @param enablePruning   set to <code>true</code> if alpha-beta pruning should be applied
      * @param enableSorting   set to <code>true</code> when move sorting should be used
+     * @param aspWindowON     set to <code>true</code> when aspiration window is ON
      * @param alpha           alpha value passed down from AI
      * @param beta            beta value passed down from AI
      * @param watchdog        Watchdog timer that triggers when time is running out
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, double alpha, double beta, PancakeWatchdog watchdog) {
+    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, boolean aspWindowON, double alpha, double beta, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
         BRSNode.enableSorting = enableSorting;
+        BRSNode.aspWindowON = aspWindowON;
+        BRSNode.aspWindowAlpha = alpha;
+        BRSNode.aspWindowBeta = beta;
         BRSNode.stateAvg = 0;
         BRSNode.stateStdv = 0;
         BRSNode.stateValues = new ArrayList<>();
@@ -63,8 +70,9 @@ public class BRSNode {
         this.layer = 0;
         this.isMaxNode = true;
         this.type = null;
-        this.alpha = alpha;
-        this.beta = beta;
+        this.alpha = -Double.MAX_VALUE;
+        this.beta = Double.MAX_VALUE;
+        this.windowSuccess = false;
 
         this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
@@ -86,6 +94,7 @@ public class BRSNode {
         this.type = type;
         this.alpha = alpha;
         this.beta = beta;
+        this.windowSuccess = false;
 
         this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
@@ -126,10 +135,10 @@ public class BRSNode {
      * @return alpha value
      */
     public double getAspWindowAlpha() {
-        if (stateValues.size() == 0) {
+        if (stateStdv == 0) {
             return -Double.MAX_VALUE;
         }
-        return this.value - stateStdv;
+        return this.value - 5*stateStdv;
     }
 
     /**
@@ -138,10 +147,10 @@ public class BRSNode {
      * @return beta value
      */
     public double getAspWindowBeta() {
-        if (stateValues.size() == 0) {
+        if (stateStdv == 0) {
             return Double.MAX_VALUE;
         }
-        return this.value + stateStdv;
+        return this.value + 5*stateStdv;
     }
 
     /**
@@ -153,13 +162,15 @@ public class BRSNode {
 
         Set<? extends BuildMove> legalMoves = getLegalMoves();
 
-        // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
-        this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
+        // initiates node value as aspiration window boundaries or +/-infinity if aspiration window is OFF
+        if (aspWindowON) this.value = this.isMaxNode ? aspWindowAlpha : aspWindowBeta;
+        else this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
 
-        // no move is available, return value of current game state directly
+        // no move is available, return value of current game state directly; counts as aspiration window success
         if (legalMoves.isEmpty()) {
             Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
+            this.windowSuccess = true;
         } else if (this.layer < BRSNode.searchDepth - 1) {
             // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
 
@@ -180,10 +191,6 @@ public class BRSNode {
                     break;
                 }
 
-                if (BRSNode.enablePruning && this.beta <= this.alpha) {
-                    break;
-                }
-
                 BRSNode childNode = new BRSNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta, this.watchdog);
                 move.doMove();
                 childNode.evaluateNode();
@@ -191,17 +198,32 @@ public class BRSNode {
 
                 // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
                 if (this.isMaxNode) {
-                    if (childNode.value > this.value) {
+                    if (childNode.value > this.value && childNode.windowSuccess) {
                         this.value = childNode.value;
                         this.bestMove = move;
+                        this.windowSuccess = true;
 
-                        this.alpha = Math.max(this.alpha, this.value);
+                        if (this.value > this.alpha){
+                            this.alpha = this.value;
+                        }
+
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            break;
+                        }
                     }
                 } else {
-                    if (childNode.value < this.value) {
+                    if (childNode.value < this.value && childNode.windowSuccess) {
                         this.value = childNode.value;
+                        this.bestMove = move;
+                        this.windowSuccess = true;
 
-                        this.beta = Math.min(this.beta, this.value);
+                        if (this.value < this.beta) {
+                            this.beta = this.value;
+                        }
+
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            break;
+                        }
                     }
                 }
             }
@@ -209,29 +231,41 @@ public class BRSNode {
         } else {
             for (BuildMove move : legalMoves) {
 
-                if (BRSNode.enablePruning && this.beta <= this.alpha) {
-                    break;
-                }
-
                 Statistics.getStatistics().enterMeasuredState(this.layer);
                 move.doMove();
                 move.setValue(evaluateCurrentState(move.getType()));
                 move.undoMove();
 
-                if(this.layer == 0) stateValues.add(move.getValue());
+                if (this.layer == 0) stateValues.add(move.getValue());
 
                 // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
                 if (this.isMaxNode) {
                     if (move.getValue() > this.value) {
                         this.value = move.getValue();
                         this.bestMove = move;
-                        this.alpha = Math.max(this.alpha, this.value);
+                        this.windowSuccess = true;
+
+                        if (this.value > alpha) {
+                            this.alpha = this.value;
+                        }
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            Statistics.getStatistics().leaveMeasuredState();
+                            break;
+                        }
                     }
                 } else {
                     if (move.getValue() < this.value) {
                         this.value = move.getValue();
+                        this.bestMove = move;
+                        this.windowSuccess = true;
 
-                        this.beta = Math.min(this.beta, this.value);
+                        if (this.value < beta) {
+                            this.beta = this.value;
+                        }
+                        if (BRSNode.enablePruning && this.beta <= this.alpha) {
+                            Statistics.getStatistics().leaveMeasuredState();
+                            break;
+                        }
                     }
                 }
                 Statistics.getStatistics().leaveMeasuredState();
@@ -243,7 +277,8 @@ public class BRSNode {
             }
         }
 
-        if (this.layer == 1) {    //Store the layer 1 node values for aspiration window size
+        //Store the layer 1 node values for aspiration window size
+        if (this.layer == 1 && this.windowSuccess) {
             stateValues.add(this.value);
         }
     }
