@@ -52,15 +52,15 @@ public class AI {
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;
             BRSNode root;
-            while (iterationHeuristic.doIteration()) {
-                LOGGER.log(Level.INFO, "Start Depth " + iterationHeuristic.getDepth() + "\nAlpha: " + alpha + " Beta: " + beta);
+            while (iterationHeuristic.doIteration() && iterationHeuristic.getDepth() < 20) {
+                LOGGER.log(Level.INFO, "Start Depth " + iterationHeuristic.getDepth() + "\nAspAlpha: " + alpha + " AspBeta: " + beta);
                 root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                         cfg.isMoveSortingEnabled(), cfg.isAspirationWindowsEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
 
                 if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
-                    LOGGER.log(Level.INFO, "Value: "+root.value);
+                    LOGGER.log(Level.INFO, "Value: " + root.value + " RootAlpha: " + root.alpha + " RootBeta: " + root.beta);
                 } else if (cfg.isAspirationWindowsEnabled() && !watchdog.isTriggered()) {
                     //aspiration window failure: restart search with default alpha/beta values
                 LOGGER.log(Level.WARNING, "Aspiration Window Failure");
