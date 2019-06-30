@@ -52,27 +52,19 @@ public class AI {
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;
             BRSNode root;
-            while (iterationHeuristic.doIteration() && iterationHeuristic.getDepth() < 20) {
-                LOGGER.log(Level.INFO, "Start Depth " + iterationHeuristic.getDepth() + "\nAspAlpha: " + alpha + " AspBeta: " + beta);
+            while (iterationHeuristic.doIteration() && iterationHeuristic.getDepth() < 20) { //searches with depth >20 is a waste of time since at this depth there must be a layer with only one node
                 root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                         cfg.isMoveSortingEnabled(), cfg.isAspirationWindowsEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
 
                 if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
-                    LOGGER.log(Level.INFO, "Value: " + root.value + " RootAlpha: " + root.alpha + " RootBeta: " + root.beta);
                 } else if (cfg.isAspirationWindowsEnabled() && !watchdog.isTriggered()) {
                     //aspiration window failure: restart search with default alpha/beta values
-                LOGGER.log(Level.WARNING, "Aspiration Window Failure");
-                LOGGER.log(Level.INFO,"Start Depth: "+iterationHeuristic.getDepth());
-
-                root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                    root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                             cfg.isMoveSortingEnabled(), false, -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
                     root.evaluateNode();
-                    if (root.getBestMove() != null) {
-                        bestMove = root.getBestMove();
-                        LOGGER.log(Level.INFO, "Value: "+root.value);
-                    }
+                    if (root.getBestMove() != null) bestMove = root.getBestMove();
                 }
 
                 if (cfg.isAspirationWindowsEnabled()) { //update aspiration window for next BRS-iteration
