@@ -10,6 +10,9 @@ import java.net.Socket;
 
 /**
  * A connection to the game server.
+ * <p>
+ * A connection is opened upon creation of a new {@code ServerConnection} object. The connection has to be closed
+ * by calling {@link ServerConnection#close()}
  */
 public class ServerConnection implements Closeable {
 
@@ -18,20 +21,24 @@ public class ServerConnection implements Closeable {
     private Socket socket;
 
     /**
-     * Creates a ServerConnection to the given host at the given port.
+     * Creates a {@code ServerConnection} to the given host at the given port.
+     * <p>
      * The port is used on this client and on the server as well.
      *
-     * @param host host to connect to
-     * @param port port to use on both server and client
+     * @param host name of host to connect to
+     * @param port port to connect to
+     * @throws IOException if an network error of any kind occurs
      */
     public ServerConnection(String host, int port) throws IOException {
         this.socket = new Socket(host, port);
     }
 
     /**
-     * Returns a message send from the server. Blocks until the message is received.
+     * Returns a {@link Message} send from the server.
+     * <p>
+     * Blocks until the {@code Message} is received.
      *
-     * @return the received message
+     * @return the received message deserialized into a {@code Message}
      */
     public Message awaitMessage() {
         try {
@@ -49,7 +56,7 @@ public class ServerConnection implements Closeable {
     }
 
     /**
-     * Sends the given message to the server.
+     * Sends the given {@link Message} to the server.
      *
      * @param msg message to send
      */
@@ -65,7 +72,7 @@ public class ServerConnection implements Closeable {
     }
 
     /**
-     * Closes the ServerConnection. The connection can't be reopened.
+     * Closes the {@code ServerConnection}. The connection can't be reopened.
      */
     public void close() {
         try {
