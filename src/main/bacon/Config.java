@@ -1,7 +1,7 @@
 package bacon;
 
 /**
- * This class is the config passed from the command line.
+ * Contains the configuration data passed from command line.
  */
 public class Config {
 
@@ -15,12 +15,19 @@ public class Config {
     private final boolean aspirationWindows;
     private final boolean enableErr;
 
+    // Default values. Those are used if no fitting argument is passed.
     private static final boolean PRUNING_DEFAULT = true;
     private static final boolean MOVE_SORTING_DEFAULT = true;
     private static final int BEAM_WIDTH_DEFAULT = 5;
     private static final boolean ASPIRATION_WINDOWS_DEFAULT = false;
     private static final boolean ENABLE_ERR_DEFAULT = false;
 
+    /**
+     * Creates an empty configuration, that only indicates a help request via {@code --help}.
+     * <p>
+     * Do not attempt to read configuration data from a {@code Config} created with this constructor.
+     * The values are assigned arbitrarily and do not reflect the command line arguments that may have been passed to the ai.
+     */
     private Config() {
         this.helpRequested = true;
 
@@ -33,7 +40,20 @@ public class Config {
         this.enableErr = ENABLE_ERR_DEFAULT;
     }
 
-    private Config(String host, int port, boolean pruning, boolean moveSorting, int beamWidth, boolean aspirationWindows, boolean enableErr) {
+    /**
+     * Creates a new {@code Config} with the given configuration data.
+     *
+     * @param host              host name to connect to
+     * @param port              port number to connect to
+     * @param pruning           {@code true} if pruning should be used, {@code false} otherwise
+     * @param moveSorting       {@code true} if move sorting should be used, {@code false} otherwise
+     * @param beamWidth         width of beam used in beam search or {@code 0} if no beam search should be done.
+     *                          This is ignored if {@code moveSorting} is set to {@code false}.
+     * @param aspirationWindows {@code true} if aspiration windows should be used, {@code false} otherwise
+     * @param enableErr         {@code true} if errors and warnings should be printed to {@code stderr}, {@code false} otherwise.
+     *                          Use this when running the ai locally.
+     */
+    public Config(String host, int port, boolean pruning, boolean moveSorting, int beamWidth, boolean aspirationWindows, boolean enableErr) {
         this.host = host;
         this.port = port;
         this.pruning = pruning;
@@ -44,17 +64,6 @@ public class Config {
 
         this.helpRequested = false;
 
-    }
-
-    public Config(boolean pruning, boolean moveSorting, int beamWidth, boolean aspirationWindows){
-        this.host = null;
-        this.port = 0;
-        this.pruning = pruning;
-        this.moveSorting = moveSorting;
-        this.beamWidth = beamWidth;
-        this.aspirationWindows = aspirationWindows;
-        this.enableErr = false;
-        this.helpRequested = true;
     }
 
     /**
@@ -77,9 +86,9 @@ public class Config {
 
     /**
      * Returns whether the user asked for a help text.
-     * When <code>true</code>, the other values are undefined and may be set arbitrarily!
+     * When {@code true}, the other values are undefined and may be set arbitrarily!
      *
-     * @return <code>true</code> if help should be displayed, <code>false</code> otherwise
+     * @return {@code true} if help should be displayed, {@code false} otherwise
      */
     boolean isHelpRequested() {
         return helpRequested;
@@ -88,16 +97,28 @@ public class Config {
     /**
      * Returns whether pruning should be used in the search tree.
      *
-     * @return <code>true</code> if pruning should be used, <code>false</code> otherwise
+     * @return {@code true} if pruning should be used, {@code false} otherwise
      */
     public boolean isPruningEnabled() {
         return pruning;
     }
 
+    /**
+     * Returns whether moves should be sorted and traversed in order.
+     *
+     * @return {@code true} if move sorting should be used, {@code false} otherwise
+     */
     public boolean isMoveSortingEnabled() {
         return moveSorting;
     }
 
+    /**
+     * Returns the width of the beam used in beam search. Returns {@code 0} if beam search is turned off.
+     * <p>
+     * This value is ignored if move sorting is turned off entirely.
+     *
+     * @return width of beam used in beam search or {@code 0} if no beam search should be done
+     */
     public int getBeamWidth() {
         return beamWidth;
     }
@@ -105,16 +126,18 @@ public class Config {
     /**
      * Returns whether aspiration windows should be used.
      *
-     * @return <code>true</code> if aspiration are enabled, <code>false</code> otherwise
+     * @return {@code true} if aspiration are enabled, {@code false} otherwise
      */
     public boolean isAspirationWindowsEnabled() {
         return aspirationWindows;
     }
 
     /**
-     * Returns whether to use the stderr stream for error logging.
+     * Returns whether to use the {@code stderr} stream for error logging.
+     * <p>
+     * Use this when running the ai locally. On the server this setting would instead lead to inconsistent logging.
      *
-     * @return <code>true</code> if errors and warnings should be printed to stderr, <code>false</code> otherwise
+     * @return {@code true} if errors and warnings should be printed to {@code stderr}, {@code false} otherwise
      */
     boolean isErrEnabled() {
         return enableErr;
@@ -124,16 +147,29 @@ public class Config {
      * Parses the arguments and returns the config.
      *
      * @param args array containing the command line arguments
-     * @return config with parsed arguments or <code>null</code> when help is requested
+     * @return config with parsed arguments or {@code null} when help is requested
      * @throws IllegalArgumentException when invalid arguments are passed
      */
     static Config fromArgs(String[] args) throws IllegalArgumentException {
         return new Parser().parseArgs(args);
     }
 
+    /**
+     * Parser that parses command line arguments and returns a {@link Config}.
+     */
     private static class Parser {
 
+        /**
+         * Parses the given arguments and returns a {@link Config} with the according data.
+         *
+         * @param args array containing the command line arguments
+         * @return config with parsed arguments or {@code null} when help is requested
+         * @throws IllegalArgumentException when invalid arguments are passed
+         */
         private Config parseArgs(String[] args) throws IllegalArgumentException {
+            /* This parser works as a state machine. CLI switches without arguments are applied directly.
+            Otherwise, the parser changes into an expecting state in which only a fitting argument value is accepted. */
+
             String host = null;
             int port = -1;
             boolean pruning = PRUNING_DEFAULT;
@@ -226,7 +262,7 @@ public class Config {
         }
 
         /**
-         * The states the parser can be in.
+         * The states the {@code Parser} can be in.
          */
         private enum State {
             EXPECT_ARG,

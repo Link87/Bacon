@@ -17,8 +17,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A Game class which contains the stateless information about the current game
- * and provides access to the currentGameState
+ * A class representing a single game.
+ * <p>
+ * This class contains the stateless information about the current game.
+ * Stateful, i.e. not constant, values are saved in a {@link GameState} instance instead.
  */
 public class Game {
 
@@ -30,26 +32,40 @@ public class Game {
     private int bombRadius;
     private int playerCount;
 
+    /**
+     * Amount of moves done by any player.
+     */
     private int moveCount = 1;
 
     /**
-     * all stateful information is contained inside this object
+     * Contains all stateful information about the game.
      */
     private GameState currentGameState = new GameState();
 
+    /**
+     * Returns the singleton {@code Game} instance.
+     *
+     * @return the {@code Game} instance
+     */
     public static Game getGame() {
         return INSTANCE;
     }
 
+    /**
+     * Returns the {@link GameState} of this {@code Game}.
+     *
+     * @return the current {@code GameState}
+     */
     public GameState getCurrentState() {
         return currentGameState;
     }
 
     /**
-     * Initialize the game with the given {@link Config}. This sends the group number and receives
-     * the map date and the starts the game loop.
+     * Initializes the {@code Game} with the given {@link Config}.
+     * <p>
+     * This sends the group number and receives the map data. Finally the game loop is started.
      *
-     * @param cfg the {@link Config} to use
+     * @param cfg the {@code Config} to use
      */
     void startGame(Config cfg) {
 
@@ -80,7 +96,7 @@ public class Game {
      * Runs the main game loop. Returns when game ends.
      *
      * @param connection the {@link ServerConnection} to use for the game
-     * @param cfg the {@link Config} to use
+     * @param cfg        the {@link Config} to use
      */
     private void runGame(ServerConnection connection, Config cfg) {
         while (currentGameState.getGamePhase() != GamePhase.ENDED) {
@@ -95,10 +111,11 @@ public class Game {
     }
 
     /**
-     * Processes the given message according to the network specification.
-     * Move Requests can not be processed, because an established server connection is required to send a response.
+     * Processes the given {@link Message} according to the network specification.
+     * <p>
+     * Move requests can not be processed, because an established server connection is required to send a response.
      *
-     * @param msg Message to process
+     * @param msg the {@code Message} to process
      */
     void processMessage(Message msg) {
         // Split message into components according to format. Message length is skipped, because Java *yay*
@@ -148,10 +165,10 @@ public class Game {
     }
 
     /**
-     * Reads the given String and initializes fields with the contained map data.
-     * String must follow specifications of message type 3.
+     * Reads the given {@code String} and initializes fields with the contained map data.
+     * String must follow specifications of message type 2 ({@link Message.Type#MAP_CONTENT}).
      *
-     * @param mapData String holding a map
+     * @param mapData a String holding a {@link Map}
      */
     public void readMap(String mapData) {
         currentGameState.setGamePhase(GamePhase.PHASE_ONE);
@@ -180,8 +197,8 @@ public class Game {
     }
 
     /**
-     * Reads the given binary data and executes the contained move on the current map (in currentGameState).
-     * Data must follow the specification of message type 6.
+     * Reads the given binary data and executes the contained move on the current {@link Map} (in the current {@link GameState}).
+     * The data must follow the specification of message type 6 ({@link Message.Type#MOVE_ANNOUNCE}).
      *
      * @param moveData byte array holding a move
      */
@@ -190,19 +207,22 @@ public class Game {
 
         if (move.isLegal()) {
             LOGGER.log(Level.FINE, "Move #{0}: Received legal move by player {1} on ({2}, {3}).",
-                    new Object[]{ moveCount, move.getPlayerId(), move.getX(), move.getY() });
+                    new Object[]{moveCount, move.getPlayerId(), move.getX(), move.getY()});
             move.doMove();
         } else LOGGER.log(Level.SEVERE, "Move #{0}: Can't execute move by player {1} on ({2}, {3}): is illegal!",
-                new Object[]{ moveCount, move.getPlayerId(), move.getX(), move.getY() });
+                new Object[]{moveCount, move.getPlayerId(), move.getX(), move.getY()});
 
         moveCount++;
     }
 
+    /**
+     * Prints a game summary to the log.
+     */
     private void printSummary() {
 
         List<Player> players = new ArrayList<>(this.playerCount);
         for (int i = 1; i <= getTotalPlayerCount(); i++) {
-           players.add(currentGameState.getPlayerFromId(i));
+            players.add(currentGameState.getPlayerFromId(i));
         }
         players.sort(Comparator.comparing((Player p) -> p.getStones().size()).reversed());
 
@@ -220,19 +240,21 @@ public class Game {
 
     /**
      * Returns the radius bombs have in the game.
+     * <p>
      * This value is constant throughout the game.
      *
      * @return radius of bombs
      */
-    public int getBombRadius() {
+    int getBombRadius() {
         return bombRadius;
     }
 
     /**
-     * Returns the total amount of players that participate in the game.
+     * Returns the total amount of {@link Player}s  that participate in the game.
+     * <p>
      * This value is constant throughout the game.
      *
-     * @return the total player count
+     * @return the total {@code Player} count
      */
     public int getTotalPlayerCount() {
         return playerCount;

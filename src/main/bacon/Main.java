@@ -3,12 +3,23 @@ package bacon;
 import java.util.Arrays;
 import java.util.logging.*;
 
+/**
+ * The main class, that contains the entry point, see {@link #main(String[])}.
+ */
 public class Main {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
+    /**
+     * The entry point of the ai.
+     * <p>
+     * Reads the command line arguments and starts a new {@link Game}.
+     *
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
 
+        // read cli arguments
         Config config = null;
         try {
             config = Config.fromArgs(args);
@@ -56,21 +67,21 @@ public class Main {
     }
 
     /**
-     * Prints the cli help information for this program.
+     * Prints the cli help information for this program to {@code System.out}.
      */
     private static void printHelp() {
         String nl = System.getProperty("line.separator");
         String helpInfo =
                 "usage: bacon [--help] [-s <server> | --server <server> -p <port> | --port <port> [--no-prune]" + nl +
-                "             [--no-sort] [-b <width> | --beam <width> | --no-beam] [--err]]" + nl +
-                "-s, --server <host>\t server to connect with (mandatory)" + nl +
-                "-p, --port <port>  \t port to connect to (mandatory)" + nl +
-                "    --no-prune     \t disable alpha-beta-pruning" + nl +
-                "    --no-sort      \t disable move sorting entirely" + nl +
-                "-b, --beam <width> \t set beam width for forward pruning" + nl +
-                "    --no-beam      \t disable beam search, same as '-b 0'" + nl +
-                "    --err          \t write errors and warnings to stderr" + nl +
-                "    --help         \t display this help text" + nl;
+                        "             [--no-sort] [-b <width> | --beam <width> | --no-beam] [--err]]" + nl +
+                        "-s, --server <host>\t server to connect with (mandatory)" + nl +
+                        "-p, --port <port>  \t port to connect to (mandatory)" + nl +
+                        "    --no-prune     \t disable alpha-beta-pruning" + nl +
+                        "    --no-sort      \t disable move sorting entirely" + nl +
+                        "-b, --beam <width> \t set beam width for forward pruning" + nl +
+                        "    --no-beam      \t disable beam search, same as '-b 0'" + nl +
+                        "    --err          \t write errors and warnings to stderr" + nl +
+                        "    --help         \t display this help text" + nl;
 
         System.out.println(helpInfo);
     }
@@ -86,13 +97,25 @@ public class Main {
     }
 
     /**
-     * A {@link Handler} that prints INFO and below to System.out and everything above to System.err.
+     * A {@link Handler} that prints {@link Level#INFO} and below to {@code System.out} and everything above to {@code System.err}.
+     * <p>
+     * In some cases it is desired to have normal and error output in the same log file.
+     * For those cases, the log splitting can be deactivated.
      */
     public static class DualConsoleHandler extends StreamHandler {
 
         private final ConsoleHandler stderrHandler = new ConsoleHandler();
         private final boolean printToErr;
 
+        /**
+         * Creates a new {@code DualConsoleHandler} with the given formatter.
+         * <p>
+         * If {@code printToErr} is set to {@code true}, {@link Level#SEVERE} and {@link Level#WARNING} log messages
+         * are printed to {@code System.err} instead of {@code System.out}.
+         *
+         * @param fmt        the {@link Formatter} to use
+         * @param printToErr if {@code true}, {@code SEVERE} and {@code WARNING} messages are printed to {@code System.err}
+         */
         DualConsoleHandler(Formatter fmt, boolean printToErr) {
             super(System.out, fmt);
             this.printToErr = printToErr;

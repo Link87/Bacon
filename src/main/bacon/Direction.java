@@ -4,9 +4,10 @@ import java.util.EnumMap;
 
 /**
  * This enum defines the directions that transitions can be assigned to.
- * The corresponding integer value can be determined with the <code>id</code> field.
+ * <p>
+ * The corresponding integer value can be determined with the constant {@link Direction#id} field.
  * Given a direction by its integer value, the enum variant can be obtained with
- * <code>fromId()</code>.
+ * {@link Direction#fromId(int)}.
  */
 public enum Direction {
     UP(0),
@@ -28,49 +29,51 @@ public enum Direction {
     }
 
     /**
-     * Convert an integer representation of a direction into a <code>Direction</code> enum variant.
+     * Convert an integer representation of a direction into a {@code Direction} enum variant.
      *
      * @param id the integer to look up
-     * @return the associated <code>Direction</code> variant
+     * @return the associated {@code Direction} variant
      */
     public static Direction fromId(int id) {
         return lookup[id];
     }
 
     /**
-     * Returns the opposite direction.
+     * Returns the opposite {@code Direction}.
      *
-     * @return the opposite direction
+     * @return the opposite {@code Direction}
      */
     public Direction opposite() {
         return Direction.opposite.get(this);
     }
 
     /**
-     * Returns the opposite direction of the given direction in integer representation.
+     * Returns the opposite {@code Direction} of the given direction in integer representation.
      *
-     * @param id integer representing a direction
-     * @return the opposite direction as an integer
+     * @param id integer representing a {@code Direction}
+     * @return the opposite {@code Direction} as an integer
      */
     public static int oppositeOf(int id) {
         return (id + 4) % 8;
     }
 
     /**
-     * A <code>Map</code> containing the opposite directions of each direction.
+     * A {@code Map} containing the opposite {@code Direction} of each {@code Direction}.
      */
     private static final EnumMap<Direction, Direction> opposite = new EnumMap<>(Direction.class);
     /**
-     * An array for fast reverse lookup of direction variants, when integer values are given.
+     * An array for fast reverse lookup of {@code Direction} variants, when integer values are given.
      */
     private static final Direction[] lookup = new Direction[8];
 
     /**
-     * Integer value that represents an invalid direction.
+     * Integer value that represents an invalid {@code Direction}.
      */
     public static final int NULL_DIRECTION_ID = -1;
 
     static {
+        // initialize lookup tables
+
         opposite.put(UP, DOWN);
         opposite.put(UP_RIGHT, DOWN_LEFT);
         opposite.put(RIGHT, LEFT);

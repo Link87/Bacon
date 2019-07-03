@@ -3,26 +3,28 @@ package bacon;
 import java.util.Arrays;
 
 /**
- * A tile on the map. A Tile may have a special {@link Property}.
+ * A tile on the map.
  * <p>
- * A tile can contain a single stone that is owned by a player. In this project, the concept of stones is simplified:
- * The ownership of the stone is represented by the ownership of that tile.
+ * A {@code Tile} can contain a single stone that is owned by a player. In this project, the concept of stones is simplified:
+ * The ownership of the stone is represented by the ownership of that {@code Tile}.
+ * <p>
+ * A Tile may also have a special {@link Property}.
  */
 public class Tile {
 
     /**
-     * Neighbouring tiles in each direction. May also contains extraneous transitions.
-     * The direction is defined by the array index, as defined in {@link Direction}.
+     * Neighbouring {@code Tile}s in each {@link Direction}. May also contains extraneous transitions.
+     * The array index corresponds to the {@link Direction#id}.
      * <p>
-     * If no transition is possible in a given direction, the value is set to <code>null</code>.
+     * If no transition is possible in a given direction, the value is set to {@code null}.
      */
     private final Tile[] transitions;
 
     /**
-     * Direction in which the according transition arrives at the other tile.
-     * The direction is defined by the array index, as defined in {@link Direction}.
+     * {@link Direction} in which the according transition arrives at the other tile.
+     * The array index corresponds to the {@link Direction#id}.
      * <p>
-     * If no transition is possible in a given direction, the array element is set to <code>Direction.NULL_DIRECTION_ID</code>.
+     * If no transition is possible in a given direction, the array element is set to {@link Direction#NULL_DIRECTION_ID}.
      */
     private final int[] arrivals;
 
@@ -33,13 +35,15 @@ public class Tile {
     public final int y;
 
     /**
-     * Creates a new Tile at the given position. If the owner is set, the property has to be set to <code>DEFAULT</code>.
+     * Creates a new {@code Tile} at the given position.
+     * <p>
+     * If the tile owner is set, the {@link Property} has to be set to {@link Property#DEFAULT}.
      *
-     * @param ownerId  number of {@link Player} that owns the stone on this Tile.
-     *                 Set to <code>Player.NULL_PLAYER_ID</code> if there is no stone on this Tile.
-     * @param property Special {@link Property} that this Tile has
-     * @param x        horizontal coordinate of this Tile
-     * @param y        vertical coordinate of this Tile
+     * @param ownerId  id of {@link Player} that owns the stone on this {@code Tile}.
+     *                 Set to {@link Player#NULL_PLAYER_ID} if there is no stone on this {@code Tile}.
+     * @param property Special {@code Property} that this {@code Tile} has
+     * @param x        horizontal coordinate of this {@code Tile}
+     * @param y        vertical coordinate of this {@code Tile}
      */
     public Tile(int ownerId, Property property, int x, int y) {
         this.ownerId = ownerId;
@@ -56,9 +60,9 @@ public class Tile {
     }
 
     /**
-     * Sets the owner of this Tile and updates the players stones.
+     * Sets the owner of this {@code Tile} and updates the players stones.
      *
-     * @param ownerId id of new owner of this Tile.
+     * @param ownerId id of new owner of this {@code Tile}.
      */
     public void setOwnerId(int ownerId) {
         if (this.ownerId != Player.NULL_PLAYER_ID) {
@@ -72,21 +76,21 @@ public class Tile {
     }
 
     /**
-     * Sets the (special) {@link Property} this Tile has.
+     * Sets the (special) {@link Property} this {@code Tile} has.
      *
-     * @param property the {@link Property} of this Tile
+     * @param property the {@code Property} of this {@code Tile}
      */
     public void setProperty(Property property) {
         this.property = property;
     }
 
     /**
-     * Sets the transition at the given direction. The other tile is either a neighbour
+     * Sets the transition at the given {@code Direction}. The other {@code Tile} is either a neighbour
      * or declared as an additional transition partner in the map file.
      *
-     * @param other     Tile the transition leads to
-     * @param direction Direction in which the transition is applied
-     * @param arrival   Direction in which the transition arrives at the other tile
+     * @param other     {@code Tile} the transition leads to
+     * @param direction {@code Direction} in integer representation in which the transition is applied
+     * @param arrival   {@code Direction} in integer representation in which the transition arrives at the other tile
      */
     void setTransition(Tile other, int direction, int arrival) {
         this.transitions[direction] = other;
@@ -95,14 +99,17 @@ public class Tile {
 
 
     /**
-     * Makes a hole out of a tile by removing its owner, its transitions to other tiles and other tiles' transition to it.
-     * Also sets property to 'HOLE'.
+     * Applies a bomb to this {@code Tile}.
+     * <p>
+     * Makes a hole out of this {@code Tile} by removing its owner, its transitions to other {@code Tile}s
+     * and other {@code Tile}s transition to it.
+     * The {@code Property} is set to {@link Property#HOLE}
      */
     public void bombTile() {
         setProperty(Property.HOLE);
         setOwnerId(Player.NULL_PLAYER_ID);
 
-        //remove transition from neighbors to bombed tile
+        // remove transition from neighbors to bombed tile
         for (int direction = 0; direction < Direction.values().length; direction++) {
             Tile neighbor = this.getTransition(direction);
             if (neighbor == null) continue;
@@ -111,7 +118,7 @@ public class Tile {
                 if (t == this) neighbor.setTransition(null, neighborDirection, Direction.NULL_DIRECTION_ID);
             }
         }
-        //remove transitions from bombed tile to neighbors
+        // remove transitions from bombed tile to neighbors
         for (int direction = 0; direction < Direction.values().length; direction++) {
             this.setTransition(null, direction, Direction.NULL_DIRECTION_ID);
         }
@@ -120,45 +127,49 @@ public class Tile {
 
 
     /**
-     * Returns the Tile the transition in the given direction leads to. Returns <code>null</code> if no transition is present.
+     * Returns the {@code Tile} the transition in the given {@code Direction} leads to.
+     * Returns {@code null} if no transition is present.
      *
-     * @param direction {@link Direction} in which the transition is applied
-     * @return the Tile the transition points to or <code>null</code> if no transition is present
+     * @param direction {@code Direction} in integer representation in which the transition is applied
+     * @return the {@code Tile} the transition points to or {@code null} if no transition is present
      */
     public Tile getTransition(int direction) {
         return this.transitions[direction];
     }
 
     /**
-     * Returns the direction in which the transition arrives. Returns <code>null</code> if no transition is present.
+     * Returns the {@code Direction} in which the transition arrives. Returns {@code null} if no transition is present.
      *
-     * @param direction {@link Direction} in which the transition starts on this tile
-     * @return the arriving direction or <code>Direction.NULL_DIRECTION_ID</code> if no transition is present in the given direction
+     * @param direction {@code Direction} in integer representation in which the transition starts on this tile
+     * @return the arriving {@code Direction} in integer representation
+     * or {@link Direction#NULL_DIRECTION_ID} if no transition is present in the given direction
      */
     public int getArrivalDirection(int direction) {
         return this.arrivals[direction];
     }
 
     /**
-     * Returns the id of the owner of this Tile.
+     * Returns the id of the owner of this {@code Tile}.
      *
-     * @return the id of the owner of this Tile or <code>Player.NULL_PLAYER_ID</code> if tile is unoccupied
+     * @return the id of the owner of this {@code Tile} or {@link Player#NULL_PLAYER_ID} if tile is unoccupied
      */
     public int getOwnerId() {
         return this.ownerId;
     }
 
     /**
-     * Returns the Property this Tile has.
+     * Returns the {@code Property} this {@code Tile} has.
      *
-     * @return the Property of this Tile
+     * @return the {@code Property} of this {@code Tile}
      */
     public Property getProperty() {
         return this.property;
     }
 
     /**
-     * Defines special properties a Tile might have. <code>DEFAULT</code> is used when no special property is available.
+     * Defines special properties a {@code Tile} might have.
+     * <p>
+     * {@code DEFAULT} is used when no special property is available.
      */
     public enum Property {
         DEFAULT,
@@ -169,11 +180,11 @@ public class Tile {
         EXPANSION;
 
         /**
-         * Translates a single character into the Property that is associated with that.
+         * Translates a single character into the {@code Property} that is associated with that.
          * See the specification for details on this.
          *
          * @param c the character to translate
-         * @return the Property that is associated with the given character
+         * @return the {@code Property} that is associated with the given character
          */
         public static Property fromChar(char c) {
             switch (c) {

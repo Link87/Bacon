@@ -1,13 +1,21 @@
 package bacon;
 
 /**
- * This enum represents the Phases of the gamestate.
- * <code>PHASE_ONE</code> stands for the playing phase,
- * <code>PHASE_TWO</code> for the bombing phase,
- * <code>ENDED</code> for the end of the game
+ * An enum for the phases a game can be in.
  */
 public enum GamePhase {
+    /**
+     * The variant representing the main playing phase.
+     */
     PHASE_ONE,
+
+    /**
+     * The variant representing the bombing phase.
+     */
     PHASE_TWO,
+
+    /**
+     * The variant representing a game that has ended.
+     */
     ENDED
 }

@@ -8,7 +8,7 @@ import java.util.*;
 public class Player {
 
     /**
-     * Integer representation of an invalid or <code>null</code> player instance.
+     * Integer representation of an invalid or {@code null} {@code Player} instance.
      */
     public static final int NULL_PLAYER_ID = 0;
 
@@ -22,27 +22,27 @@ public class Player {
     private Set<Tile> stones;
 
     /**
-     * Creates a new Player instance.
+     * Creates a new {@code Player} instance.
      *
-     * @param id                 index of the player
-     * @param overrideStoneCount amount of override stones the player has
-     * @param bombCount          amount o bombs the player has
+     * @param id                 index of the {@code Player}
+     * @param overrideStoneCount amount of override stones the {@code Player} has
+     * @param bombCount          amount o bombs the {@code Player} has
      */
     public Player(int id, int overrideStoneCount, int bombCount) {
         this.id = id;
         this.overrideStoneCount = overrideStoneCount;
         this.bombCount = bombCount;
         this.disqualified = false;
-        // Create a set that only hold weak references to its contents
-        // This may break the invariants of all set methods, if not handled carefully!
         this.stones = new HashSet<>();
     }
 
     /**
-     * Creates a shallow copy, meaning that (this != copy)
-     * stones Set is left empty
+     * Creates a shallow copy of the {@code Player} instance.
+     * <p>
+     * This implies that {@code equals} is {@code false} when comparing this instance with the copy,
+     * but complex fields are not actually copied. Instead, the {@code stones} set is left empty.
      *
-     * @return a shallow copy
+     * @return a copy of the {@code Player} instance
      */
     Player shallowCopy() {
         Player copy = new Player(this.id, this.overrideStoneCount, this.bombCount);
@@ -51,101 +51,103 @@ public class Player {
     }
 
     /**
-     * Returns the number of tiles the player currently owns
+     * Returns the number of {@link Tile}s the {@code Player} currently owns
      *
-     * @return the number of tiles of the player
+     * @return the number of {@code Tile}s of the {@code Player}
      */
     public int getStoneCount() {
         return this.stones.size();
     }
 
     /**
-     * Returns whether the player is disqualified.
+     * Returns whether the {@code Player} is disqualified.
      *
-     * @return true if the player is disqualified
+     * @return {@code true} if the {@code Player} is disqualified, {@code false} otherwise
      */
     public boolean isDisqualified() {
         return this.disqualified;
     }
 
     /**
-     * Returns the amount of override stones the player has left.
+     * Returns the amount of override stones the {@code Player} has left.
      *
-     * @return amount of override stones
+     * @return the amount of override stones of the {@code Player}
      */
     public int getOverrideStoneCount() {
         return this.overrideStoneCount;
     }
 
     /**
-     * Returns the amount of bombs the player has left.
+     * Returns the amount of bombs the {@code Player} has left.
      *
-     * @return amount of bombs
+     * @return the amount of bombs of the {@code Player}
      */
     public int getBombCount() {
         return this.bombCount;
     }
 
     /**
-     * Places tile in players possession.
+     * Puts the given {@code Tile} in {@code Player}s possession.
      * <p>
-     * Behavior is undefined on <code>null</code> values.
+     * Behavior is undefined on {@code null} values.
      *
-     * @param tile which now belongs to the player
+     * @param tile {@code Tile} which now belongs to the {@code Player}
      */
     void addStone(Tile tile) {
         stones.add(tile);
     }
 
     /**
-     * Removes ownership of the tile owned by this owner
+     * Removes ownership of the {@code Tile} formerly owned by this {@code Player}
      *
-     * @param tile which no longer belongs to this player
+     * @param tile {@code Tile} which no longer belongs to this {@code Player}
      */
     void removeStone(Tile tile) {
         stones.remove(tile);
     }
 
     /**
-     * Returns the tiles owned by the player.
+     * Returns the {@code Tile}s owned by the {@code Player}.
      *
-     * @return a set containing all of the players tiles
+     * @return a set containing all of the {@code Player}s tiles
      */
     public Set<Tile> getStones() {
         return Collections.unmodifiableSet(this.stones);
     }
 
     /**
-     * Changes the amount of override stones of this player by given number.
+     * Changes the amount of override stones of this {@code Player} by the given number.
+     * Provide a negative number to remove stones from the {@code Player}s inventory.
      *
-     * @param n amount of stones that are added (or removed when negative)
+     * @param n amount of override stones that are added, if value is positive, or removed, if value is negative
      */
     public void receiveOverrideStone(int n) {
         this.overrideStoneCount += n;
     }
 
     /**
-     * Changes the amount of bombs of this player by given number.
+     * Changes the amount of bombs of this {@code Player} by the given number.
+     * Provide a negative number to remove bombs from the {@code Player}s inventory.
      *
-     * @param n amount of stones that are added (or removed when negative)
+     * @param n amount of bombs that are added, if value is positive, or removed, if value is negative
      */
     public void receiveBomb(int n) {
         this.bombCount += n;
     }
 
     /**
-     * Marks this player as disqualified.
+     * Marks this {@code Player} as disqualified.
      */
-    public void disqualify() {
+    void disqualify() {
         this.disqualified = true;
     }
 
     /**
-     * Returns whether the player is the same as the given object. Returns <code>true</code>, when object is a Player
-     * instance and has the same player number.
+     * Returns whether the {@code Player} is the same as the given object. Returns {@code true}, when object is a
+     * {@code Player} instance and has the same id.
      *
      * @param obj object to compare with
-     * @return true if player numbers are equal, false otherwise
+     * @return {@code true} if both objects are {@code Player}s and {@link Player#id}s are equal, {@code false} otherwise
      */
     @Override
     public boolean equals(Object obj) {
