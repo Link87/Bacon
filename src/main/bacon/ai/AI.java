@@ -52,7 +52,7 @@ public class AI {
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;
             BRSNode root;
-            while (iterationHeuristic.doIteration() && iterationHeuristic.getDepth() < 20) { //searches with depth >20 is a waste of time since at this depth there must be a layer with only one node
+            while (iterationHeuristic.doIteration()) {
                 root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                         cfg.isMoveSortingEnabled(), cfg.isAspirationWindowsEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
@@ -77,6 +77,8 @@ public class AI {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
                     break;
                 }
+                //stop ai from for example trying depth 10 if only 5 rounds remain
+                if (BRSNode.reachedDepth < iterationHeuristic.getDepth()) break;
             }
         } else {
             Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());

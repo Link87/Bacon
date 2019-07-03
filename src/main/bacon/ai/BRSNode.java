@@ -13,6 +13,8 @@ import java.lang.Math;
 
 public class BRSNode {
 
+    public static int reachedDepth;
+
     private static final double STABILITY_SCALAR = 1;
     private static final double CLUSTERING_SCALAR = 1;
     private static final double MOBILITY_SCALAR = 1;
@@ -66,6 +68,7 @@ public class BRSNode {
         BRSNode.stateAvg = 0;
         BRSNode.stateStdv = 0;
         BRSNode.stateValues = new ArrayList<>();
+        BRSNode.reachedDepth = 0;
 
         this.layer = 0;
         this.isMaxNode = true;
@@ -138,7 +141,7 @@ public class BRSNode {
         if (stateStdv == 0) {
             return -Double.MAX_VALUE;
         }
-        return this.value - 5*stateStdv;
+        return this.value - 5 * stateStdv;
     }
 
     /**
@@ -150,7 +153,7 @@ public class BRSNode {
         if (stateStdv == 0) {
             return Double.MAX_VALUE;
         }
-        return this.value + 5*stateStdv;
+        return this.value + 5 * stateStdv;
     }
 
     /**
@@ -172,6 +175,7 @@ public class BRSNode {
             this.value = evaluateCurrentState(this.type);
             this.windowSuccess = true;
         } else if (this.layer < BRSNode.searchDepth - 1) {
+            BRSNode.reachedDepth = Integer.max(BRSNode.reachedDepth, this.layer + 1);
             // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
 
             List<? extends BuildMove> moves;
@@ -203,7 +207,7 @@ public class BRSNode {
                         this.bestMove = move;
                         this.windowSuccess = true;
 
-                        if (this.value > this.alpha){
+                        if (this.value > this.alpha) {
                             this.alpha = this.value;
                         }
 
@@ -229,6 +233,8 @@ public class BRSNode {
             }
 
         } else {
+            BRSNode.reachedDepth = Integer.max(BRSNode.reachedDepth, this.layer + 1);
+
             for (BuildMove move : legalMoves) {
 
                 Statistics.getStatistics().enterMeasuredState(this.layer);
@@ -319,7 +325,7 @@ public class BRSNode {
             move.doMove();
             move.setValue(evaluateCurrentState(move.getType()));
             move.undoMove();
-            if(watchdog.isPancake()) break;
+            if (watchdog.isPancake()) break;
         }
 
         // order moves by value
