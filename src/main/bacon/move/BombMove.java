@@ -10,29 +10,31 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A class which represents placing a bomb on a tile.
+ * A class which represents a move placing a bomb on a {@link Tile}.
  */
 public class BombMove extends Move {
 
     /**
-     * Creates instance of BombMove via the constructor in its superclass {@link BuildMove}
+     * Creates a new instance of {@code BombMove} from the given values.
      *
-     * @param state  the game state on which the move operates
-     * @param player the player of the move
-     * @param x      the x coordinate
-     * @param y      the y coordinate
+     * @param state    the {@link GameState} on which the move operates
+     * @param playerId the {@code id} of the {@link bacon.Player} of the move
+     * @param x        the horizontal coordinate
+     * @param y        the vertical coordinate
      */
-    public BombMove(GameState state, int player, int x, int y) {
-        super(state, player, x, y);
+    public BombMove(GameState state, int playerId, int x, int y) {
+        super(state, playerId, x, y);
         this.type = Type.BOMB;
     }
 
 
     /**
-     * Checks if this move is legal.
-     * Returns false if destination tile is a hole or the player has not enough bombs, otherwise true.
+     * Checks if this {@code BombMove} is legal.
+     * <p>
+     * Returns {@code false} if destination {@link Tile} is a hole
+     * or the {@link bacon.Player} has not enough bombs, otherwise {@code true}.
      *
-     * @return true if the move is legal, false otherwise
+     * @return {@code true} if the move is legal, {@code false} otherwise
      */
     public boolean isLegal() {
         if (this.state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.HOLE) return false;
@@ -41,11 +43,10 @@ public class BombMove extends Move {
 
 
     /**
-     * Executes this move.
+     * Executes this {@code BombMove}.
      * <p>
-     * Does nothing if isLegal() method determines the move to be illegal.
-     * Otherwise uses dynamic programming to calculate all tiles that need to be bombed with bombTile() method in
-     * Tile class.
+     * This method uses dynamic programming to calculate all {@link Tile}s that need to be bombed with {@link Tile#bombTile()}.
+     * Does nothing instead, if {@link #isLegal()} method determines the move to be illegal.
      */
     public void doMove() {
         // m is an 2D ArrayList of tiles, where m.get(1) contains all tiles (at least) 1 step away from t, m.get(2) contains
@@ -89,8 +90,13 @@ public class BombMove extends Move {
         this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
     }
 
+    /**
+     * {@code BombMove}s cannot be undone. This method throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public void undoMove() {
-
+        throw new UnsupportedOperationException();
     }
 }

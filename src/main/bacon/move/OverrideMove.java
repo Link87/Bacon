@@ -4,27 +4,27 @@ import bacon.GameState;
 import bacon.Tile;
 
 /**
- * A class which represents placing an override stone on a tile
+ * A class which represents a move placing an override stone on a {@link Tile}.
  */
 public class OverrideMove extends BuildMove {
 
     /**
-     * Creates an instance of RegularMove via the constructor in its superclass {@link BuildMove}.
+     * Creates an instance of {@code OverrideMove} via the constructor in its superclass {@link BuildMove}.
      *
-     * @param state  the game state on which the move operates
-     * @param player the player of the move
-     * @param x      the x coordinate
-     * @param y      the y coordinate
+     * @param state    the {@link GameState} on which the move operates
+     * @param playerId the {@code id} of the {@link bacon.Player} of the move
+     * @param x        the horizontal coordinate
+     * @param y        the vertical coordinate
      */
-    OverrideMove(GameState state, int player, int x, int y) {
-        super(state, player, x, y);
+    OverrideMove(GameState state, int playerId, int x, int y) {
+        super(state, playerId, x, y);
         this.type = Type.OVERRIDE;
     }
 
     /**
-     * Checks if this move is legal.
+     * Checks if the {@code OverrideMove} is legal.
      *
-     * @return true if the move is legal, false otherwise
+     * @return {@code true} if the {@code OverrideMove} is legal, {@code false} otherwise
      */
     public boolean isLegal() {
         if (this.state.getPlayerFromId(this.playerId).getOverrideStoneCount() == 0)
@@ -35,16 +35,7 @@ public class OverrideMove extends BuildMove {
     }
 
     /**
-     * Undoes this move.
-     */
-    @Override
-    public void undoMove() {
-        super.undoMove();
-        this.state.getPlayerFromId(this.playerId).receiveOverrideStone(1);
-    }
-
-    /**
-     * Executes this move.
+     * Executes the {@code OverrideMove}.
      */
     public void doMove() {
         Tile tile = this.state.getMap().getTileAt(this.xPos, this.yPos);
@@ -57,6 +48,17 @@ public class OverrideMove extends BuildMove {
         }
 
         this.state.getPlayerFromId(this.playerId).receiveOverrideStone(-1);    // Subtract 1 override stone from player's inventory
+    }
+
+    /**
+     * Undoes the {@code OverrideMove}.
+     * <p>
+     * Requires the {@code OverrideMove} to previously be done.
+     */
+    @Override
+    public void undoMove() {
+        super.undoMove();
+        this.state.getPlayerFromId(this.playerId).receiveOverrideStone(1);
     }
 
 }
