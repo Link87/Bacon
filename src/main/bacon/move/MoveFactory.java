@@ -17,6 +17,7 @@ public class MoveFactory {
      * @param x        the horizontal coordinate
      * @param y        the vertical coordinate
      * @param request  a special bonus the player asks for, applicable for choice and bonus {@link Tile}s
+     * @return an instance of a {@code Move} subclass with the given data
      * @throws IllegalArgumentException when the illegal data is provided
      */
     public static Move createMove(GameState state, int playerId, int x, int y, BonusRequest request) {
@@ -48,6 +49,7 @@ public class MoveFactory {
      * @param player the {@link Player} of the move
      * @param x      the horizontal coordinate
      * @param y      the vertical coordinate
+     * @return an instance of a {@code Move} subclass with the given data
      * @throws IllegalArgumentException when the illegal data is provided
      */
     public static Move createMove(GameState state, int player, int x, int y) {
