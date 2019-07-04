@@ -8,51 +8,51 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Determines an ArrayList of all possible legal move from a certain game state
- * for a certain player in any game phase.
+ * A collection of methods, that return legal moves in a given game state.
+ * <p>
+ * All methods are static, stateless and stand-alone. Therefore no instances of {@code Heuristics} can be created.
  */
 public class LegalMoves {
 
     private LegalMoves() {}
 
     /**
-     * Returns all legal REGULAR moves possible from a certain given board state and player in the first phase.
-     * CAUTION: PLAYER ARGUMENT MUST REFER TO A PLAYER OF THE GIVEN STATE
+     * Returns all legal regular {@link Move}s possible from a certain given board state and player in the first phase.
      *
-     * @param state    Game State to be examined
-     * @param playerId number of the current player in turn
-     * @return legal regular moves in the given board state
+     * @param state    the {@link GameState} to be examined
+     * @param playerId the {@code id} of the current {@link Player} in turn
+     * @return a set of all {@link RegularMove}s being legal in the given board state
      */
     public static Set<RegularMove> getLegalRegularMoves(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
 
-        int freeTiles = state.getMap().getTotalTileCount()-state.getMap().getOccupiedTileCount();
+        int freeTiles = state.getMap().getTotalTileCount() - state.getMap().getOccupiedTileCount();
 
-        if (state.getPlayerFromId(playerId).isDisqualified()||freeTiles==0)
+        if (state.getPlayerFromId(playerId).isDisqualified() || freeTiles == 0)
             return Collections.emptySet();
 
         Set<RegularMove> legalMoves = new HashSet<>();
 
-        if(freeTiles<state.getPlayerFromId(playerId).getStoneCount()){
+        if (freeTiles < state.getPlayerFromId(playerId).getStoneCount()) {
             for (int y = 0; y < state.getMap().height; y++) {
                 for (int x = 0; x < state.getMap().width; x++) {
-                    Tile tile = state.getMap().getTileAt(x,y);
-                    if(tile.getOwnerId() == Player.NULL_PLAYER_ID && tile.getProperty()!= Tile.Property.HOLE && tile.getProperty()!= Tile.Property.EXPANSION){
-                        RegularMove move = (RegularMove) MoveFactory.createMove(state,playerId,x,y);
-                        if(move.isLegal()){
+                    Tile tile = state.getMap().getTileAt(x, y);
+                    if (tile.getOwnerId() == Player.NULL_PLAYER_ID && tile.getProperty() != Tile.Property.HOLE && tile.getProperty() != Tile.Property.EXPANSION) {
+                        RegularMove move = (RegularMove) MoveFactory.createMove(state, playerId, x, y);
+                        if (move.isLegal()) {
                             legalMoves.add(move);
                         }
-                        move = (RegularMove) MoveFactory.createMove(state,playerId,x,y,new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
-                        if(move.isLegal()){
+                        move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
+                        if (move.isLegal()) {
                             legalMoves.add(move);
-                            move = (RegularMove) MoveFactory.createMove(state,playerId,x,y,new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+                            move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
                             legalMoves.add(move);
                         }
                         for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-                            move = (RegularMove) MoveFactory.createMove(state,playerId,x,y,new BonusRequest(i));
-                            if(move.isLegal()){
+                            move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(i));
+                            if (move.isLegal()) {
                                 legalMoves.add(move);
                             }
                         }
@@ -108,12 +108,11 @@ public class LegalMoves {
     }
 
     /**
-     * Returns all legal OVERRIDE moves possible from a certain given board state and player in the first phase.
-     * CAUTION: PLAYER ARGUMENT MUST REFER TO A PLAYER OF THE GIVEN STATE
+     * Returns all legal override {@link Move}s possible from a certain given board state and player in the first phase.
      *
-     * @param state    Game State to be examined
-     * @param playerId number of the current player in turn
-     * @return legal override moves in the given board state
+     * @param state    the {@link GameState} to be examined
+     * @param playerId the {@code id} of the current {@link Player} in turn
+     * @return a set of all {@link OverrideMove}s being legal in the given board state
      */
     public static Set<OverrideMove> getLegalOverrideMoves(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
@@ -136,11 +135,11 @@ public class LegalMoves {
                     Tile next = last.getTransition(searchDirection);
                     if (next == null ||
                             (next.getOwnerId() == Player.NULL_PLAYER_ID && next.getProperty() != Tile.Property.EXPANSION)) {
-                        //next is hole or unowned
+                        // next is hole or unowned
                         break;
                     }
                     if (next != ogTile.getTransition(ogDirection) && next != ogTile) {
-                        //next is not right next to og in search direction or og
+                        // next is not right next to og in search direction or og
                         legalMoves.add((OverrideMove) MoveFactory.createMove(state, playerId, next.x, next.y));
                     }
                     if (next.getOwnerId() == playerId) {
@@ -163,9 +162,9 @@ public class LegalMoves {
     /**
      * Returns all legal moves possible from a certain given board state and player in the second phase.
      *
-     * @param state    Game State to be examined
-     * @param playerId number of the current player in turn
-     * @return legal bomb moves in the given board state
+     * @param state    the {@link GameState} to be examined
+     * @param playerId the {@code id} of the current {@link Player} in turn
+     * @return a set of all {@link BombMove}s being legal in the given board state
      */
     public static Set<BombMove> getLegalBombMoves(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_TWO) {

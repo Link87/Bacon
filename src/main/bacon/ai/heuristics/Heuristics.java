@@ -10,18 +10,25 @@ import java.util.Set;
 
 import static java.lang.Math.*;
 
+/**
+ * A collection of heuristic methods.
+ * <p>
+ * All methods are static, stateless and stand-alone. Therefore no instances of {@code Heuristics} can be created.
+ */
 public class Heuristics {
 
     private Heuristics() {}
 
     /**
-     * Determines whether there are still inversion/choice tiles on the map and hints
-     * uncertainty about stone ownership
+     * Returns whether the game is still in uncertainty phase.
+     * <p>
+     * This is the case, if there are still inversion or choice tiles on the map and hints
+     * uncertainty about stone ownership.
      *
-     * @param state GameState to be examined
+     * @param state the {@link GameState} to be examined
      * @return whether this game state is in the uncertainty phase
      */
-    public static boolean isUncertaintyPhase(GameState state) {
+    static boolean isUncertaintyPhase(GameState state) {
         // TODO Optimize this methods by including inversion/choice tile coordinates as stateful attribute of Game
         for (int x = 0; x < state.getMap().width; x++) {
             for (int y = 0; y < state.getMap().height; y++) {
@@ -35,10 +42,10 @@ public class Heuristics {
     }
 
     /**
-     * Calculates the mobility heuristics of this certain given game state and player
+     * Calculates the mobility heuristics of the given game state and player.
      *
-     * @param state    GameState to be examined
-     * @param playerId Number of player in turn
+     * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
      * @return a real number as mobility heuristics
      */
     public static int mobility(GameState state, int playerId) {
@@ -56,11 +63,11 @@ public class Heuristics {
     }
 
     /**
-     * Calculates the bomb bonus heuristics of this certain given game state and player.
+     * Calculates the bomb bonus heuristics of the given game state and player.
      *
-     * @param state    GameState to be examined
-     * @param playerId number of player in turn
-     * @return a real number as bonus heuristics
+     * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
+     * @return a real number as mobility heuristics
      */
     public static double bonusBomb(GameState state, int playerId) {
         int bombCount = state.getPlayerFromId(playerId).getBombCount();
@@ -70,11 +77,11 @@ public class Heuristics {
     }
 
     /**
-     * Calculates the override bonus heuristics of this certain given game state and player.
+     * Calculates the override bonus heuristics of the given game state and player.
      *
-     * @param state    GameState to be examined
-     * @param playerId number of player in turn
-     * @return a real number as bonus heuristics
+     * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
+     * @return a real number as mobility heuristics
      */
     public static double bonusOverride(GameState state, int playerId) {
         int overrideStoneCount = state.getPlayerFromId(playerId).getOverrideStoneCount();
@@ -85,12 +92,13 @@ public class Heuristics {
     }
 
     /**
-     * Calculates the clustering heuristics of this certain given game state, player and target tile. This heuristic is
-     * basically a copy of clustering heuristic, but evaluates MOVES directly instead of GAME STATES due to high branching
-     * factor in the Bombing Phase
+     * Calculates the clustering heuristics of the given game state.
+     * <p>
+     * The {@code GameState} is required to be in the second game phase.
      *
-     * @param move BombMove to rate
-     * @return a real number as clustering heuristics (the only heuristics that matters in Bombing Phase)
+     * @param state the {@link GameState} to be examined
+     * @param move  the {@link BombMove} to rate
+     * @return a real number as clustering heuristics
      */
     public static double bombingPhaseHeuristic(GameState state, BombMove move) {
         int playerStoneCount = state.getPlayerFromId(move.getPlayerId()).getStoneCount();

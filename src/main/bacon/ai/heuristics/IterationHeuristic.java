@@ -7,6 +7,14 @@ import java.util.logging.Logger;
 
 /**
  * Heuristic that controls the search iterations.
+ * <p>
+ * Depth-limited games only do a single iteration, with maximum depth.
+ * <p>
+ * Time-limited games instead use iterative deepening. This class includes a heuristic,
+ * that decides whether another iteration is likely to finish in the time limit.
+ * Fails of the heuristic are caught by {@link PancakeWatchdog}.
+ * <p>
+ * Each turn requires to use a new instance of {@code IterationHeuristic}.
  */
 public class IterationHeuristic {
 
@@ -29,7 +37,9 @@ public class IterationHeuristic {
     private int maxDepth;
 
     /**
-     * Creates a new IterationHeuristic instance. Starts a timer when time limit is not zero.
+     * Creates a new {@code IterationHeuristic} instance.
+     * <p>
+     * Either {@code timeLimit} or {@code maxDepth} have to be non-zero. Starts a timer in the first case.
      *
      * @param timeLimit the time limit in ms that applies or zero if no time limit is set
      * @param maxDepth  the maximum search depth or zero if depth is not set
@@ -51,9 +61,11 @@ public class IterationHeuristic {
     }
 
     /**
-     * Returns whether another iteration should be done. The depth is increased. This has to be called once on every iteration.
+     * Returns whether another iteration should be done. The depth is increased.
+     * <p>
+     * This has to be called once in every iteration.
      *
-     * @return <code>true</code> if another iteration should be done, <code>false</code> otherwise
+     * @return {@code true} if another iteration should be done, {@code false} otherwise
      */
     public boolean doIteration() {
 
@@ -61,7 +73,7 @@ public class IterationHeuristic {
             // time limit => iterative deepening
 
             if (this.currentDepth == 0) {
-                LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}", new Object[]{ this.currentDepth, this.startTimeStamp, this.iterationTimeStamp});
+                LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}", new Object[]{this.currentDepth, this.startTimeStamp, this.iterationTimeStamp});
                 this.iterationTimeStamp = System.nanoTime();
                 this.currentDepth += 1;
                 return true;
@@ -79,9 +91,9 @@ public class IterationHeuristic {
             long estimate = (long) ((float) elapsed / avgTimes.get(this.currentDepth) * avgTimes.get(this.currentDepth + 1));
             boolean doAnother = (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000L * SAFETY_FACTOR >= elapsedSinceStart + estimate && this.currentDepth < MAX_DEPTH;
 
-            LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}", new Object[]{ this.currentDepth, this.startTimeStamp, this.iterationTimeStamp, estimate});
+            LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}", new Object[]{this.currentDepth, this.startTimeStamp, this.iterationTimeStamp, estimate});
             LOGGER.log(Level.FINE, "Limit: {0}, Elapsed(start): {1}, Est: {2}, Elapsed(it): {3}, avg(this): {4}, avg(next): {5}",
-                    new Object[]{ (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000L, elapsedSinceStart,
+                    new Object[]{(this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000L, elapsedSinceStart,
                             estimate, elapsed, avgTimes.get(this.currentDepth), avgTimes.get(this.currentDepth + 1)});
 
             // avg' = (layer_count * avg + time) / layer_count'
@@ -109,7 +121,7 @@ public class IterationHeuristic {
     }
 
     /**
-     * Returns the depth to search to in the iteration.
+     * Returns the maximum search depth for the current iteration.
      *
      * @return the maximum search depth for the current iteration
      */
