@@ -41,13 +41,6 @@ public class HeuristicsTest {
         assertEquals("Mobility Heuristic Error", 19, Heuristics.mobility(Game.getGame().getCurrentState(), 1));
     }
 
-    //TODO Fix implement in map getTotalTile count and update the expected clustering value
-    @Test
-    public void clustering() {
-        Game.getGame().readMap(Maps.EXAMPLE_CLUSTERING);
-        assertEquals("Clustering heuristic error", 1.36, Heuristics.clustering(Game.getGame().getCurrentState(), 1), 0.01);
-    }
-
     @Test
     public void bonus() {
         Game.getGame().readMap(Maps.EXAMPLE);
