@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * A collection of methods, that return legal moves in a given game state.
  * <p>
- * All methods are static, stateless and stand-alone. Therefore no instances of {@code Heuristics} can be created.
+ * All methods are static, stateless and stand-alone. Therefore no instances of {@code LegalMoves} can be created.
  */
 public class LegalMoves {
 

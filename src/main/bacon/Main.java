@@ -10,6 +10,8 @@ public class Main {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
+    private Main() {}
+
     /**
      * The entry point of the ai.
      * <p>
@@ -57,9 +59,11 @@ public class Main {
                 "                                                                       \n" +
                 "🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓\n");
 
-        LOGGER.log(Level.INFO, "Going to connect to {0}:{1}", new Object[]{config.getHost(), config.getPort()});
+        LOGGER.log(Level.INFO, "Going to connect to {0}:" + config.getPort(), config.getHost());
         LOGGER.log(Level.INFO, "Alpha-Beta-Pruning enabled: {0}", config.isPruningEnabled());
         LOGGER.log(Level.INFO, "Move-Sorting enabled: {0}", config.isMoveSortingEnabled());
+        LOGGER.log(Level.INFO, "The murderer is always the gardener: {0} ({1})",
+                new Object[]{config.getBeamWidth() > 0, config.getBeamWidth() * 100});
         LOGGER.log(Level.INFO, "Number of kittens that were harmed during development: {0}", 0);
 
         Game.getGame().startGame(config);
