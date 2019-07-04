@@ -16,26 +16,38 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * A class for the actual ai.
+ */
 public class AI {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
     private static final AI INSTANCE = new AI();
 
-    private AI() {
-    }
+    /**
+     * Singleton constructor that does nothing.
+     */
+    private AI() {}
 
+    /**
+     * Returns the singleton {@code AI} instance.
+     *
+     * @return the {@code AI} instance
+     */
     public static AI getAI() {
         return INSTANCE;
     }
 
     /**
-     * Request a move from the ai.
+     * Request a {@link Move} from the {@code AI}.
+     * <p>
+     * Returns the best move that can be found in the given time or depth limit.
      *
      * @param timeout          the time the ai has for its computation
      * @param depth            the maximum search depth the ai is allowed to do
      * @param cfg              config containing settings for search algorithms
-     * @param currentGameState current Game State
+     * @param currentGameState current {@link GameState}
      * @return the next move
      */
     public Move requestMove(int timeout, int depth, Config cfg, GameState currentGameState) {
@@ -60,14 +72,15 @@ public class AI {
                 if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
                 } else if (cfg.isAspirationWindowsEnabled() && !watchdog.isTriggered()) {
-                    //aspiration window failure: restart search with default alpha/beta values
+                    // aspiration window failure: restart search with default alpha/beta values
                     root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
                             cfg.isMoveSortingEnabled(), false, -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
                     root.evaluateNode();
                     if (root.getBestMove() != null) bestMove = root.getBestMove();
                 }
 
-                if (cfg.isAspirationWindowsEnabled()) { //update aspiration window for next BRS-iteration
+                if (cfg.isAspirationWindowsEnabled()) {
+                    // update aspiration window for next BRS-iteration
                     root.aspWindow();
                     alpha = root.getAspWindowAlpha();
                     beta = root.getAspWindowBeta();
@@ -77,8 +90,9 @@ public class AI {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
                     break;
                 }
-                //stop ai from for example trying depth 10 if only 5 rounds remain
-                if (BRSNode.reachedDepth < iterationHeuristic.getDepth()) break;
+
+                // stop ai from for example trying depth 10 if only 5 rounds remain
+                if (BRSNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
             }
         } else {
             Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());

@@ -2,6 +2,16 @@ package bacon.ai;
 
 import java.util.*;
 
+/**
+ * Records statistics of calculations for logging purposes.
+ * <p>
+ * Each move calculation should use a separate instance of {@code Statistics}.
+ * A new one can be initialized by calling {@link #init()}.
+ * <p>
+ * This measures the total amount of time needed, as well as the
+ * total amount of states in each layer of the search tree.
+ * Additionally, the computing cost of leaf nodes can be measured.
+ */
 class Statistics {
 
     private static Statistics INSTANCE = new Statistics();
@@ -13,14 +23,18 @@ class Statistics {
     private boolean inMeasuredState;
 
     /**
-     * Initializes the stats. This deletes everything that was previously saved and starts the internal Timer.
+     * Initializes a new {@code Statistics} instance.
+     * <p>
+     * This deletes everything that was previously saved and starts the internal timer.
      */
     void init() {
         INSTANCE = new Statistics();
     }
 
     /**
-     * Adds a state to the statistics. Call either this or <code>enterMeasuredState</code> once per state.
+     * Adds a state to the statistics.
+     * <p>
+     * Call either this or {@link #enterMeasuredState(int)} once per state.
      *
      * @param layer the layer of the state
      */
@@ -30,9 +44,12 @@ class Statistics {
     }
 
     /**
-     * Adds a state to the statistics. Call either this or <code>enterState</code> once per state.
-     * This call starts an internal timer, that measures the computing time of the state. A call to
-     * <code>leaveMeasuredState</code> stopping the timer is obligatory.
+     * Adds a state to the statistics.
+     * <p>
+     * Call either this or {@link #enterState(int)} once per state.
+     * <p>
+     * This call starts an internal timer, that measures the computing time of the state.
+     * A call to {@link #leaveMeasuredState()} stopping the timer is obligatory.
      *
      * @param layer the layer of the state
      * @throws IllegalStateException when still measuring a state
@@ -45,7 +62,7 @@ class Statistics {
     }
 
     /**
-     * Call this when calculations of a state are finished that was added by <code>enterMeasuredState</code>.
+     * Call this when calculations of a state are finished that was added by {@link #enterMeasuredState(int)}.
      *
      * @throws IllegalStateException when not measuring a state
      */
@@ -67,7 +84,7 @@ class Statistics {
     /**
      * Returns the amount of states in each layer.
      *
-     * @return a map containing the state counts, where <code>key</code> is the layer and <code>value</code> the count
+     * @return a map containing the state counts, where the key is the layer and the value the state count
      */
     Map<Integer, Integer> getStateCounts() {
         return Collections.unmodifiableMap(this.stateCounts);
@@ -104,9 +121,9 @@ class Statistics {
     }
 
     /**
-     * Returns the default {@link Statistics} instance.
+     * Returns the default {@code Statistics} instance.
      *
-     * @return the Statistics instance
+     * @return the {@code Statistics} instance
      */
     static Statistics getStatistics() {
         return INSTANCE;
