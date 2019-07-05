@@ -14,7 +14,6 @@ import java.lang.Math;
 public class BRSPlusNode {
 
     private static final double STABILITY_SCALAR = 1;
-    private static final double CLUSTERING_SCALAR = 1;
     private static final double MOBILITY_SCALAR = 1;
     private static final double BONUS_SCALAR = 100;
 
@@ -30,6 +29,7 @@ public class BRSPlusNode {
      */
     private final Move.Type type;
     private double value;
+    private double privValue;
 
     private static boolean enablePruning;
     private static boolean enableSorting;
@@ -71,12 +71,13 @@ public class BRSPlusNode {
      * @param beta      beta value
      * @param watchdog  Watchdog timer that triggers when time is running out
      */
-    private BRSPlusNode(int layer, boolean isMaxNode, Move.Type type, double alpha, double beta, PancakeWatchdog watchdog) {
+    private BRSPlusNode(int layer, boolean isMaxNode, Move.Type type, double alpha, double beta, double privValue, PancakeWatchdog watchdog) {
         this.layer = layer;
         this.isMaxNode = isMaxNode;
         this.type = type;
         this.alpha = alpha;
         this.beta = beta;
+        this.privValue = privValue;
 
         this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
@@ -137,7 +138,7 @@ public class BRSPlusNode {
                     break;
                 }
 
-                BRSPlusNode childNode = new BRSPlusNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta, this.watchdog);
+                BRSPlusNode childNode = new BRSPlusNode(this.layer + 1, !isMaxNode, move.getType(), move.getValue(), this.alpha, this.beta, this.watchdog);
                 move.doMove();
                 childNode.evaluateNode();
                 move.undoMove();
@@ -237,14 +238,14 @@ public class BRSPlusNode {
         //determine the worst value (for us) by averaging the beam values of every opponent
 
         //init with startPlayer
-        double worstValue = averageOfBeamValues(listOfMoveLists.get(0));
+        double biggestLoss = privValue - averageOfBeamValues(listOfMoveLists.get(0));
         int expandPlayer = startPlayer;
         int expandIndex = 0;
 
         for (int i = 1; i < listOfMoveLists.size(); i++) {
-            double curVal = averageOfBeamValues(listOfMoveLists.get(i));
-            if (curVal < worstValue) {
-                worstValue = curVal;
+            double curLoss = averageOfBeamValues(listOfMoveLists.get(i - 1)) - averageOfBeamValues(listOfMoveLists.get(i));
+            if (curLoss > biggestLoss) {
+                biggestLoss = curLoss;
                 expandIndex = i;
                 expandPlayer = listOfMoveLists.get(expandIndex).get(0).getPlayerId();
             }
@@ -258,7 +259,7 @@ public class BRSPlusNode {
             Statistics.getStatistics().enterState(this.layer);
 
             //first eval this state (just to use what we have already computed) than move back to expand player to let him expand
-            BRSPlusNode childNode = new BRSPlusNode(this.layer + 1, !isMaxNode, listOfMoveLists.get(expandIndex).get(0).getType(), this.alpha, this.beta, this.watchdog);
+            BRSPlusNode childNode = new BRSPlusNode(this.layer + 1, !isMaxNode, listOfMoveLists.get(expandIndex).get(0).getType(), listOfMoveLists.get(expandIndex).get(0).getValue(), this.alpha, this.beta, this.watchdog);
             childNode.evaluateNode();
 
             if (childNode.value < this.value) {
@@ -305,7 +306,7 @@ public class BRSPlusNode {
                     temp.doMove();
                 }
 
-                childNode = new BRSPlusNode(this.layer + 1, !isMaxNode, move.getType(), this.alpha, this.beta, this.watchdog);
+                childNode = new BRSPlusNode(this.layer + 1, !isMaxNode, move.getType(), move.getValue(), this.alpha, this.beta, this.watchdog);
                 childNode.evaluateNode();
 
                 //undo moves that are after expandPlayer but before the next max node
@@ -552,9 +553,11 @@ public class BRSPlusNode {
             return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
                     + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe())
                     + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
-                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe());
+                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe())
+                    + state.getPlayerFromId(state.getMe()).getStoneCount();
         } else if (type == Move.Type.OVERRIDE) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe());
+            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
+                    + state.getPlayerFromId(state.getMe()).getStoneCount();
         }
 
         throw new IllegalStateException("Cannot evaluate bomb heuristic in brs tree. I shouldn't be here...");
