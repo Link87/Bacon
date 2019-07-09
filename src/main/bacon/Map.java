@@ -1,8 +1,8 @@
 package bacon;
 
-import java.util.*;
+import bacon.move.BombMove;
 
-import static bacon.Direction.*;
+import java.util.*;
 
 /**
  * A map on which Reversi is played.
@@ -32,14 +32,13 @@ public class Map {
     private final Tile[][] tiles;
 
     /**
-     * Contains, for each tile on the map, the tiles which are within its bomb radius
-     * This is a stateless attribute of the map geometry and it calculated before the start of the game
-     * It is used to speed up the bomb heuristic
+     * Precomputed lookup table that contains, for each tile on the {@code Map},
+     * the {@link Tile}s which are within its bomb radius.
      */
     private BombGeometry bombGeometry;
 
     /**
-     * Keeps track of all the rows, columns, diagonals and indiagonals
+     * Keeps track of all the {@link TileLine} in the {@code Map}.
      */
     private LineGeometry lineGeometry;
 
@@ -126,6 +125,8 @@ public class Map {
      * characters each that represent the {@code Map} tiles according to the specification.
      * The {@code Map} definition can be followed with a listing of transitions that also have to follow the specification.
      * Transitions have to be in separated lines.
+     * <p>
+     * The {@link LineGeometry} and {@link BombGeometry} are calculated.
      *
      * @param width  width of the {@code Map}
      * @param height height of the {@code Map}
@@ -178,7 +179,7 @@ public class Map {
                 }
                 if (y != 0) {
                     if (tiles[x][y - 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y - 1], UP.id, UP.opposite().id);
+                        tiles[x][y].setTransition(tiles[x][y - 1], Direction.UP.id, Direction.UP.opposite().id);
                     }
                     if (x != 0 && tiles[x - 1][y - 1].getProperty() != Tile.Property.HOLE) {
                         tiles[x][y].setTransition(tiles[x - 1][y - 1], Direction.UP_LEFT.id, Direction.UP_LEFT.opposite().id);
@@ -189,7 +190,7 @@ public class Map {
                 }
                 if (y != height - 1) {
                     if (tiles[x][y + 1].getProperty() != Tile.Property.HOLE) {
-                        tiles[x][y].setTransition(tiles[x][y + 1], DOWN.id, DOWN.opposite().id);
+                        tiles[x][y].setTransition(tiles[x][y + 1], Direction.DOWN.id, Direction.DOWN.opposite().id);
                     }
                     if (x != 0 && tiles[x - 1][y + 1].getProperty() != Tile.Property.HOLE) {
                         tiles[x][y].setTransition(tiles[x - 1][y + 1], Direction.DOWN_LEFT.id, Direction.DOWN_LEFT.opposite().id);
@@ -202,7 +203,7 @@ public class Map {
                     tiles[x][y].setTransition(tiles[x + 1][y], Direction.RIGHT.id, Direction.RIGHT.opposite().id);
                 }
                 if (x != 0 && tiles[x - 1][y].getProperty() != Tile.Property.HOLE) {
-                    tiles[x][y].setTransition(tiles[x - 1][y], LEFT.id, LEFT.opposite().id);
+                    tiles[x][y].setTransition(tiles[x - 1][y], Direction.LEFT.id, Direction.LEFT.opposite().id);
                 }
 
             }
@@ -220,109 +221,23 @@ public class Map {
             );
         }
 
+        // compute the static bomb geometry
         map.bombGeometry = map.new BombGeometry();
 
+        // compute the static line geometry
         map.lineGeometry = map.new LineGeometry();
 
         return map;
     }
 
-
     /**
-     * This method gets called each time a new TileLine is created. It searches from this (origin) tile along this
-     * (line) direction to find all tiles that belong to this TileLine
-     *
-     * @param originTile The tile for which a new TileLine had to be created. Search originates from this tile.
-     * @param lineDirection Starting direction of search
-     * @param tileLine Search result are put into this TileLine
+     * Updates player share of {@link TileLine}s in the {@link LineGeometry}.
+     * <p>
+     * Call this method after the player {@code id} has been assigned.
      */
-    private static void lineSearch(Tile originTile, Direction lineDirection, TileLine tileLine) {
-        Tile curTile = originTile;
-        tileLine.addTile(originTile);
-
-        Direction searchDirection = lineDirection;
-        Direction arrivalDirection;
-
-        while (curTile.getTransition(searchDirection.id) != null) {
-            arrivalDirection = Direction.fromId(curTile.getArrivalDirection(searchDirection.id));
-
-            curTile = curTile.getTransition(searchDirection.id);
-            if (curTile == originTile && arrivalDirection.opposite() == lineDirection) break;
-
-            tileLine.addTile(curTile);
-
-            switch (arrivalDirection) {
-                case UP:
-                case DOWN:
-                    curTile.setColumn(tileLine);
-                    break;
-                case RIGHT:
-                case LEFT:
-                    curTile.setRow(tileLine);
-                    break;
-                case UP_LEFT:
-                case DOWN_RIGHT:
-                    curTile.setIndiagonal(tileLine);
-                    break;
-                case UP_RIGHT:
-                case DOWN_LEFT:
-                    curTile.setDiagonal(tileLine);
-                    break;
-            }
-            searchDirection = arrivalDirection.opposite();
-        }
+    void assignLineGeometryPlayers() {
+        lineGeometry.assignTileLinePlayers();
     }
-
-    /**
-     * Updates player share of MapLines after player number assignment
-     */
-    void assignTileLinePlayers() {
-        for (TileLine m : lineGeometry.getTileLines()) {
-            m.initializePlayerShare();
-        }
-    }
-
-
-    /**
-     * This method gets called for each tile on the map at the beginning of the game to evaluate which tiles lie within
-     * its bomb radius. These sets are saved to be used later by the bomb heuristic.
-     *
-     * @param tile the tile whose surroundings is to be examined
-     * @return the set of tiles within one bomb radius of a tile
-     */
-    private static Set<Tile> bombSet(Tile tile) {
-        // we recycle code from BombMove for this purpose
-
-        // set of already examined tiles
-        Set<Tile> bombSet = new HashSet<>();
-        // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-        var currentTiles = new ArrayList<Tile>();
-        // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-        var nextTiles = new ArrayList<Tile>();
-
-        bombSet.add(tile);
-        currentTiles.add(tile);
-        int radius = Game.getGame().getBombRadius();
-
-        //searches for all neighbours that need to be bombed out
-        for (int i = 0; i < radius; i++) {
-            for (Tile t : currentTiles) {
-                for (Direction direction : Direction.values()) {
-                    if (t.getTransition(direction.id) != null) {
-                        if (!bombSet.contains(t.getTransition(direction.id))) {
-                            bombSet.add(t.getTransition(direction.id));
-                            nextTiles.add(t.getTransition(direction.id));
-                        }
-                    }
-                }
-            }
-            currentTiles = nextTiles;
-            nextTiles = new ArrayList<>((i + 1) * 8);
-        }
-
-        return bombSet;
-    }
-
 
     /**
      * Returns a new {@code String} representing the {@code Map}.
@@ -373,7 +288,7 @@ public class Map {
     }
 
     /**
-     * Returns the total amount of {@code Tile}s, that are no holes.
+     * Returns the total amount of {@code Tile}s that are no holes.
      *
      * @return number of non-hole {@code Tile}s.
      */
@@ -430,27 +345,44 @@ public class Map {
     }
 
     /**
-     * By assessing the map's geometry at the beginning of the game and saving it as a stateless attribute, we save
-     * time later when evaluating the bomb heuristic
+     * Returns the {@link Tile}s that are affected by a bomb thrown onto the given tile.
+     * <p>
+     * In contrast to {@link BombMove#getAffectedTiles(Tile, int)}, this method uses precomputed lookup tables
+     * to return a set of tiles. Using this method is generally faster than computing the set of affected tiles again.
      *
-     * @param tile the tile whose surroundings we're interested in
-     * @return tiles that lie within one bomb radius of the tile to be evaluated
+     * @param target the {@code Tile} whose surroundings is to be examined
+     * @return the {@link Set} of {@code Tile}s within bomb radius of the {@code Tile}
      */
-    Set<Tile> getBombSet(Tile tile) {
-        return bombGeometry.getAffectedTilesAt(tile.x, tile.y);
+    Set<Tile> getAffectedTiles(Tile target) {
+        return bombGeometry.getAffectedTilesAt(target.x, target.y);
     }
 
+    /**
+     * Returns the {@link TileLine}s of the {@code Map}.
+     *
+     * @return a {@link List} of {@code TileLine}s of the {@code Map}
+     */
     List<TileLine> getTileLines() {
         return lineGeometry.getTileLines();
     }
 
+    /**
+     * Contains lookup tables for the {@link Tile}s affected by a {@link BombMove}.
+     */
     private class BombGeometry {
 
+        /**
+         * Contains the {@link Tile}s that are affected by a {@link BombMove},
+         * for each of the {@code Tile}s on the {@link Map}.
+         * <p>
+         * The two-dimensional list index refers to the target coordinates.
+         */
         List<List<Set<Tile>>> affectedTiles;
 
         /**
-         * The following section determines the map bomb geometry (stateless) and saves the result in a width x height Array(-list)
-         * If there's too much data, we simply leave each bombSet empty
+         * Creates a new {@code BombGeometry} instance.
+         *
+         * Computes the static map bomb geometry. The affected areas are not computed, if the map is too large.
          */
         private BombGeometry() {
             this.affectedTiles = new ArrayList<>();
@@ -460,7 +392,7 @@ public class Map {
                     if (width * height * Math.pow(2 * Game.getGame().getBombRadius() + 1, 2) > 100000) {
                         column.add(new HashSet<>());
                     } else {
-                        column.add(y, bombSet(Map.this.getTileAt(x, y)));
+                        column.add(y, BombMove.getAffectedTiles(Map.this.getTileAt(x, y), Game.getGame().getBombRadius()));
                     }
                 }
                 this.affectedTiles.add(x, column);
@@ -472,17 +404,27 @@ public class Map {
          *
          * @param x the horizontal coordinate
          * @param y the vertical coordinate
-         * @return a set of {@code Tile}s that are affected
+         * @return a {@link Set} of {@code Tile}s that are affected
          */
         private Set<Tile> getAffectedTilesAt(int x, int y) {
             return this.affectedTiles.get(x).get(y);
         }
+
     }
 
+    /**
+     * Contains the {@link TileLine}s of the {@link Map}.
+     */
     private class LineGeometry {
 
+        /**
+         * The {@link TileLine}s of the {@link Map}.
+         */
         List<TileLine> tileLines;
 
+        /**
+         * Creates a new {@code LineGeometry} instance. Calculates all {@link TileLine}s of the {@link Map}.
+         */
         private LineGeometry() {
             // The following section determines the map line geometry (stateless)
             tileLines = new ArrayList<>();
@@ -495,67 +437,72 @@ public class Map {
                         continue;
                     }
 
-                    for (Direction lineDirection : Direction.values()) {
+                    for (int lineDirection = 0; lineDirection < Direction.values().length; lineDirection++) {
                         TileLine tileLine;
-                        switch (lineDirection) {
-                            case UP:
-                            case DOWN:
-                                if (originTile.getColumn() != null) {
-                                    tileLine = originTile.getColumn();
-                                } else {
-                                    tileLine = new TileLine();
-                                    tileLines.add(tileLine);
-                                    originTile.setColumn(tileLine);
-                                    lineSearch(originTile, UP, tileLine);
-                                    lineSearch(originTile, DOWN, tileLine);
-                                }
-                                break;
-                            case RIGHT:
-                            case LEFT:
-                                if (originTile.getRow() != null){
-                                    tileLine = originTile.getRow();
-                                } else{
-                                    tileLine = new TileLine();
-                                    tileLines.add(tileLine);
-                                    originTile.setRow(tileLine);
-                                    lineSearch(originTile, LEFT, tileLine);
-                                    lineSearch(originTile, RIGHT, tileLine);
-                                }
-                                break;
-                            case UP_LEFT:
-                            case DOWN_RIGHT:
-                                if(originTile.getIndiagonal() != null){
-                                    tileLine = originTile.getIndiagonal();
-                                } else {
-                                    tileLine = new TileLine();
-                                    tileLines.add(tileLine);
-                                    originTile.setIndiagonal(tileLine);
-                                    lineSearch(originTile, UP_LEFT, tileLine);
-                                    lineSearch(originTile, DOWN_RIGHT, tileLine);
-                                }
-                                break;
-                            case UP_RIGHT:
-                            case DOWN_LEFT:
-                                if (originTile.getDiagonal() != null){
-                                    tileLine = originTile.getDiagonal();
-                                } else {
-                                    tileLine = new TileLine();
-                                    tileLines.add(tileLine);
-                                    originTile.setDiagonal(tileLine);
-                                    lineSearch(originTile, UP_RIGHT, tileLine);
-                                    lineSearch(originTile, DOWN_LEFT, tileLine);
-                                }
-                                break;
-                            default:
+                        if (lineDirection == Direction.UP.id || lineDirection == Direction.DOWN.id) {
+                            if (originTile.getColumn() != null) {
+                                tileLine = originTile.getColumn();
+                            } else {
                                 tileLine = new TileLine();
+                                tileLines.add(tileLine);
+                                originTile.setColumn(tileLine);
+                                tileLine.lineSearch(originTile, Direction.UP.id);
+                                tileLine.lineSearch(originTile, Direction.DOWN.id);
+                            }
+                        } else if (lineDirection == Direction.RIGHT.id || lineDirection == Direction.LEFT.id) {
+                            if (originTile.getRow() != null) {
+                                tileLine = originTile.getRow();
+                            } else {
+                                tileLine = new TileLine();
+                                tileLines.add(tileLine);
+                                originTile.setRow(tileLine);
+                                tileLine.lineSearch(originTile, Direction.LEFT.id);
+                                tileLine.lineSearch(originTile, Direction.RIGHT.id);
+                            }
+                        } else if (lineDirection == Direction.UP_LEFT.id || lineDirection == Direction.DOWN_RIGHT.id) {
+                            if (originTile.getIndiagonal() != null) {
+                                tileLine = originTile.getIndiagonal();
+                            } else {
+                                tileLine = new TileLine();
+                                tileLines.add(tileLine);
+                                originTile.setIndiagonal(tileLine);
+                                tileLine.lineSearch(originTile, Direction.UP_LEFT.id);
+                                tileLine.lineSearch(originTile, Direction.DOWN_RIGHT.id);
+                            }
+                        } else if (lineDirection == Direction.UP_RIGHT.id || lineDirection == Direction.DOWN_LEFT.id) {
+                            if (originTile.getDiagonal() != null) {
+                                tileLine = originTile.getDiagonal();
+                            } else {
+                                tileLine = new TileLine();
+                                tileLines.add(tileLine);
+                                originTile.setDiagonal(tileLine);
+                                tileLine.lineSearch(originTile, Direction.UP_RIGHT.id);
+                                tileLine.lineSearch(originTile, Direction.DOWN_LEFT.id);
+                            }
+                        } else {
+                            tileLine = new TileLine();
                         }
 
-                        lineSearch(originTile, lineDirection, tileLine);
+                        tileLine.lineSearch(originTile, lineDirection);
                     }
                 }
             }
         }
 
+        /**
+         * Assigns the right {@link Player}s.
+         */
+        private void assignTileLinePlayers() {
+            for (TileLine m : tileLines) {
+                m.initializePlayerShare();
+            }
+        }
+
+        /**
+         * Returns all {@link TileLine}s of the {@link Map}.
+         *
+         * @return a {@link Set} of {@code TileLine}s of the {@code Map}.
+         */
         private List<TileLine> getTileLines() {
             return Collections.unmodifiableList(tileLines);
         }

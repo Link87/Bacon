@@ -1,11 +1,11 @@
 package bacon.ai.heuristics;
 
-import bacon.*;
+import bacon.GamePhase;
+import bacon.GameState;
+import bacon.Player;
+import bacon.Tile;
 import bacon.move.BombMove;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static java.lang.Math.*;
@@ -131,36 +131,8 @@ public class Heuristics {
         double clusteringSum = 0; // heuristic to be returned
 
 
-        // in the following part of the code we search for all tiles within one bomb radius of the bombing target
-        // we recycle code from BombMove for this purpose
-
-        // set of already examined tiles
-        Set<Tile> bombSet = new HashSet<>();
-        // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-        List<Tile> currentTiles = new ArrayList<>();
-        // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-        List<Tile> nextTiles = new ArrayList<>();
-
-        bombSet.add(state.getMap().getTileAt(move.getX(), move.getY()));
-        currentTiles.add(state.getMap().getTileAt(move.getX(), move.getY()));
-
-        //searches for all neighbours that need to be bombed out
-        for (int i = 0; i < bombRadius; i++) {
-            for (Tile t : currentTiles) {
-                for (int direction = 0; direction < Direction.values().length; direction++) {
-                    if (t.getTransition(direction) != null) {
-                        if (!bombSet.contains(t.getTransition(direction))) {
-                            bombSet.add(t.getTransition(direction));
-                            nextTiles.add(t.getTransition(direction));
-                        }
-                    }
-                }
-            }
-            currentTiles = nextTiles;
-            nextTiles = new ArrayList<>((i + 1) * 8);
-        }
-        // end of recycled code
-
+        // all tiles within one bomb radius of the bombing target
+        Set<Tile> bombSet = BombMove.getAffectedTiles(state.getMap().getTileAt(move.getX(), move.getY()), bombRadius);
 
         for (Tile t : bombSet) {   // we examine each tile within the bomb radius for ownership
             // and assign damage to each rival in case our stone is bombed

@@ -39,7 +39,7 @@ public class TileLine {
      *
      * @param tile the {@code Tile} to be added
      */
-    void addTile(Tile tile) {
+    private void addTile(Tile tile) {
         if (!this.lineTiles.contains(tile)) {
             this.lineTiles.add(tile);
             this.lineSize++;
@@ -118,6 +118,51 @@ public class TileLine {
      */
     public int getPlayerShare() {
         return playerShare;
+    }
+
+    /**
+     * Finds all tiles that belong to the {@code TileLine}.
+     * <p>
+     * It searches from the given {@link Tile} in the given {@link Direction}.
+     *
+     * @param origin    The {@code Tile} for which a new {@code TileLine} has to be created.
+     *                  Search originates from this {@code Tile}.
+     * @param direction the {@link Direction} in integer representation to start the search
+     */
+    void lineSearch(Tile origin, int direction) {
+        Tile curTile = origin;
+        this.addTile(origin);
+
+        int searchDirection = direction;
+        int arrivalDirection;
+
+        while (curTile.getTransition(searchDirection) != null) {
+            arrivalDirection = curTile.getArrivalDirection(searchDirection);
+
+            curTile = curTile.getTransition(searchDirection);
+            if (curTile == origin && Direction.oppositeOf(arrivalDirection) == direction) break;
+            this.addTile(curTile);
+
+            switch (Direction.fromId(arrivalDirection)) {
+                case UP:
+                case DOWN:
+                    curTile.setColumn(this);
+                    break;
+                case RIGHT:
+                case LEFT:
+                    curTile.setRow(this);
+                    break;
+                case UP_LEFT:
+                case DOWN_RIGHT:
+                    curTile.setIndiagonal(this);
+                    break;
+                case UP_RIGHT:
+                case DOWN_LEFT:
+                    curTile.setDiagonal(this);
+                    break;
+            }
+            searchDirection = Direction.oppositeOf(arrivalDirection);
+        }
     }
 
 }
