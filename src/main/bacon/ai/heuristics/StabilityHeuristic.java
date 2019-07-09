@@ -44,21 +44,22 @@ public class StabilityHeuristic {
         // Iterates over all player's stones and categorizes them according to stability directions
         for (Tile stone : state.getPlayerFromId(playerId).getStones()) {
 
-            if (stone.getTransition(Direction.LEFT.id) == null || stone.getTransition(Direction.RIGHT.id) == null) {
+            if (stone.getTransition(Direction.LEFT.id) == null || stone.getTransition(Direction.RIGHT.id) == null || stone.getRow().getFillLevel() == stone.getRow().getLineSize()) {
                 horzStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP.id) == null || stone.getTransition(Direction.DOWN.id) == null) {
+            if (stone.getTransition(Direction.UP.id) == null || stone.getTransition(Direction.DOWN.id) == null || stone.getColumn().getFillLevel() == stone.getColumn().getLineSize()) {
                 vertStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP_RIGHT.id) == null || stone.getTransition(Direction.DOWN_LEFT.id) == null) {
+            if (stone.getTransition(Direction.UP_RIGHT.id) == null || stone.getTransition(Direction.DOWN_LEFT.id) == null || stone.getDiagonal().getFillLevel() == stone.getDiagonal().getLineSize()) {
                 diagStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP_LEFT.id) == null || stone.getTransition(Direction.DOWN_RIGHT.id) == null) {
+            if (stone.getTransition(Direction.UP_LEFT.id) == null || stone.getTransition(Direction.DOWN_RIGHT.id) == null || stone.getIndiagonal().getFillLevel() == stone.getIndiagonal().getLineSize()) {
                 indiagStbl.add(stone);
             }
+
         }
 
         // Gradually extends stability from stable stones to neighbouring stones

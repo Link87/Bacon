@@ -34,6 +34,13 @@ public class Tile {
     public final int x;
     public final int y;
 
+
+    // the tile lines this tile is part of
+    private TileLine row;
+    private TileLine column;
+    private TileLine diagonal;
+    private TileLine indiagonal;
+
     /**
      * Creates a new {@code Tile} at the given position.
      * <p>
@@ -61,18 +68,45 @@ public class Tile {
 
     /**
      * Sets the owner of this {@code Tile} and updates the players stones.
+     * Also updates fill level and player share of map lines.
      *
      * @param ownerId id of new owner of this {@code Tile}.
      */
     public void setOwnerId(int ownerId) {
+        int myId = Game.getGame().getCurrentState().getMe();
         if (this.ownerId != Player.NULL_PLAYER_ID) {
             Game.getGame().getCurrentState().getPlayerFromId(this.ownerId).removeStone(this);
         }
         if (ownerId != Player.NULL_PLAYER_ID) {
             Game.getGame().getCurrentState().getPlayerFromId(ownerId).addStone(this);
         }
-        this.ownerId = ownerId;
 
+        if (this.ownerId == Player.NULL_PLAYER_ID && ownerId != Player.NULL_PLAYER_ID) {
+            this.row.changeFillLevel(1);
+            this.column.changeFillLevel(1);
+            this.diagonal.changeFillLevel(1);
+            this.indiagonal.changeFillLevel(1);
+        }
+        else if (this.ownerId != Player.NULL_PLAYER_ID && ownerId == Player.NULL_PLAYER_ID) {
+            this.row.changeFillLevel(-1);
+            this.column.changeFillLevel(-1);
+            this.diagonal.changeFillLevel(-1);
+            this.indiagonal.changeFillLevel(-1);
+        }
+        if (this.ownerId != myId && ownerId == myId) {
+            this.row.changePlayerShare(1);
+            this.column.changePlayerShare(1);
+            this.diagonal.changePlayerShare(1);
+            this.indiagonal.changePlayerShare(1);
+        }
+        else if (this.ownerId == myId && ownerId != myId) {
+            this.row.changePlayerShare(-1);
+            this.column.changePlayerShare(-1);
+            this.diagonal.changePlayerShare(-1);
+            this.indiagonal.changePlayerShare(-1);
+        }
+
+        this.ownerId = ownerId;
     }
 
     /**
@@ -97,6 +131,77 @@ public class Tile {
         this.arrivals[direction] = arrival;
     }
 
+    /**
+     * Sets the horizontal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param row the horizontal {@code TileLine} of the {@code Tile}
+     */
+    void setRow(TileLine row) {
+        this.row = row;
+    }
+
+    /**
+     * Sets the vertical {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param column the vertical {@code TileLine} of the {@code Tile}
+     */
+    void setColumn(TileLine column) {
+        this.column = column;
+    }
+
+    /**
+     * Sets the diagonal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param diagonal the horizontal {@code TileLine} of the {@code Tile}
+     */
+    void setDiagonal(TileLine diagonal) {
+        this.diagonal = diagonal;
+    }
+
+    /**
+     * Sets the backwards diagonal (indiagonal) {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param indiagonal the indiagonal {@code TileLine} of the {@code Tile}
+     */
+    void setIndiagonal(TileLine indiagonal) {
+        this.indiagonal = indiagonal;
+    }
+
+    /**
+     * Returns the horizontal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @return the horizontal {@code TileLine} of the {@code Tile}
+     */
+    public TileLine getRow() {
+        return row;
+    }
+
+    /**
+     * Returns the vertical {@link TileLine} the {@code Tile} is part of.
+     *
+     * @return the vertical {@code TileLine} of the {@code Tile}
+     */
+    public TileLine getColumn() {
+        return column;
+    }
+
+    /**
+     * Returns the diagonal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @return the horizontal {@code TileLine} of the {@code Tile}
+     */
+    public TileLine getDiagonal() {
+        return diagonal;
+    }
+
+    /**
+     * Returns the backwards diagonal (indiagonal) {@link TileLine} the {@code Tile} is part of.
+     *
+     * @return the indiagonal {@code TileLine} of the {@code Tile}
+     */
+    public TileLine getIndiagonal() {
+        return indiagonal;
+    }
 
     /**
      * Applies a bomb to this {@code Tile}.

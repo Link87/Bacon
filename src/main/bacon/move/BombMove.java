@@ -45,18 +45,29 @@ public class BombMove extends Move {
     /**
      * Executes this {@code BombMove}.
      * <p>
-     * This method uses dynamic programming to calculate all {@link Tile}s that need to be bombed with {@link Tile#bombTile()}.
+     * This method calculates all {@link Tile}s that need to be bombed with {@link Tile#bombTile()}.
      * Does nothing instead, if {@link #isLegal()} method determines the move to be illegal.
      */
     public void doMove() {
-        // m is an 2D ArrayList of tiles, where m.get(1) contains all tiles (at least) 1 step away from t, m.get(2) contains
-        // all tiles (at least) 2 steps away from t etc.
-        // We start at radius 0 and work our way up to radius r. We consider every transition of every tile in the previous
-        // radius-layer i-1 and check whether this entry has already appeared. If not, we stack this entry onto m[i]
-
         int radius = state.getBombRadius();
-        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
+        Tile target = state.getMap().getTileAt(this.xPos, this.yPos);
 
+        Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
+
+        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
+        bombSet.forEach(Tile::bombTile);
+
+        // Subtract 1 bomb from player's inventory
+        this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
+    }
+
+    /**
+     * Returns the {@link Tile}s that are affected by a bomb thrown onto the given tile.
+     *
+     * @param target the {@code Tile} whose surroundings is to be examined
+     * @return the {@link Set} of {@code Tile}s within bomb radius of the {@code Tile}
+     */
+    public static Set<Tile> getAffectedTiles(Tile target, int radius) {
         // set of already examined tiles
         Set<Tile> bombSet = new HashSet<>();
         // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
@@ -64,10 +75,12 @@ public class BombMove extends Move {
         // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
         List<Tile> nextTiles = new ArrayList<>();
 
-        bombSet.add(tile);
-        currentTiles.add(tile);
+        bombSet.add(target);
+        currentTiles.add(target);
 
-        //searches for all neighbours that need to be bombed out
+        // Searches for all neighbours that need to be bombed out.
+        // Starts at radius 0 and works its way up to the bomb radius. Considers every transition of every tile in the previous
+        // radius-layer i-1 and checks whether this entry has already appeared. If not, stacks this entry onto m[i]
         for (int i = 0; i < radius; i++) {
             for (Tile t : currentTiles) {
                 for (int direction = 0; direction < Direction.values().length; direction++) {
@@ -83,11 +96,7 @@ public class BombMove extends Move {
             nextTiles = new ArrayList<>((i + 1) * 8);
         }
 
-        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
-        bombSet.forEach(Tile::bombTile);
-
-        // Subtract 1 bomb from player's inventory
-        this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
+        return bombSet;
     }
 
     /**
