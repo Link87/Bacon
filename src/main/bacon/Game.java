@@ -168,7 +168,7 @@ public class Game {
      * Reads the given {@code String} and initializes fields with the contained map data.
      * String must follow specifications of message type 2 ({@link Message.Type#MAP_CONTENT}).
      *
-     * @param mapData a String holding a {@link Map}
+     * @param mapData a {@code String} holding a {@link Map}
      */
     public void readMap(String mapData) {
         currentGameState.setGamePhase(GamePhase.PHASE_ONE);

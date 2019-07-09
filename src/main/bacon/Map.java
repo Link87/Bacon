@@ -23,7 +23,7 @@ public class Map {
     /**
      * The {@link Tile}s that have an expansion stone on them
      */
-    private static Set<Tile> expansionTiles;
+    private Set<Tile> expansionTiles;
 
     /**
      * The {@link Tile}s this map consists of. This is guaranteed to be non-empty.
@@ -52,7 +52,7 @@ public class Map {
         this.occupiedTiles = initOccupied;
         this.totalTiles = totalTiles;
 
-        Map.expansionTiles = expansionTiles;
+        this.expansionTiles = expansionTiles;
     }
 
     /**
@@ -90,7 +90,7 @@ public class Map {
         }
 
         // setting tile transition pointers to point to tiles in copyTiles
-        return new Map(copyTiles, this.occupiedTiles, this.totalTiles, Map.expansionTiles);
+        return new Map(copyTiles, this.occupiedTiles, this.totalTiles, this.expansionTiles);
     }
 
     /**
@@ -108,8 +108,10 @@ public class Map {
 
     /**
      * Deserialize a {@code Map} object from the given {@code String} lines.
+     * <p>
      * The lines are expected to already be ASCII and must start with {@code height} lines with {@code width}
      * characters each that represent the {@code Map} tiles according to the specification.
+     * <p>
      * The {@code Map} definition can be followed with a listing of transitions that also have to follow the specification.
      * Transitions have to be in separated lines.
      *
