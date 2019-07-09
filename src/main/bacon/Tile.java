@@ -35,6 +35,14 @@ public class Tile {
     public final int y;
 
     /**
+     * Row/column/diagonal/indiagonal the tile belongs to
+     */
+    private MapLine row;
+    private MapLine column;
+    private MapLine diagonal;
+    private MapLine indiagonal;
+
+    /**
      * Creates a new {@code Tile} at the given position.
      * <p>
      * If the tile owner is set, the {@link Property} has to be set to {@link Property#DEFAULT}.
@@ -97,6 +105,21 @@ public class Tile {
         this.arrivals[direction] = arrival;
     }
 
+    public void setRow(MapLine row) {
+        this.row = row;
+    }
+
+    public void setColumn(MapLine column) {
+        this.column = column;
+    }
+
+    public void setDiagonal(MapLine diagonal) {
+        this.diagonal = diagonal;
+    }
+
+    public void setIndiagonal(MapLine indiagonal) {
+        this.indiagonal = indiagonal;
+    }
 
     /**
      * Applies a bomb to this {@code Tile}.
@@ -165,6 +188,23 @@ public class Tile {
     public Property getProperty() {
         return this.property;
     }
+
+    public MapLine getRow() {
+        return row;
+    }
+
+    public MapLine getColumn() {
+        return column;
+    }
+
+    public MapLine getDiagonal() {
+        return diagonal;
+    }
+
+    public MapLine getIndiagonal() {
+        return indiagonal;
+    }
+
 
     /**
      * Defines special properties a {@code Tile} might have.

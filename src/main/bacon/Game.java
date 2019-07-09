@@ -132,6 +132,8 @@ public class Game {
                 byte me = msg.getBinaryContent()[0];
                 LOGGER.log(Level.INFO, "We are player number {0}.", me);
                 currentGameState.setMe(me);
+                // initializes player share in MapLineGeometry
+                this.getCurrentState().getMap().mapLinePlayerAssignment();
                 break;
             case MOVE_ANNOUNCE:
                 // Server announces move of a player
