@@ -1,20 +1,22 @@
 package bacon;
 
 import org.junit.Test;
+
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class MapLineGeometryTest {
+public class TileLineGeometryTest {
 
     @Test
     public void LineGeometryTest() {
         Game.getGame().readMap(Maps.EXAMPLE_LINEGEOMETRY);
         Map map = Game.getGame().getCurrentState().getMap();
 
-        Set<MapLine> LineSet = map.getLineSet();
+        List<TileLine> LineSet = map.getTileLines();
 
-        for (MapLine m : LineSet) {
+        for (TileLine m : LineSet) {
             System.out.println();
             for (Tile t : m.getLineTiles()) {
                 System.out.println("(" + t.x + "," + t.y + ")");
@@ -29,7 +31,7 @@ public class MapLineGeometryTest {
         Direction direction = Direction.UP_RIGHT;
 
         Tile tile = map.getTileAt(x, y);
-        MapLine tileLine;
+        TileLine tileLine;
         switch (direction) {
             case UP:
             case DOWN:
@@ -73,7 +75,7 @@ public class MapLineGeometryTest {
         Direction direction = Direction.UP_RIGHT;
 
         Tile tile = map.getTileAt(x, y);
-        MapLine tileLine;
+        TileLine tileLine;
         switch (direction) {
             case UP:
             case DOWN:
@@ -97,7 +99,7 @@ public class MapLineGeometryTest {
         }
 
         // Needs to be changed as well if tile is changed
-        assertEquals("MapLine has the wrong size", 4, tileLine.getLineSize());
-        assertEquals("MapLine has the wrong fill level", 4, tileLine.getFillLevel());
+        assertEquals("TileLine has the wrong size", 4, tileLine.getLineSize());
+        assertEquals("TileLine has the wrong fill level", 4, tileLine.getFillLevel());
     }
 }

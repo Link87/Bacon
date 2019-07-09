@@ -3,7 +3,6 @@ package bacon.ai.heuristics;
 import bacon.Direction;
 import bacon.Tile;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -63,7 +62,7 @@ public class StabilityHeuristic {
 
             if (stone.getRow().getFillLevel() == stone.getRow().getLineSize() || stone.getColumn().getFillLevel() == stone.getColumn().getLineSize() ||
                     stone.getDiagonal().getFillLevel() == stone.getDiagonal().getLineSize() || stone.getIndiagonal().getFillLevel() == stone.getIndiagonal().getLineSize()) {
-                System.out.println("MapLine stability " + "(" + stone.x + "," + stone.y + ")"
+                System.out.println("TileLine stability " + "(" + stone.x + "," + stone.y + ")"
                         + " row size: " + stone.getRow().getLineSize() + " row fill: " + stone.getRow().getFillLevel() + " row playershare: " + stone.getRow().getPlayerShare()
                         + " column size: " + stone.getColumn().getLineSize() + " column fill: " + stone.getColumn().getFillLevel()
                         + " diagonal size: " + stone.getDiagonal().getLineSize() + " diagonal fill: " + stone.getDiagonal().getFillLevel()

@@ -35,11 +35,11 @@ public class Tile {
     public final int y;
 
 
-    // row/column/diagonal/indiagonal the tile belongs to
-    private MapLine row;
-    private MapLine column;
-    private MapLine diagonal;
-    private MapLine indiagonal;
+    // the tile lines this tile is part of
+    private TileLine row;
+    private TileLine column;
+    private TileLine diagonal;
+    private TileLine indiagonal;
 
     /**
      * Creates a new {@code Tile} at the given position.
@@ -131,20 +131,76 @@ public class Tile {
         this.arrivals[direction] = arrival;
     }
 
-    public void setRow(MapLine row) {
+    /**
+     * Sets the horizontal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param row the horizontal {@code TileLine} of the {@code Tile}
+     */
+    void setRow(TileLine row) {
         this.row = row;
     }
 
-    public void setColumn(MapLine column) {
+    /**
+     * Sets the vertical {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param column the vertical {@code TileLine} of the {@code Tile}
+     */
+    void setColumn(TileLine column) {
         this.column = column;
     }
 
-    public void setDiagonal(MapLine diagonal) {
+    /**
+     * Sets the diagonal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param diagonal the horizontal {@code TileLine} of the {@code Tile}
+     */
+    void setDiagonal(TileLine diagonal) {
         this.diagonal = diagonal;
     }
 
-    public void setIndiagonal(MapLine indiagonal) {
+    /**
+     * Sets the backwards diagonal (indiagonal) {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param indiagonal the indiagonal {@code TileLine} of the {@code Tile}
+     */
+    void setIndiagonal(TileLine indiagonal) {
         this.indiagonal = indiagonal;
+    }
+
+    /**
+     * Returns the horizontal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @return the horizontal {@code TileLine} of the {@code Tile}
+     */
+    public TileLine getRow() {
+        return row;
+    }
+
+    /**
+     * Returns the vertical {@link TileLine} the {@code Tile} is part of.
+     *
+     * @return the vertical {@code TileLine} of the {@code Tile}
+     */
+    public TileLine getColumn() {
+        return column;
+    }
+
+    /**
+     * Returns the diagonal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @return the horizontal {@code TileLine} of the {@code Tile}
+     */
+    public TileLine getDiagonal() {
+        return diagonal;
+    }
+
+    /**
+     * Returns the backwards diagonal (indiagonal) {@link TileLine} the {@code Tile} is part of.
+     *
+     * @return the indiagonal {@code TileLine} of the {@code Tile}
+     */
+    public TileLine getIndiagonal() {
+        return indiagonal;
     }
 
     /**
@@ -214,23 +270,6 @@ public class Tile {
     public Property getProperty() {
         return this.property;
     }
-
-    public MapLine getRow() {
-        return row;
-    }
-
-    public MapLine getColumn() {
-        return column;
-    }
-
-    public MapLine getDiagonal() {
-        return diagonal;
-    }
-
-    public MapLine getIndiagonal() {
-        return indiagonal;
-    }
-
 
     /**
      * Defines special properties a {@code Tile} might have.

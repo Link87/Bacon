@@ -1,8 +1,6 @@
 package bacon;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static bacon.Direction.*;
 
@@ -38,12 +36,12 @@ public class Map {
      * This is a stateless attribute of the map geometry and it calculated before the start of the game
      * It is used to speed up the bomb heuristic
      */
-    private ArrayList<ArrayList<Set<Tile>>> bombGeometry;
+    private BombGeometry bombGeometry;
 
     /**
      * Keeps track of all the rows, columns, diagonals and indiagonals
      */
-    private Set<MapLine> mapLineGeometry;
+    private LineGeometry lineGeometry;
 
 
     /**
@@ -222,113 +220,25 @@ public class Map {
             );
         }
 
-        // The following section determines the map bomb geometry (stateless) and saves the result in a width x height Array(-list)
-        // If there's too much data, we simply leave each bombSet empty
-        map.bombGeometry = new ArrayList<>();
-        if (width * height * Math.pow(2 * Game.getGame().getBombRadius() + 1, 2) > 100000) {
-            for (ArrayList<Set<Tile>> a : map.bombGeometry) {
-                for (int i = 0; i < height; i++) {
-                    Set<Tile> tmp = new HashSet<>();
-                    a.add(tmp);
-                }
-            }
-        } else {
-            for (int x = 0; x < width; x++) {
-                ArrayList<Set<Tile>> tmpColumn = new ArrayList<>();
-                for (int y = 0; y < height; y++) {
-                    Set<Tile> tmp = bombSet(map.getTileAt(x, y));
-                    tmpColumn.add(y, tmp);
-                }
-                map.bombGeometry.add(x, tmpColumn);
-            }
-        }
+        map.bombGeometry = map.new BombGeometry();
 
-        // The following section determines the map line geometry (stateless)
-        map.mapLineGeometry = new HashSet<>();
-
-        for (int x = 0; x < map.width; x++) {
-            for (int y = 0; y < map.height; y++) {
-                Tile originTile = map.getTileAt(x, y);
-
-                if (originTile.getProperty() == Tile.Property.HOLE) {
-                    continue;
-                }
-
-                for (Direction lineDirection : Direction.values()) {
-                    MapLine mapLine;
-                    switch (lineDirection) {
-                        case UP:
-                        case DOWN:
-                            if (originTile.getColumn() != null) {
-                                mapLine = originTile.getColumn();
-                            } else {
-                                mapLine = new MapLine();
-                                map.mapLineGeometry.add(mapLine);
-                                originTile.setColumn(mapLine);
-                                lineSearch(originTile, UP, mapLine);
-                                lineSearch(originTile, DOWN, mapLine);
-                            }
-                            break;
-                        case RIGHT:
-                        case LEFT:
-                            if (originTile.getRow() != null){
-                                mapLine = originTile.getRow();
-                            } else{
-                                mapLine = new MapLine();
-                                map.mapLineGeometry.add(mapLine);
-                                originTile.setRow(mapLine);
-                                lineSearch(originTile, LEFT, mapLine);
-                                lineSearch(originTile, RIGHT, mapLine);
-                            }
-                            break;
-                        case UP_LEFT:
-                        case DOWN_RIGHT:
-                            if(originTile.getIndiagonal() != null){
-                                mapLine = originTile.getIndiagonal();
-                            } else {
-                                mapLine = new MapLine();
-                                map.mapLineGeometry.add(mapLine);
-                                originTile.setIndiagonal(mapLine);
-                                lineSearch(originTile, UP_LEFT, mapLine);
-                                lineSearch(originTile, DOWN_RIGHT, mapLine);
-                            }
-                            break;
-                        case UP_RIGHT:
-                        case DOWN_LEFT:
-                            if (originTile.getDiagonal() != null){
-                                mapLine = originTile.getDiagonal();
-                            } else {
-                                mapLine = new MapLine();
-                                map.mapLineGeometry.add(mapLine);
-                                originTile.setDiagonal(mapLine);
-                                lineSearch(originTile, UP_RIGHT, mapLine);
-                                lineSearch(originTile, DOWN_LEFT, mapLine);
-                            }
-                            break;
-                        default:
-                            mapLine = new MapLine();
-                    }
-
-                    lineSearch(originTile, lineDirection, mapLine);
-                }
-            }
-        }
+        map.lineGeometry = map.new LineGeometry();
 
         return map;
     }
 
 
     /**
-     * This method gets called each time a new MapLine is created. It searches from this (origin) tile along this
-     * (line) direction to find all tiles that belong to this MapLine
+     * This method gets called each time a new TileLine is created. It searches from this (origin) tile along this
+     * (line) direction to find all tiles that belong to this TileLine
      *
-     * @param originTile The tile for which a new MapLine had to be created. Search originates from this tile.
+     * @param originTile The tile for which a new TileLine had to be created. Search originates from this tile.
      * @param lineDirection Starting direction of search
-     * @param mapLine Search result are put into this MapLine
+     * @param tileLine Search result are put into this TileLine
      */
-    private static void lineSearch(Tile originTile, Direction lineDirection, MapLine mapLine) {
+    private static void lineSearch(Tile originTile, Direction lineDirection, TileLine tileLine) {
         Tile curTile = originTile;
-        mapLine.addTile(originTile);
+        tileLine.addTile(originTile);
 
         Direction searchDirection = lineDirection;
         Direction arrivalDirection;
@@ -339,24 +249,24 @@ public class Map {
             curTile = curTile.getTransition(searchDirection.id);
             if (curTile == originTile && arrivalDirection.opposite() == lineDirection) break;
 
-            mapLine.addTile(curTile);
+            tileLine.addTile(curTile);
 
             switch (arrivalDirection) {
                 case UP:
                 case DOWN:
-                    curTile.setColumn(mapLine);
+                    curTile.setColumn(tileLine);
                     break;
                 case RIGHT:
                 case LEFT:
-                    curTile.setRow(mapLine);
+                    curTile.setRow(tileLine);
                     break;
                 case UP_LEFT:
                 case DOWN_RIGHT:
-                    curTile.setIndiagonal(mapLine);
+                    curTile.setIndiagonal(tileLine);
                     break;
                 case UP_RIGHT:
                 case DOWN_LEFT:
-                    curTile.setDiagonal(mapLine);
+                    curTile.setDiagonal(tileLine);
                     break;
             }
             searchDirection = arrivalDirection.opposite();
@@ -366,8 +276,8 @@ public class Map {
     /**
      * Updates player share of MapLines after player number assignment
      */
-    public void mapLinePlayerAssignment() {
-        for (MapLine m : mapLineGeometry) {
+    void assignTileLinePlayers() {
+        for (TileLine m : lineGeometry.getTileLines()) {
             m.initializePlayerShare();
         }
     }
@@ -526,12 +436,129 @@ public class Map {
      * @param tile the tile whose surroundings we're interested in
      * @return tiles that lie within one bomb radius of the tile to be evaluated
      */
-    public Set<Tile> getBombSet(Tile tile) {
-        return bombGeometry.get(tile.x).get(tile.y);
+    Set<Tile> getBombSet(Tile tile) {
+        return bombGeometry.getAffectedTilesAt(tile.x, tile.y);
     }
 
-    public Set<MapLine> getLineSet() {
-        return mapLineGeometry;
+    List<TileLine> getTileLines() {
+        return lineGeometry.getTileLines();
+    }
+
+    private class BombGeometry {
+
+        List<List<Set<Tile>>> affectedTiles;
+
+        /**
+         * The following section determines the map bomb geometry (stateless) and saves the result in a width x height Array(-list)
+         * If there's too much data, we simply leave each bombSet empty
+         */
+        private BombGeometry() {
+            this.affectedTiles = new ArrayList<>();
+            for (int x = 0; x < width; x++) {
+                List<Set<Tile>> column = new ArrayList<>();
+                for (int y = 0; y < height; y++) {
+                    if (width * height * Math.pow(2 * Game.getGame().getBombRadius() + 1, 2) > 100000) {
+                        column.add(new HashSet<>());
+                    } else {
+                        column.add(y, bombSet(Map.this.getTileAt(x, y)));
+                    }
+                }
+                this.affectedTiles.add(x, column);
+            }
+        }
+
+        /**
+         * Returns the {@link Tile}s that are affected by a bomb thrown onto the given coordinates.
+         *
+         * @param x the horizontal coordinate
+         * @param y the vertical coordinate
+         * @return a set of {@code Tile}s that are affected
+         */
+        private Set<Tile> getAffectedTilesAt(int x, int y) {
+            return this.affectedTiles.get(x).get(y);
+        }
+    }
+
+    private class LineGeometry {
+
+        List<TileLine> tileLines;
+
+        private LineGeometry() {
+            // The following section determines the map line geometry (stateless)
+            tileLines = new ArrayList<>();
+
+            for (int x = 0; x < Map.this.width; x++) {
+                for (int y = 0; y < Map.this.height; y++) {
+                    Tile originTile = Map.this.getTileAt(x, y);
+
+                    if (originTile.getProperty() == Tile.Property.HOLE) {
+                        continue;
+                    }
+
+                    for (Direction lineDirection : Direction.values()) {
+                        TileLine tileLine;
+                        switch (lineDirection) {
+                            case UP:
+                            case DOWN:
+                                if (originTile.getColumn() != null) {
+                                    tileLine = originTile.getColumn();
+                                } else {
+                                    tileLine = new TileLine();
+                                    tileLines.add(tileLine);
+                                    originTile.setColumn(tileLine);
+                                    lineSearch(originTile, UP, tileLine);
+                                    lineSearch(originTile, DOWN, tileLine);
+                                }
+                                break;
+                            case RIGHT:
+                            case LEFT:
+                                if (originTile.getRow() != null){
+                                    tileLine = originTile.getRow();
+                                } else{
+                                    tileLine = new TileLine();
+                                    tileLines.add(tileLine);
+                                    originTile.setRow(tileLine);
+                                    lineSearch(originTile, LEFT, tileLine);
+                                    lineSearch(originTile, RIGHT, tileLine);
+                                }
+                                break;
+                            case UP_LEFT:
+                            case DOWN_RIGHT:
+                                if(originTile.getIndiagonal() != null){
+                                    tileLine = originTile.getIndiagonal();
+                                } else {
+                                    tileLine = new TileLine();
+                                    tileLines.add(tileLine);
+                                    originTile.setIndiagonal(tileLine);
+                                    lineSearch(originTile, UP_LEFT, tileLine);
+                                    lineSearch(originTile, DOWN_RIGHT, tileLine);
+                                }
+                                break;
+                            case UP_RIGHT:
+                            case DOWN_LEFT:
+                                if (originTile.getDiagonal() != null){
+                                    tileLine = originTile.getDiagonal();
+                                } else {
+                                    tileLine = new TileLine();
+                                    tileLines.add(tileLine);
+                                    originTile.setDiagonal(tileLine);
+                                    lineSearch(originTile, UP_RIGHT, tileLine);
+                                    lineSearch(originTile, DOWN_LEFT, tileLine);
+                                }
+                                break;
+                            default:
+                                tileLine = new TileLine();
+                        }
+
+                        lineSearch(originTile, lineDirection, tileLine);
+                    }
+                }
+            }
+        }
+
+        private List<TileLine> getTileLines() {
+            return Collections.unmodifiableList(tileLines);
+        }
     }
 
 }

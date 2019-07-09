@@ -133,7 +133,7 @@ public class Game {
                 LOGGER.log(Level.INFO, "We are player number {0}.", me);
                 currentGameState.setMe(me);
                 // initializes player share in MapLineGeometry
-                this.getCurrentState().getMap().mapLinePlayerAssignment();
+                this.getCurrentState().getMap().assignTileLinePlayers();
                 break;
             case MOVE_ANNOUNCE:
                 // Server announces move of a player
