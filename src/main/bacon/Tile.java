@@ -34,9 +34,8 @@ public class Tile {
     public final int x;
     public final int y;
 
-    /**
-     * Row/column/diagonal/indiagonal the tile belongs to
-     */
+
+    // row/column/diagonal/indiagonal the tile belongs to
     private MapLine row;
     private MapLine column;
     private MapLine diagonal;
@@ -69,18 +68,45 @@ public class Tile {
 
     /**
      * Sets the owner of this {@code Tile} and updates the players stones.
+     * Also updates fill level and player share of map lines.
      *
      * @param ownerId id of new owner of this {@code Tile}.
      */
     public void setOwnerId(int ownerId) {
+        int myId = Game.getGame().getCurrentState().getMe();
         if (this.ownerId != Player.NULL_PLAYER_ID) {
             Game.getGame().getCurrentState().getPlayerFromId(this.ownerId).removeStone(this);
         }
         if (ownerId != Player.NULL_PLAYER_ID) {
             Game.getGame().getCurrentState().getPlayerFromId(ownerId).addStone(this);
         }
-        this.ownerId = ownerId;
 
+        if (this.ownerId == Player.NULL_PLAYER_ID && ownerId != Player.NULL_PLAYER_ID) {
+            this.row.changeFillLevel(1);
+            this.column.changeFillLevel(1);
+            this.diagonal.changeFillLevel(1);
+            this.indiagonal.changeFillLevel(1);
+        }
+        else if (this.ownerId != Player.NULL_PLAYER_ID && ownerId == Player.NULL_PLAYER_ID) {
+            this.row.changeFillLevel(-1);
+            this.column.changeFillLevel(-1);
+            this.diagonal.changeFillLevel(-1);
+            this.indiagonal.changeFillLevel(-1);
+        }
+        if (this.ownerId != myId && ownerId == myId) {
+            this.row.changePlayerShare(1);
+            this.column.changePlayerShare(1);
+            this.diagonal.changePlayerShare(1);
+            this.indiagonal.changePlayerShare(1);
+        }
+        else if (this.ownerId == myId && ownerId != myId) {
+            this.row.changePlayerShare(-1);
+            this.column.changePlayerShare(-1);
+            this.diagonal.changePlayerShare(-1);
+            this.indiagonal.changePlayerShare(-1);
+        }
+
+        this.ownerId = ownerId;
     }
 
     /**

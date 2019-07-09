@@ -49,13 +49,12 @@ public class MapLine {
 
 
     /**
-     * Updates fillLevel and playerShare after a move
+     * Updates playerShare after a move
      * Must be updated after every doMove() and undoMove()
      *
      * @param count number of new player's stones added
      */
-    public void addPlayersStones(int count) {
-        fillLevel += count;
+    public void changePlayerShare(int count) {
         playerShare += count;
     }
 
@@ -65,7 +64,7 @@ public class MapLine {
      *
      * @param count number of new opponent's stones added
      */
-    public void addOpponentStones(int count) {
+    public void changeFillLevel(int count) {
         fillLevel += count;
     }
 
