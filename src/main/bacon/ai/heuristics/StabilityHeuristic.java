@@ -60,19 +60,6 @@ public class StabilityHeuristic {
                 indiagStbl.add(stone);
             }
 
-            if (stone.getRow().getFillLevel() == stone.getRow().getLineSize() || stone.getColumn().getFillLevel() == stone.getColumn().getLineSize() ||
-                    stone.getDiagonal().getFillLevel() == stone.getDiagonal().getLineSize() || stone.getIndiagonal().getFillLevel() == stone.getIndiagonal().getLineSize()) {
-                System.out.println("TileLine stability " + "(" + stone.x + "," + stone.y + ")"
-                        + " row size: " + stone.getRow().getLineSize() + " row fill: " + stone.getRow().getFillLevel() + " row playershare: " + stone.getRow().getPlayerShare()
-                        + " column size: " + stone.getColumn().getLineSize() + " column fill: " + stone.getColumn().getFillLevel()
-                        + " diagonal size: " + stone.getDiagonal().getLineSize() + " diagonal fill: " + stone.getDiagonal().getFillLevel()
-                        + " indiagonal size: " + stone.getIndiagonal().getLineSize() + " indiagonal fill: " + stone.getIndiagonal().getFillLevel()
-                );
-                for (Tile t : stone.getRow().getLineTiles()) {
-                    System.out.print(" (" + t.x + "," + t.y + ")");
-                }
-                System.out.println();
-            }
         }
 
         // Gradually extends stability from stable stones to neighbouring stones
