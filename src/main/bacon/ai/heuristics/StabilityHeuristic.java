@@ -3,6 +3,7 @@ package bacon.ai.heuristics;
 import bacon.Direction;
 import bacon.Tile;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,20 +45,34 @@ public class StabilityHeuristic {
         // Iterates over all player's stones and categorizes them according to stability directions
         for (Tile stone : state.getPlayerFromId(playerId).getStones()) {
 
-            if (stone.getTransition(Direction.LEFT.id) == null || stone.getTransition(Direction.RIGHT.id) == null) {
+            if (stone.getTransition(Direction.LEFT.id) == null || stone.getTransition(Direction.RIGHT.id) == null || stone.getRow().getFillLevel() == stone.getRow().getLineSize()) {
                 horzStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP.id) == null || stone.getTransition(Direction.DOWN.id) == null) {
+            if (stone.getTransition(Direction.UP.id) == null || stone.getTransition(Direction.DOWN.id) == null || stone.getColumn().getFillLevel() == stone.getColumn().getLineSize()) {
                 vertStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP_RIGHT.id) == null || stone.getTransition(Direction.DOWN_LEFT.id) == null) {
+            if (stone.getTransition(Direction.UP_RIGHT.id) == null || stone.getTransition(Direction.DOWN_LEFT.id) == null || stone.getDiagonal().getFillLevel() == stone.getDiagonal().getLineSize()) {
                 diagStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP_LEFT.id) == null || stone.getTransition(Direction.DOWN_RIGHT.id) == null) {
+            if (stone.getTransition(Direction.UP_LEFT.id) == null || stone.getTransition(Direction.DOWN_RIGHT.id) == null || stone.getIndiagonal().getFillLevel() == stone.getIndiagonal().getLineSize()) {
                 indiagStbl.add(stone);
+            }
+
+            if (stone.getRow().getFillLevel() == stone.getRow().getLineSize() || stone.getColumn().getFillLevel() == stone.getColumn().getLineSize() ||
+                    stone.getDiagonal().getFillLevel() == stone.getDiagonal().getLineSize() || stone.getIndiagonal().getFillLevel() == stone.getIndiagonal().getLineSize()) {
+                System.out.println("MapLine stability " + "(" + stone.x + "," + stone.y + ")"
+                        + " row size: " + stone.getRow().getLineSize() + " row fill: " + stone.getRow().getFillLevel() + " row playershare: " + stone.getRow().getPlayerShare()
+                        + " column size: " + stone.getColumn().getLineSize() + " column fill: " + stone.getColumn().getFillLevel()
+                        + " diagonal size: " + stone.getDiagonal().getLineSize() + " diagonal fill: " + stone.getDiagonal().getFillLevel()
+                        + " indiagonal size: " + stone.getIndiagonal().getLineSize() + " indiagonal fill: " + stone.getIndiagonal().getFillLevel()
+                );
+                for (Tile t : stone.getRow().getLineTiles()) {
+                    System.out.print(" (" + t.x + "," + t.y + ")");
+                }
+                System.out.println();
             }
         }
 
