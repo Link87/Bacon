@@ -37,20 +37,6 @@ public class Player {
     }
 
     /**
-     * Creates a shallow copy of the {@code Player} instance.
-     * <p>
-     * This implies that {@code equals} is {@code false} when comparing this instance with the copy,
-     * but complex fields are not actually copied. Instead, the {@code stones} set is left empty.
-     *
-     * @return a copy of the {@code Player} instance
-     */
-    Player shallowCopy() {
-        Player copy = new Player(this.id, this.overrideStoneCount, this.bombCount);
-        copy.disqualified = this.disqualified;
-        return copy;
-    }
-
-    /**
      * Returns the number of {@link Tile}s the {@code Player} currently owns
      *
      * @return the number of {@code Tile}s of the {@code Player}

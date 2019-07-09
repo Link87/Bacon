@@ -26,44 +26,6 @@ public class GameState {
     public GameState() {}
 
     /**
-     * A shallow copy constructor used by the {@link #getDeepCopy()} method.
-     *
-     * @param players      Array of {@link Player} that participate in the {@link Game}
-     * @param map          the {@link Map} on which the game is played
-     * @param currentPhase the current {@link GamePhase}
-     * @param me           {@code id} of the {@code Player} that is controlled by the AI
-     */
-    private GameState(Player[] players, Map map, GamePhase currentPhase, int me) {
-        this.players = players;
-        this.map = map;
-        this.currentPhase = currentPhase;
-        this.me = me;
-    }
-
-    /**
-     * Creates a meaningful deep copy of the {@code GameState}.
-     * <p>
-     * Tiles and their owners are linked up here.
-     *
-     * @return a deep copy of the {@code GameState}
-     */
-    GameState getDeepCopy() {
-        Map mapCopy = this.map.semiDeepCopy();
-
-        Player[] playersCopy = new Player[this.getTotalPlayerCount()];
-        //every Tile in CopyMap with an owner gets the correct owner linked
-        //every Player gets the tiles he owns correctly assigned
-        for (int i = 0; i < playersCopy.length; i++) {
-            playersCopy[i] = this.players[i].shallowCopy();
-            for (Tile stone : this.players[i].getStones()) {
-                playersCopy[i].addStone(mapCopy.getTileAt(stone.x, stone.y));
-            }
-        }
-
-        return new GameState(playersCopy, mapCopy, this.currentPhase, this.me - 1);
-    }
-
-    /**
      * Returns the {@link Player} that corresponds to the given player {@code id}.
      *
      * @param id the id of the {@code Player} to search for

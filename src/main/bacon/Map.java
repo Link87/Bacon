@@ -56,44 +56,6 @@ public class Map {
     }
 
     /**
-     * Makes a semi-deep copy of the {@code Map}.
-     * <p>
-     * {@code Tile}s are copied and transitions point to {@code Tile}s inside the {@code Map} instance.
-     * The owner pointer (of {@code Tile}) however still points to the original {@code Player} objects.
-     *
-     * @return a one level deep copy of the {@code Map}
-     */
-    Map semiDeepCopy() {
-        Tile[][] copyTiles = new Tile[this.width][this.height];
-
-        for (int y = 0; y < this.height; y++) {
-            for (int x = 0; x < this.width; x++) {
-                Tile original = this.getTileAt(x, y);
-                copyTiles[x][y] = new Tile(original.getOwnerId(), original.getProperty(), original.x, original.y);
-            }
-        }
-
-        for (int y = 0; y < this.height; y++) {
-            for (int x = 0; x < this.width; x++) {
-                Tile original = this.getTileAt(x, y);
-
-                Tile currentTile = copyTiles[x][y];
-                for (int direction = 0; direction < Direction.values().length; direction++) {
-                    if (original.getTransition(direction) != null) {
-                        int xOfTrans = original.getTransition(direction).x;
-                        int yOfTrans = original.getTransition(direction).y;
-                        currentTile.setTransition(copyTiles[xOfTrans][yOfTrans],
-                                direction, original.getArrivalDirection(direction));
-                    }
-                }
-            }
-        }
-
-        // setting tile transition pointers to point to tiles in copyTiles
-        return new Map(copyTiles, this.occupiedTiles, this.totalTiles, this.expansionTiles);
-    }
-
-    /**
      * Extends the {@code Map} with the given transition.
      *
      * @param tile1      First {@code Map} of the transition
