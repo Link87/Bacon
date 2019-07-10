@@ -1,9 +1,6 @@
 package bacon.ai.heuristics;
 
-import bacon.GamePhase;
-import bacon.GameState;
-import bacon.Player;
-import bacon.Tile;
+import bacon.*;
 import bacon.move.BombMove;
 
 import java.util.Set;
@@ -60,6 +57,27 @@ public class Heuristics {
         mobility += LegalMoves.getLegalOverrideMoves(state, playerId).size();
 
         return mobility;
+    }
+
+    /**
+     * Calculates the override stability heuristics of the given game state and player.
+     *
+     * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
+     * @return a real number as override stability heuristics
+     */
+    public static int overrideStability(GameState state, int playerId) {
+        int overrideStability = 0;
+
+        if (state.getGamePhase() != GamePhase.PHASE_ONE) {
+            throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
+        }
+
+        for (TileLine t : state.getMap().getTileLines()) {
+            if (t.getPlayerShare() == t.getLineSize()) overrideStability += t.getPlayerShare();
+        }
+
+        return overrideStability;
     }
 
     /**

@@ -195,7 +195,7 @@ public class Map {
      * <p>
      * Call this method after the player {@code id} has been assigned.
      */
-    void assignLineGeometryPlayers() {
+    public void assignLineGeometryPlayers() {
         lineGeometry.assignTileLinePlayers();
     }
 
@@ -309,7 +309,7 @@ public class Map {
      *
      * @return a {@link List} of {@code TileLine}s of the {@code Map}
      */
-    List<TileLine> getTileLines() {
+    public List<TileLine> getTileLines() {
         return lineGeometry.getTileLines();
     }
 

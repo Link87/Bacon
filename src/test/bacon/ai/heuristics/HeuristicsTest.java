@@ -42,6 +42,14 @@ public class HeuristicsTest {
     }
 
     @Test
+    public void overrideStability() {
+        Game.getGame().readMap(Maps.EXAMPLE_OVERRIDE_STABILITY);
+        Game.getGame().getCurrentState().setMe(1);
+        Game.getGame().getCurrentState().getMap().assignLineGeometryPlayers();
+        assertEquals("Override stability heuristic error", 14, Heuristics.overrideStability(Game.getGame().getCurrentState(), 1), 0.1);
+    }
+
+    @Test
     public void bonus() {
         Game.getGame().readMap(Maps.EXAMPLE);
 
