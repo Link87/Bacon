@@ -49,7 +49,7 @@ public abstract class Move {
 
     /**
      * Undoes the {@code Move}.
-     *
+     * <p>
      * Requires the {@code Move} to previously be done.
      */
     public abstract void undoMove();

@@ -1,6 +1,9 @@
 package bacon.move;
 
-import bacon.*;
+import bacon.Direction;
+import bacon.GameState;
+import bacon.Player;
+import bacon.Tile;
 
 import java.util.ArrayList;
 import java.util.HashSet;

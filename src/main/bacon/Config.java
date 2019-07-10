@@ -5,8 +5,14 @@ package bacon;
  */
 public class Config {
 
-    private final boolean helpRequested;
+    // Default values. Those are used if no fitting argument is passed.
+    private static final boolean PRUNING_DEFAULT = true;
+    private static final boolean MOVE_SORTING_DEFAULT = true;
+    private static final int BEAM_WIDTH_DEFAULT = 5;
+    private static final boolean ASPIRATION_WINDOWS_DEFAULT = false;
+    private static final boolean ENABLE_ERR_DEFAULT = false;
 
+    private final boolean helpRequested;
     private final String host;
     private final int port;
     private final boolean pruning;
@@ -14,13 +20,6 @@ public class Config {
     private final int beamWidth;
     private final boolean aspirationWindows;
     private final boolean enableErr;
-
-    // Default values. Those are used if no fitting argument is passed.
-    private static final boolean PRUNING_DEFAULT = true;
-    private static final boolean MOVE_SORTING_DEFAULT = true;
-    private static final int BEAM_WIDTH_DEFAULT = 5;
-    private static final boolean ASPIRATION_WINDOWS_DEFAULT = false;
-    private static final boolean ENABLE_ERR_DEFAULT = false;
 
     /**
      * Creates an empty configuration, that only indicates a help request via {@code --help}.
@@ -64,6 +63,17 @@ public class Config {
 
         this.helpRequested = false;
 
+    }
+
+    /**
+     * Parses the arguments and returns the config.
+     *
+     * @param args array containing the command line arguments
+     * @return config with parsed arguments or {@code null} when help is requested
+     * @throws IllegalArgumentException when invalid arguments are passed
+     */
+    static Config fromArgs(String[] args) throws IllegalArgumentException {
+        return new Parser().parseArgs(args);
     }
 
     /**
@@ -141,17 +151,6 @@ public class Config {
      */
     boolean isErrEnabled() {
         return enableErr;
-    }
-
-    /**
-     * Parses the arguments and returns the config.
-     *
-     * @param args array containing the command line arguments
-     * @return config with parsed arguments or {@code null} when help is requested
-     * @throws IllegalArgumentException when invalid arguments are passed
-     */
-    static Config fromArgs(String[] args) throws IllegalArgumentException {
-        return new Parser().parseArgs(args);
     }
 
     /**

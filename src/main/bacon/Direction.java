@@ -20,43 +20,13 @@ public enum Direction {
     UP_LEFT(7);
 
     /**
-     * The integer representation of the direction.
+     * Integer value that represents an invalid {@code Direction}.
      */
-    public final int id;
-
-    Direction(int id) {
-        this.id = id;
-    }
-
+    public static final int NULL_DIRECTION_ID = -1;
     /**
-     * Convert an integer representation of a direction into a {@code Direction} enum variant.
-     *
-     * @param id the integer to look up
-     * @return the associated {@code Direction} variant
+     * Number of {@code Direction} variants.
      */
-    public static Direction fromId(int id) {
-        return lookup[id];
-    }
-
-    /**
-     * Returns the opposite {@code Direction}.
-     *
-     * @return the opposite {@code Direction}
-     */
-    public Direction opposite() {
-        return Direction.opposite.get(this);
-    }
-
-    /**
-     * Returns the opposite {@code Direction} of the given direction in integer representation.
-     *
-     * @param id integer representing a {@code Direction}
-     * @return the opposite {@code Direction} as an integer
-     */
-    public static int oppositeOf(int id) {
-        return (id + 4) % 8;
-    }
-
+    public static final int DIRECTION_COUNT = 8;
     /**
      * A {@code Map} containing the opposite {@code Direction} of each {@code Direction}.
      */
@@ -65,15 +35,6 @@ public enum Direction {
      * An array for fast reverse lookup of {@code Direction} variants, when integer values are given.
      */
     private static final Direction[] lookup = new Direction[8];
-
-    /**
-     * Integer value that represents an invalid {@code Direction}.
-     */
-    public static final int NULL_DIRECTION_ID = -1;
-    /**
-     * Number of {@code Direction} variants.
-     */
-    public static final int DIRECTION_COUNT = 8;
 
     static {
         // initialize lookup tables
@@ -89,5 +50,42 @@ public enum Direction {
 
         for (Direction direction : Direction.values())
             lookup[direction.id] = direction;
+    }
+
+    /**
+     * The integer representation of the direction.
+     */
+    public final int id;
+    Direction(int id) {
+        this.id = id;
+    }
+
+    /**
+     * Convert an integer representation of a direction into a {@code Direction} enum variant.
+     *
+     * @param id the integer to look up
+     * @return the associated {@code Direction} variant
+     */
+    public static Direction fromId(int id) {
+        return lookup[id];
+    }
+
+    /**
+     * Returns the opposite {@code Direction} of the given direction in integer representation.
+     *
+     * @param id integer representing a {@code Direction}
+     * @return the opposite {@code Direction} as an integer
+     */
+    public static int oppositeOf(int id) {
+        return (id + 4) % 8;
+    }
+
+    /**
+     * Returns the opposite {@code Direction}.
+     *
+     * @return the opposite {@code Direction}
+     */
+    public Direction opposite() {
+        return Direction.opposite.get(this);
     }
 }

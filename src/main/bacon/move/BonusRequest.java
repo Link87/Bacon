@@ -9,20 +9,9 @@ import bacon.Player;
 public class BonusRequest {
 
     /**
-     * This enum contains the types a {@code BonusRequest} can have.
-     */
-    public enum Type {
-        NONE,
-        BOMB_BONUS,
-        OVERRIDE_BONUS,
-        CHOOSE_PLAYER
-    }
-
-    /**
      * The {@link Type} the {@code BonusRequest} is of.
      */
     public final Type type;
-
     /**
      * The {@code id} of the other {@link Player}, if {@code type} is {@link Type#CHOOSE_PLAYER}.
      */
@@ -121,6 +110,16 @@ public class BonusRequest {
     @Override
     public int hashCode() {
         return 31 * (31 + type.hashCode()) + other;
+    }
+
+    /**
+     * This enum contains the types a {@code BonusRequest} can have.
+     */
+    public enum Type {
+        NONE,
+        BOMB_BONUS,
+        OVERRIDE_BONUS,
+        CHOOSE_PLAYER
     }
 
 }

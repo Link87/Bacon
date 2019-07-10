@@ -63,16 +63,6 @@ public class Message {
         }
 
         /**
-         * Returns the binary value that corresponds to the {@code Type}.
-         * See the network specification for details.
-         *
-         * @return the binary value of the {@code Type}
-         */
-        public int getValue() {
-            return value;
-        }
-
-        /**
          * Returns the {@code Type} that corresponds to the given binary value.
          * See the network specification for details.
          *
@@ -102,6 +92,16 @@ public class Message {
                 default:
                     return null;
             }
+        }
+
+        /**
+         * Returns the binary value that corresponds to the {@code Type}.
+         * See the network specification for details.
+         *
+         * @return the binary value of the {@code Type}
+         */
+        public int getValue() {
+            return value;
         }
     }
 }

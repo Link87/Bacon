@@ -27,40 +27,6 @@ public class BombMove extends Move {
         this.type = Type.BOMB;
     }
 
-
-    /**
-     * Checks if this {@code BombMove} is legal.
-     * <p>
-     * Returns {@code false} if destination {@link Tile} is a hole
-     * or the {@link bacon.Player} has not enough bombs, otherwise {@code true}.
-     *
-     * @return {@code true} if the move is legal, {@code false} otherwise
-     */
-    public boolean isLegal() {
-        if (this.state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.HOLE) return false;
-        return this.state.getPlayerFromId(this.playerId).getBombCount() != 0;
-    }
-
-
-    /**
-     * Executes this {@code BombMove}.
-     * <p>
-     * This method calculates all {@link Tile}s that need to be bombed with {@link Tile#bombTile()}.
-     * Does nothing instead, if {@link #isLegal()} method determines the move to be illegal.
-     */
-    public void doMove() {
-        int radius = state.getBombRadius();
-        Tile target = state.getMap().getTileAt(this.xPos, this.yPos);
-
-        Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
-
-        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
-        bombSet.forEach(Tile::bombTile);
-
-        // Subtract 1 bomb from player's inventory
-        this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
-    }
-
     /**
      * Returns the {@link Tile}s that are affected by a bomb thrown onto the given tile.
      *
@@ -97,6 +63,38 @@ public class BombMove extends Move {
         }
 
         return bombSet;
+    }
+
+    /**
+     * Checks if this {@code BombMove} is legal.
+     * <p>
+     * Returns {@code false} if destination {@link Tile} is a hole
+     * or the {@link bacon.Player} has not enough bombs, otherwise {@code true}.
+     *
+     * @return {@code true} if the move is legal, {@code false} otherwise
+     */
+    public boolean isLegal() {
+        if (this.state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.HOLE) return false;
+        return this.state.getPlayerFromId(this.playerId).getBombCount() != 0;
+    }
+
+    /**
+     * Executes this {@code BombMove}.
+     * <p>
+     * This method calculates all {@link Tile}s that need to be bombed with {@link Tile#bombTile()}.
+     * Does nothing instead, if {@link #isLegal()} method determines the move to be illegal.
+     */
+    public void doMove() {
+        int radius = state.getBombRadius();
+        Tile target = state.getMap().getTileAt(this.xPos, this.yPos);
+
+        Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
+
+        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
+        bombSet.forEach(Tile::bombTile);
+
+        // Subtract 1 bomb from player's inventory
+        this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
     }
 
     /**

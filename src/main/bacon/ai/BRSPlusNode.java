@@ -6,33 +6,31 @@ import bacon.ai.heuristics.Heuristics;
 import bacon.ai.heuristics.LegalMoves;
 import bacon.ai.heuristics.PancakeWatchdog;
 import bacon.ai.heuristics.StabilityHeuristic;
-import bacon.move.*;
+import bacon.move.BuildMove;
+import bacon.move.Move;
 
 import java.util.*;
-import java.lang.Math;
 
 public class BRSPlusNode {
 
     private static final double STABILITY_SCALAR = 1;
     private static final double MOBILITY_SCALAR = 1;
     private static final double BONUS_SCALAR = 100;
-
-    private final int layer;
     private static int searchDepth;
     private static int branchingFactor;
-    private BuildMove bestMove;
-    private boolean isMaxNode;
+    private static boolean enablePruning;
+    private static boolean enableSorting;
+    private final int layer;
     private final GameState state;
     private final PancakeWatchdog watchdog;
     /**
      * Type of move that lead to this node
      */
     private final Move.Type type;
+    private BuildMove bestMove;
+    private boolean isMaxNode;
     private double value;
     private double privValue;
-
-    private static boolean enablePruning;
-    private static boolean enableSorting;
     private double alpha;
     private double beta;
 

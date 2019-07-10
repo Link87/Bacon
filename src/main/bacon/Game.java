@@ -28,19 +28,21 @@ public class Game {
 
     private static final int GROUP_NUMBER = 6;
     private static final Game INSTANCE = new Game();
-
+    /**
+     * Contains all stateful information about the game.
+     */
+    private final GameState currentGameState = new GameState();
     private int bombRadius;
     private int playerCount;
-
     /**
      * Amount of moves done by any player.
      */
     private int moveCount = 1;
 
     /**
-     * Contains all stateful information about the game.
+     * Private dummy constructor because singleton.
      */
-    private final GameState currentGameState = new GameState();
+    private Game() {}
 
     /**
      * Returns the singleton {@code Game} instance.
@@ -261,9 +263,4 @@ public class Game {
     public int getTotalPlayerCount() {
         return playerCount;
     }
-
-    /**
-     * Private dummy constructor because singleton.
-     */
-    private Game() {}
 }

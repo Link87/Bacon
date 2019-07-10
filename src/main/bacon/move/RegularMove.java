@@ -1,6 +1,8 @@
 package bacon.move;
 
-import bacon.*;
+import bacon.GameState;
+import bacon.Player;
+import bacon.Tile;
 
 import java.nio.ByteBuffer;
 

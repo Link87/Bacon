@@ -1,6 +1,8 @@
 package bacon;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A Player class which contains player data and performs player actions.
@@ -16,10 +18,10 @@ public class Player {
      * The index of the player.
      */
     public final int id;
+    private final Set<Tile> stones;
     private int overrideStoneCount;
     private int bombCount;
     private boolean disqualified;
-    private final Set<Tile> stones;
 
     /**
      * Creates a new {@code Player} instance.

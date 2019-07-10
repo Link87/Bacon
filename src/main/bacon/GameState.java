@@ -2,7 +2,7 @@ package bacon;
 
 /**
  * Instances of this class contain stateful information about the game.
- *
+ * <p>
  * Queries for stateless information are redirected to the {@link Game} singleton.
  */
 public class GameState {
@@ -44,6 +44,15 @@ public class GameState {
      */
     public GamePhase getGamePhase() {
         return currentPhase;
+    }
+
+    /**
+     * Sets the {@link GamePhase} the game currently is in.
+     *
+     * @param currentPhase the current game phase
+     */
+    public void setGamePhase(GamePhase currentPhase) {
+        this.currentPhase = currentPhase;
     }
 
     /**
@@ -94,24 +103,6 @@ public class GameState {
     }
 
     /**
-     * Return the {@code id} of the {@link Player} that is controlled by the ai.
-     *
-     * @return the {@code id} of the {@code Player} controlled by the ai
-     */
-    public int getMe() {
-        return me;
-    }
-
-    /**
-     * Sets the array of {@link Player}s that participate in the game.
-     *
-     * @param players the {@code Player}s that participate
-     */
-    void setPlayers(Player[] players) {
-        this.players = players;
-    }
-
-    /**
      * Sets the {@link Map} the game is played on.
      *
      * @param map the {@code Map} the game is played on
@@ -121,12 +112,12 @@ public class GameState {
     }
 
     /**
-     * Sets the {@link GamePhase} the game currently is in.
+     * Return the {@code id} of the {@link Player} that is controlled by the ai.
      *
-     * @param currentPhase the current game phase
+     * @return the {@code id} of the {@code Player} controlled by the ai
      */
-    public void setGamePhase(GamePhase currentPhase) {
-        this.currentPhase = currentPhase;
+    public int getMe() {
+        return me;
     }
 
     /**
@@ -136,6 +127,15 @@ public class GameState {
      */
     public void setMe(int me) {
         this.me = me;
+    }
+
+    /**
+     * Sets the array of {@link Player}s that participate in the game.
+     *
+     * @param players the {@code Player}s that participate
+     */
+    void setPlayers(Player[] players) {
+        this.players = players;
     }
 
 }

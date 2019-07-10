@@ -19,19 +19,20 @@ import java.util.logging.Logger;
 public class IterationHeuristic {
 
     private static final Logger LOGGER = Logger.getGlobal();
+
     private static final int MAX_DEPTH = 15;
     private static final double SAFETY_FACTOR = 0.90;
 
-    private final boolean useTimeLimit;
+    private static final Map<Integer, Long> avgTimes = new HashMap<>();
+    private static final Map<Integer, Integer> layerCount = new HashMap<>();
 
+    private final boolean useTimeLimit;
     private int currentDepth;
 
     // time only
     private long startTimeStamp;
     private long iterationTimeStamp;
     private int timeLimit;
-    private static final Map<Integer, Long> avgTimes = new HashMap<>();
-    private static final Map<Integer, Integer> layerCount = new HashMap<>();
 
     // depth only
     private int maxDepth;

@@ -11,7 +11,10 @@ public class Map {
 
     public final int width;
     public final int height;
-
+    /**
+     * The {@link Tile}s this map consists of. This is guaranteed to be non-empty.
+     */
+    private final Tile[][] tiles;
     /**
      * Amount of {@link Tile}s occupied by any {@link Player}.
      */
@@ -20,17 +23,10 @@ public class Map {
      * Amount of {@link Tile}s not being a hole, i.e. {@code Tile}s that can be occupied by a {@link Player}.
      */
     private int totalTiles;
-
     /**
      * The {@link Tile}s that have an expansion stone on them
      */
     private Set<Tile> expansionTiles;
-
-    /**
-     * The {@link Tile}s this map consists of. This is guaranteed to be non-empty.
-     */
-    private final Tile[][] tiles;
-
     /**
      * Precomputed lookup table that contains, for each tile on the {@code Map},
      * the {@link Tile}s which are within its bomb radius.
@@ -66,19 +62,6 @@ public class Map {
         this.totalTiles = totalTiles;
 
         this.expansionTiles = expansionTiles;
-    }
-
-    /**
-     * Extends the {@code Map} with the given transition.
-     *
-     * @param tile1      First {@code Map} of the transition
-     * @param direction1 {@code Direction} in integer representation in which the transition applies on the first tile
-     * @param tile2      Second {@code Map} of the transition
-     * @param direction2 {@code Direction} in integer representation in which the transition applies on the second tile
-     */
-    private void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
-        tile1.setTransition(tile2, direction1, direction2);
-        tile2.setTransition(tile1, direction2, direction1);
     }
 
     /**
@@ -192,6 +175,19 @@ public class Map {
         map.lineGeometry = map.new LineGeometry();
 
         return map;
+    }
+
+    /**
+     * Extends the {@code Map} with the given transition.
+     *
+     * @param tile1      First {@code Map} of the transition
+     * @param direction1 {@code Direction} in integer representation in which the transition applies on the first tile
+     * @param tile2      Second {@code Map} of the transition
+     * @param direction2 {@code Direction} in integer representation in which the transition applies on the second tile
+     */
+    private void addTransition(Tile tile1, int direction1, Tile tile2, int direction2) {
+        tile1.setTransition(tile2, direction1, direction2);
+        tile2.setTransition(tile1, direction2, direction1);
     }
 
     /**
@@ -345,7 +341,7 @@ public class Map {
 
         /**
          * Creates a new {@code BombGeometry} instance.
-         *
+         * <p>
          * Computes the static map bomb geometry. The affected areas are not computed, if the map is too large.
          */
         private BombGeometry() {

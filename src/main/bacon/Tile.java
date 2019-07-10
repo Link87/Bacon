@@ -12,6 +12,8 @@ import java.util.Arrays;
  */
 public class Tile {
 
+    public final int x;
+    public final int y;
     /**
      * Neighbouring {@code Tile}s in each {@link Direction}. May also contains extraneous transitions.
      * The array index corresponds to the {@link Direction#id}.
@@ -19,7 +21,6 @@ public class Tile {
      * If no transition is possible in a given direction, the value is set to {@code null}.
      */
     private final Tile[] transitions;
-
     /**
      * {@link Direction} in which the according transition arrives at the other tile.
      * The array index corresponds to the {@link Direction#id}.
@@ -27,14 +28,8 @@ public class Tile {
      * If no transition is possible in a given direction, the array element is set to {@link Direction#NULL_DIRECTION_ID}.
      */
     private final int[] arrivals;
-
     private int ownerId;
     private Property property;
-
-    public final int x;
-    public final int y;
-
-
     // the tile lines this tile is part of
     private TileLine row;
     private TileLine column;
@@ -67,58 +62,6 @@ public class Tile {
     }
 
     /**
-     * Sets the owner of this {@code Tile} and updates the players stones.
-     * Also updates fill level and player share of map lines.
-     *
-     * @param ownerId id of new owner of this {@code Tile}.
-     */
-    public void setOwnerId(int ownerId) {
-        int myId = Game.getGame().getCurrentState().getMe();
-        if (this.ownerId != Player.NULL_PLAYER_ID) {
-            Game.getGame().getCurrentState().getPlayerFromId(this.ownerId).removeStone(this);
-        }
-        if (ownerId != Player.NULL_PLAYER_ID) {
-            Game.getGame().getCurrentState().getPlayerFromId(ownerId).addStone(this);
-        }
-
-        if (this.ownerId == Player.NULL_PLAYER_ID && ownerId != Player.NULL_PLAYER_ID) {
-            this.row.changeFillLevel(1);
-            this.column.changeFillLevel(1);
-            this.diagonal.changeFillLevel(1);
-            this.indiagonal.changeFillLevel(1);
-        }
-        else if (this.ownerId != Player.NULL_PLAYER_ID && ownerId == Player.NULL_PLAYER_ID) {
-            this.row.changeFillLevel(-1);
-            this.column.changeFillLevel(-1);
-            this.diagonal.changeFillLevel(-1);
-            this.indiagonal.changeFillLevel(-1);
-        }
-        if (this.ownerId != myId && ownerId == myId) {
-            this.row.changePlayerShare(1);
-            this.column.changePlayerShare(1);
-            this.diagonal.changePlayerShare(1);
-            this.indiagonal.changePlayerShare(1);
-        }
-        else if (this.ownerId == myId && ownerId != myId) {
-            this.row.changePlayerShare(-1);
-            this.column.changePlayerShare(-1);
-            this.diagonal.changePlayerShare(-1);
-            this.indiagonal.changePlayerShare(-1);
-        }
-
-        this.ownerId = ownerId;
-    }
-
-    /**
-     * Sets the (special) {@link Property} this {@code Tile} has.
-     *
-     * @param property the {@code Property} of this {@code Tile}
-     */
-    public void setProperty(Property property) {
-        this.property = property;
-    }
-
-    /**
      * Sets the transition at the given {@code Direction}. The other {@code Tile} is either a neighbour
      * or declared as an additional transition partner in the map file.
      *
@@ -132,48 +75,21 @@ public class Tile {
     }
 
     /**
-     * Sets the horizontal {@link TileLine} the {@code Tile} is part of.
-     *
-     * @param row the horizontal {@code TileLine} of the {@code Tile}
-     */
-    void setRow(TileLine row) {
-        this.row = row;
-    }
-
-    /**
-     * Sets the vertical {@link TileLine} the {@code Tile} is part of.
-     *
-     * @param column the vertical {@code TileLine} of the {@code Tile}
-     */
-    void setColumn(TileLine column) {
-        this.column = column;
-    }
-
-    /**
-     * Sets the diagonal {@link TileLine} the {@code Tile} is part of.
-     *
-     * @param diagonal the horizontal {@code TileLine} of the {@code Tile}
-     */
-    void setDiagonal(TileLine diagonal) {
-        this.diagonal = diagonal;
-    }
-
-    /**
-     * Sets the backwards diagonal (indiagonal) {@link TileLine} the {@code Tile} is part of.
-     *
-     * @param indiagonal the indiagonal {@code TileLine} of the {@code Tile}
-     */
-    void setIndiagonal(TileLine indiagonal) {
-        this.indiagonal = indiagonal;
-    }
-
-    /**
      * Returns the horizontal {@link TileLine} the {@code Tile} is part of.
      *
      * @return the horizontal {@code TileLine} of the {@code Tile}
      */
     public TileLine getRow() {
         return row;
+    }
+
+    /**
+     * Sets the horizontal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param row the horizontal {@code TileLine} of the {@code Tile}
+     */
+    void setRow(TileLine row) {
+        this.row = row;
     }
 
     /**
@@ -186,6 +102,15 @@ public class Tile {
     }
 
     /**
+     * Sets the vertical {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param column the vertical {@code TileLine} of the {@code Tile}
+     */
+    void setColumn(TileLine column) {
+        this.column = column;
+    }
+
+    /**
      * Returns the diagonal {@link TileLine} the {@code Tile} is part of.
      *
      * @return the horizontal {@code TileLine} of the {@code Tile}
@@ -195,12 +120,30 @@ public class Tile {
     }
 
     /**
+     * Sets the diagonal {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param diagonal the horizontal {@code TileLine} of the {@code Tile}
+     */
+    void setDiagonal(TileLine diagonal) {
+        this.diagonal = diagonal;
+    }
+
+    /**
      * Returns the backwards diagonal (indiagonal) {@link TileLine} the {@code Tile} is part of.
      *
      * @return the indiagonal {@code TileLine} of the {@code Tile}
      */
     public TileLine getIndiagonal() {
         return indiagonal;
+    }
+
+    /**
+     * Sets the backwards diagonal (indiagonal) {@link TileLine} the {@code Tile} is part of.
+     *
+     * @param indiagonal the indiagonal {@code TileLine} of the {@code Tile}
+     */
+    void setIndiagonal(TileLine indiagonal) {
+        this.indiagonal = indiagonal;
     }
 
     /**
@@ -229,7 +172,6 @@ public class Tile {
         }
 
     }
-
 
     /**
      * Returns the {@code Tile} the transition in the given {@code Direction} leads to.
@@ -263,12 +205,62 @@ public class Tile {
     }
 
     /**
+     * Sets the owner of this {@code Tile} and updates the players stones.
+     * Also updates fill level and player share of map lines.
+     *
+     * @param ownerId id of new owner of this {@code Tile}.
+     */
+    public void setOwnerId(int ownerId) {
+        int myId = Game.getGame().getCurrentState().getMe();
+        if (this.ownerId != Player.NULL_PLAYER_ID) {
+            Game.getGame().getCurrentState().getPlayerFromId(this.ownerId).removeStone(this);
+        }
+        if (ownerId != Player.NULL_PLAYER_ID) {
+            Game.getGame().getCurrentState().getPlayerFromId(ownerId).addStone(this);
+        }
+
+        if (this.ownerId == Player.NULL_PLAYER_ID && ownerId != Player.NULL_PLAYER_ID) {
+            this.row.changeFillLevel(1);
+            this.column.changeFillLevel(1);
+            this.diagonal.changeFillLevel(1);
+            this.indiagonal.changeFillLevel(1);
+        } else if (this.ownerId != Player.NULL_PLAYER_ID && ownerId == Player.NULL_PLAYER_ID) {
+            this.row.changeFillLevel(-1);
+            this.column.changeFillLevel(-1);
+            this.diagonal.changeFillLevel(-1);
+            this.indiagonal.changeFillLevel(-1);
+        }
+        if (this.ownerId != myId && ownerId == myId) {
+            this.row.changePlayerShare(1);
+            this.column.changePlayerShare(1);
+            this.diagonal.changePlayerShare(1);
+            this.indiagonal.changePlayerShare(1);
+        } else if (this.ownerId == myId && ownerId != myId) {
+            this.row.changePlayerShare(-1);
+            this.column.changePlayerShare(-1);
+            this.diagonal.changePlayerShare(-1);
+            this.indiagonal.changePlayerShare(-1);
+        }
+
+        this.ownerId = ownerId;
+    }
+
+    /**
      * Returns the {@code Property} this {@code Tile} has.
      *
      * @return the {@code Property} of this {@code Tile}
      */
     public Property getProperty() {
         return this.property;
+    }
+
+    /**
+     * Sets the (special) {@link Property} this {@code Tile} has.
+     *
+     * @param property the {@code Property} of this {@code Tile}
+     */
+    public void setProperty(Property property) {
+        this.property = property;
     }
 
     /**

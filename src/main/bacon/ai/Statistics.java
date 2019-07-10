@@ -18,9 +18,25 @@ class Statistics {
 
     private final Map<Integer, Integer> stateCounts;
     private final long startTimeStamp;
-    private long stateTimeStamp;
     private final List<Integer> stateTimes;
+    private long stateTimeStamp;
     private boolean inMeasuredState;
+
+    private Statistics() {
+        this.stateCounts = new HashMap<>();
+        this.stateTimes = new ArrayList<>();
+        this.startTimeStamp = System.nanoTime();
+        this.inMeasuredState = false;
+    }
+
+    /**
+     * Returns the default {@code Statistics} instance.
+     *
+     * @return the {@code Statistics} instance
+     */
+    static Statistics getStatistics() {
+        return INSTANCE;
+    }
 
     /**
      * Initializes a new {@code Statistics} instance.
@@ -118,21 +134,5 @@ class Statistics {
         if (this.stateCounts.size() > 0)
             return this.stateCounts.get(this.stateCounts.size() - 1);
         else return 0;
-    }
-
-    /**
-     * Returns the default {@code Statistics} instance.
-     *
-     * @return the {@code Statistics} instance
-     */
-    static Statistics getStatistics() {
-        return INSTANCE;
-    }
-
-    private Statistics() {
-        this.stateCounts = new HashMap<>();
-        this.stateTimes = new ArrayList<>();
-        this.startTimeStamp = System.nanoTime();
-        this.inMeasuredState = false;
     }
 }

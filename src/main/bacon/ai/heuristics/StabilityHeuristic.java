@@ -11,26 +11,24 @@ import java.util.Set;
  */
 public class StabilityHeuristic {
 
-    private StabilityHeuristic() {}
+    private static final Set<Tile> horzStbl = new HashSet<>();
 
     /*
     Sets that solely exist, to avoid huge method signatures. These are reset after each usage.
      */
-
-    private static final Set<Tile> horzStbl = new HashSet<>();
     private static final Set<Tile> vertStbl = new HashSet<>();
     private static final Set<Tile> diagStbl = new HashSet<>();
     private static final Set<Tile> indiagStbl = new HashSet<>();
-
     private static final Set<Tile> horzFinal = new HashSet<>();
     private static final Set<Tile> vertFinal = new HashSet<>();
     private static final Set<Tile> diagFinal = new HashSet<>();
     private static final Set<Tile> indiagFinal = new HashSet<>();
-
     private static final Set<Tile> tmpHorz = new HashSet<>();
     private static final Set<Tile> tmpVert = new HashSet<>();
     private static final Set<Tile> tmpDiag = new HashSet<>();
     private static final Set<Tile> tmpIndiag = new HashSet<>();
+
+    private StabilityHeuristic() {}
 
     /**
      * Calculates the stability heuristics of the given {@link bacon.GameState} and {@link bacon.Player}.
@@ -142,7 +140,7 @@ public class StabilityHeuristic {
 
     /**
      * Finds arrival direction and adds the {@link Tile} to the according stability direction.
-     *
+     * <p>
      * Subroutine for the stability heuristic.
      *
      * @param tile      the {@code Tile} to be examined

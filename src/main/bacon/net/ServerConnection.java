@@ -1,12 +1,12 @@
 package bacon.net;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A connection to the game server.

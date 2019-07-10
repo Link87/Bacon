@@ -6,10 +6,12 @@ import bacon.ai.heuristics.Heuristics;
 import bacon.ai.heuristics.LegalMoves;
 import bacon.ai.heuristics.PancakeWatchdog;
 import bacon.ai.heuristics.StabilityHeuristic;
-import bacon.move.*;
+import bacon.move.BuildMove;
+import bacon.move.Move;
+import bacon.move.OverrideMove;
+import bacon.move.RegularMove;
 
 import java.util.*;
-import java.lang.Math;
 
 /**
  * A node in the search tree.
@@ -59,14 +61,6 @@ public class BRSNode {
      */
     private final Move.Type type;
     /**
-     * The best move that was found so far in all child nodes.
-     */
-    private BuildMove bestMove;
-    /**
-     * {@code true} if this node is a max node, {@code false} if this node is a min node.
-     */
-    private boolean isMaxNode;
-    /**
      * The {@link GameState} the node is in.
      */
     private final GameState state;
@@ -74,6 +68,14 @@ public class BRSNode {
      * The watchdog timer that triggers, when time is about to run out.
      */
     private final PancakeWatchdog watchdog;
+    /**
+     * The best move that was found so far in all child nodes.
+     */
+    private BuildMove bestMove;
+    /**
+     * {@code true} if this node is a max node, {@code false} if this node is a min node.
+     */
+    private boolean isMaxNode;
     /**
      * The evaluation value of this node.
      */
@@ -147,6 +149,15 @@ public class BRSNode {
 
         this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
+    }
+
+    /**
+     * Returns the maximum depth that was reached in the search.
+     *
+     * @return the maximum reached search depth
+     */
+    static int getMaximumReachedDepth() {
+        return BRSNode.reachedDepth;
     }
 
     /**
@@ -537,15 +548,6 @@ public class BRSNode {
         if (!legalRegularMoves.isEmpty()) return legalRegularMoves;
         else if (!legalOverrideMoves.isEmpty()) return legalOverrideMoves;
         else return Collections.emptySet();
-    }
-
-    /**
-     * Returns the maximum depth that was reached in the search.
-     *
-     * @return the maximum reached search depth
-     */
-    static int getMaximumReachedDepth() {
-        return BRSNode.reachedDepth;
     }
 
     /**
