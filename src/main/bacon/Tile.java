@@ -61,8 +61,8 @@ public class Tile {
         this.x = x;
         this.y = y;
 
-        this.transitions = new Tile[Direction.values().length];
-        this.arrivals = new int[Direction.values().length];
+        this.transitions = new Tile[Direction.DIRECTION_COUNT];
+        this.arrivals = new int[Direction.DIRECTION_COUNT];
         Arrays.fill(this.arrivals, Direction.NULL_DIRECTION_ID);
     }
 
@@ -215,16 +215,16 @@ public class Tile {
         setOwnerId(Player.NULL_PLAYER_ID);
 
         // remove transition from neighbors to bombed tile
-        for (int direction = 0; direction < Direction.values().length; direction++) {
+        for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
             Tile neighbor = this.getTransition(direction);
             if (neighbor == null) continue;
-            for (int neighborDirection = 0; neighborDirection < Direction.values().length; neighborDirection++) {
+            for (int neighborDirection = 0; neighborDirection < Direction.DIRECTION_COUNT; neighborDirection++) {
                 Tile t = neighbor.getTransition(neighborDirection);
                 if (t == this) neighbor.setTransition(null, neighborDirection, Direction.NULL_DIRECTION_ID);
             }
         }
         // remove transitions from bombed tile to neighbors
-        for (int direction = 0; direction < Direction.values().length; direction++) {
+        for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
             this.setTransition(null, direction, Direction.NULL_DIRECTION_ID);
         }
 

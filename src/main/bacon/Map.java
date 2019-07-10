@@ -401,7 +401,7 @@ public class Map {
                         continue;
                     }
 
-                    for (int lineDirection = 0; lineDirection < Direction.values().length; lineDirection++) {
+                    for (int lineDirection = 0; lineDirection < Direction.DIRECTION_COUNT; lineDirection++) {
                         TileLine tileLine;
                         if (lineDirection == Direction.UP.id || lineDirection == Direction.DOWN.id) {
                             if (originTile.getColumn() != null) {

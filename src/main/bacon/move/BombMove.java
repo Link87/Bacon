@@ -83,7 +83,7 @@ public class BombMove extends Move {
         // radius-layer i-1 and checks whether this entry has already appeared. If not, stacks this entry onto m[i]
         for (int i = 0; i < radius; i++) {
             for (Tile t : currentTiles) {
-                for (int direction = 0; direction < Direction.values().length; direction++) {
+                for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
                     if (t.getTransition(direction) != null) {
                         if (!bombSet.contains(t.getTransition(direction))) {
                             bombSet.add(t.getTransition(direction));

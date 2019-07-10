@@ -45,9 +45,9 @@ public class BuildMove extends Move {
         if (tile.getProperty() == Tile.Property.HOLE) return false;
 
         // farthest reachable tile in each direction
-        Tile[] surrounding = new Tile[Direction.values().length];
+        Tile[] surrounding = new Tile[Direction.DIRECTION_COUNT];
         // direction in which to walk for each starting direction
-        int[] searchDirections = new int[Direction.values().length];
+        int[] searchDirections = new int[Direction.DIRECTION_COUNT];
         for (int i = 0; i < surrounding.length; i++) {
             surrounding[i] = tile;
             searchDirections[i] = i;
@@ -79,7 +79,7 @@ public class BuildMove extends Move {
                 } else emptyOrHoleCount++;     // If this next tile is a hole, we can stop searching in this direction
             }
 
-            if (emptyOrHoleCount >= Direction.values().length)
+            if (emptyOrHoleCount >= Direction.DIRECTION_COUNT)
                 break;    // If we've hit a barrier in all 8 directions, we can stop searching altogether and declare the move illegal
             steps++;    // Increment radius from the center
         }
@@ -99,7 +99,7 @@ public class BuildMove extends Move {
 
         Set<Tile> turnOver = new HashSet<>();
 
-        for (int direction = 0; direction < Direction.values().length; direction++) {
+        for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
             List<Tile> path = new ArrayList<>();   // path in the given direction
             Tile last = originTile;                   // last tile of the path
             int searchDirection = direction;    // the direction we're searching in

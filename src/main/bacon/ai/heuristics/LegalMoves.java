@@ -65,7 +65,7 @@ public class LegalMoves {
 
         for (Tile tile : state.getPlayerFromId(playerId).getStones()) { // iterates over all of the player's stones
 
-            for (int direction = 0; direction < Direction.values().length; direction++) {
+            for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
                 int steps = 0; //counts steps from our own stone currently under consideration
                 int searchDirection = direction;
                 Tile last = tile;
@@ -127,7 +127,7 @@ public class LegalMoves {
 
         for (Tile ogTile : state.getPlayerFromId(playerId).getStones()) { // iterates over all of the player's stones
 
-            for (int ogDirection = 0; ogDirection < Direction.values().length; ogDirection++) {
+            for (int ogDirection = 0; ogDirection < Direction.DIRECTION_COUNT; ogDirection++) {
                 int searchDirection = ogDirection;
                 Tile last = ogTile;
 

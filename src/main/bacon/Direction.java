@@ -70,6 +70,10 @@ public enum Direction {
      * Integer value that represents an invalid {@code Direction}.
      */
     public static final int NULL_DIRECTION_ID = -1;
+    /**
+     * Number of {@code Direction} variants.
+     */
+    public static final int DIRECTION_COUNT = 8;
 
     static {
         // initialize lookup tables
