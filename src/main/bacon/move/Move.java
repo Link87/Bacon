@@ -12,10 +12,10 @@ import java.nio.ByteBuffer;
  * A {@code Move} can be done and undone, as described in the <i>command</i> pattern.
  */
 public abstract class Move {
-    GameState state;
-    int playerId;
-    int xPos;
-    int yPos;
+    final GameState state;
+    final int playerId;
+    final int xPos;
+    final int yPos;
     Type type;
 
     private double value;

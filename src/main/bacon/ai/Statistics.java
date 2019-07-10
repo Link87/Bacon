@@ -16,10 +16,10 @@ class Statistics {
 
     private static Statistics INSTANCE = new Statistics();
 
-    private Map<Integer, Integer> stateCounts;
-    private long startTimeStamp;
+    private final Map<Integer, Integer> stateCounts;
+    private final long startTimeStamp;
     private long stateTimeStamp;
-    private List<Integer> stateTimes;
+    private final List<Integer> stateTimes;
     private boolean inMeasuredState;
 
     /**

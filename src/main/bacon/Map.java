@@ -341,7 +341,7 @@ public class Map {
          * <p>
          * The two-dimensional list index refers to the target coordinates.
          */
-        List<List<Set<Tile>>> affectedTiles;
+        final List<List<Set<Tile>>> affectedTiles;
 
         /**
          * Creates a new {@code BombGeometry} instance.
@@ -384,7 +384,7 @@ public class Map {
         /**
          * The {@link TileLine}s of the {@link Map}.
          */
-        List<TileLine> tileLines;
+        final List<TileLine> tileLines;
 
         /**
          * Creates a new {@code LineGeometry} instance. Calculates all {@link TileLine}s of the {@link Map}.

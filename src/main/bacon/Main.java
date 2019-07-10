@@ -93,7 +93,7 @@ public class Main {
     /**
      * A {@link Formatter} that only emits the log level and message to minimize the information other teams can get.
      */
-    public static class PrivacyFormatter extends Formatter {
+    static class PrivacyFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
             return record.getLevel() + ": " + formatMessage(record) + "\n";

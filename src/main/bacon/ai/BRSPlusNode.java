@@ -22,8 +22,8 @@ public class BRSPlusNode {
     private static int branchingFactor;
     private BuildMove bestMove;
     private boolean isMaxNode;
-    private GameState state;
-    private PancakeWatchdog watchdog;
+    private final GameState state;
+    private final PancakeWatchdog watchdog;
     /**
      * Type of move that lead to this node
      */
@@ -95,7 +95,7 @@ public class BRSPlusNode {
     /**
      * Evaluates a node. Handles cases of "this should be a max/min Node but is actually a min/max node"
      */
-    public void evaluateNode() {
+    private void evaluateNode() {
         if (this.isMaxNode) {
             if (!evalMaxNode()) {
                 this.isMaxNode = false;
@@ -509,12 +509,7 @@ public class BRSPlusNode {
                 }
             }
 
-            worstMoves.sort(new Comparator<BuildMove>() {
-                @Override
-                public int compare(BuildMove buildMove, BuildMove t1) {
-                    return (int) (buildMove.getValue() - t1.getValue());
-                }
-            });
+            worstMoves.sort((buildMove, t1) -> (int) (buildMove.getValue() - t1.getValue()));
 
             while (moveIterator.hasNext()) {
                 if (this.watchdog.isPancake()) break;

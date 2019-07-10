@@ -40,7 +40,7 @@ public class Game {
     /**
      * Contains all stateful information about the game.
      */
-    private GameState currentGameState = new GameState();
+    private final GameState currentGameState = new GameState();
 
     /**
      * Returns the singleton {@code Game} instance.

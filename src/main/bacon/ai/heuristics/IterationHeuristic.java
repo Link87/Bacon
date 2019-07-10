@@ -30,8 +30,8 @@ public class IterationHeuristic {
     private long startTimeStamp;
     private long iterationTimeStamp;
     private int timeLimit;
-    private static Map<Integer, Long> avgTimes = new HashMap<>();
-    private static Map<Integer, Integer> layerCount = new HashMap<>();
+    private static final Map<Integer, Long> avgTimes = new HashMap<>();
+    private static final Map<Integer, Integer> layerCount = new HashMap<>();
 
     // depth only
     private int maxDepth;

@@ -19,7 +19,7 @@ public class Player {
     private int overrideStoneCount;
     private int bombCount;
     private boolean disqualified;
-    private Set<Tile> stones;
+    private final Set<Tile> stones;
 
     /**
      * Creates a new {@code Player} instance.

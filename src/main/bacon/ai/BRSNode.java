@@ -69,11 +69,11 @@ public class BRSNode {
     /**
      * The {@link GameState} the node is in.
      */
-    private GameState state;
+    private final GameState state;
     /**
      * The watchdog timer that triggers, when time is about to run out.
      */
-    private PancakeWatchdog watchdog;
+    private final PancakeWatchdog watchdog;
     /**
      * The evaluation value of this node.
      */

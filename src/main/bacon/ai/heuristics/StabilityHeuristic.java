@@ -17,20 +17,20 @@ public class StabilityHeuristic {
     Sets that solely exist, to avoid huge method signatures. These are reset after each usage.
      */
 
-    private static Set<Tile> horzStbl = new HashSet<>();
-    private static Set<Tile> vertStbl = new HashSet<>();
-    private static Set<Tile> diagStbl = new HashSet<>();
-    private static Set<Tile> indiagStbl = new HashSet<>();
+    private static final Set<Tile> horzStbl = new HashSet<>();
+    private static final Set<Tile> vertStbl = new HashSet<>();
+    private static final Set<Tile> diagStbl = new HashSet<>();
+    private static final Set<Tile> indiagStbl = new HashSet<>();
 
-    private static Set<Tile> horzFinal = new HashSet<>();
-    private static Set<Tile> vertFinal = new HashSet<>();
-    private static Set<Tile> diagFinal = new HashSet<>();
-    private static Set<Tile> indiagFinal = new HashSet<>();
+    private static final Set<Tile> horzFinal = new HashSet<>();
+    private static final Set<Tile> vertFinal = new HashSet<>();
+    private static final Set<Tile> diagFinal = new HashSet<>();
+    private static final Set<Tile> indiagFinal = new HashSet<>();
 
-    private static Set<Tile> tmpHorz = new HashSet<>();
-    private static Set<Tile> tmpVert = new HashSet<>();
-    private static Set<Tile> tmpDiag = new HashSet<>();
-    private static Set<Tile> tmpIndiag = new HashSet<>();
+    private static final Set<Tile> tmpHorz = new HashSet<>();
+    private static final Set<Tile> tmpVert = new HashSet<>();
+    private static final Set<Tile> tmpDiag = new HashSet<>();
+    private static final Set<Tile> tmpIndiag = new HashSet<>();
 
     /**
      * Calculates the stability heuristics of the given {@link bacon.GameState} and {@link bacon.Player}.

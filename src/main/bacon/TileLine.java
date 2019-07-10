@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class TileLine {
 
-    private Set<Tile> lineTiles;
+    private final Set<Tile> lineTiles;
     private int lineSize;
     private int fillLevel;
     private int playerShare;
@@ -87,7 +87,7 @@ public class TileLine {
      *
      * @return a set of {@code Tile}s being in the {@code TileLine}
      */
-    public Set<Tile> getLineTiles() {
+    Set<Tile> getLineTiles() {
         return Collections.unmodifiableSet(lineTiles);
     }
 
