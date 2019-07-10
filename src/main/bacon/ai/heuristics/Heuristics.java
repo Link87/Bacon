@@ -119,7 +119,7 @@ public class Heuristics {
                 "bombingPhaseHeuristic is a move heuristic: cannot make a move without bombs";
 
         for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
-            if (i + 1 == move.getPlayerId()) {
+            if (i == move.getPlayerId() - 1) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             } else {
                 rivalry[i] = (rivalBombCount[move.getPlayerId() - 1] * (pow(2 * bombRadius + 1, 2))) /
@@ -133,6 +133,8 @@ public class Heuristics {
 
         // all tiles within one bomb radius of the bombing target
         Set<Tile> bombSet = state.getMap().getTileAt(move.getX(), move.getY()).getBombEffect();
+        // in case precomputation of bombEffect failed (e.g. bomb radius too big), bombEffect is computed again
+        if (bombSet.isEmpty() == true) bombSet = BombMove.getAffectedTiles(state.getMap().getTileAt(move.getX(), move.getY()), bombRadius);
 
         for (Tile t : bombSet) {   // we examine each tile within the bomb radius for ownership
             // and assign damage to each rival in case our stone is bombed

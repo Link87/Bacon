@@ -314,16 +314,24 @@ public class Map {
     }
 
     /**
-     * Sets the bomb effect of each tile of the map at the beginning of the game
+     * Sets the bomb effect of each tile of the map at the beginning of the game.
+     * Also calculates the average bomb area for this map.
      * @param map current map
      */
     private static void bombGeometry(Map map) {
+        int tileCount = 1;
+        int bombEffectSum = 0;
         if(map.width * map.height * Math.pow(2 * Game.getGame().getBombRadius() + 1, 2) <= 100000) {
             for (int x = 0; x < map.width; x++) {
                 for (int y = 0; y < map.height; y++) {
-                    if (map.getTileAt(x,y) != null) map.getTileAt(x, y).setBombEffect(BombMove.getAffectedTiles(map.getTileAt(x, y), Game.getGame().getBombRadius()));
+                    if (map.getTileAt(x,y) != null) {
+                        map.getTileAt(x, y).setBombEffect(BombMove.getAffectedTiles(map.getTileAt(x, y), Game.getGame().getBombRadius()));
+                        bombEffectSum += map.getTileAt(x,y).getBombEffect().size();
+                        tileCount++;
+                    }
                 }
             }
+            map.avgBombArea = bombEffectSum/tileCount;
         }
     }
 
