@@ -13,7 +13,7 @@ public class MapBombGeometryTest {
         Game.getGame().readMap(Maps.EXAMPLE_BOMBGEOMETRY);
         Map map = Game.getGame().getCurrentState().getMap();
 
-        Set<Tile> bombSet = map.getAffectedTiles(map.getTileAt(7,7));
+        Set<Tile> bombSet = map.getTileAt(7,7).getBombEffect();
 
         assertEquals("BombSet has the wrong size", 9, bombSet.size());
 

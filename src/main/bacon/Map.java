@@ -27,16 +27,16 @@ public class Map {
      * The {@link Tile}s that have an expansion stone on them
      */
     private Set<Tile> expansionTiles;
-    /**
-     * Precomputed lookup table that contains, for each tile on the {@code Map},
-     * the {@link Tile}s which are within its bomb radius.
-     */
-    private BombGeometry bombGeometry;
 
     /**
      * Keeps track of all the {@link TileLine} in the {@code Map}.
      */
     private LineGeometry lineGeometry;
+
+    /**
+     * Average number of tiles bombed in a bomb move
+     */
+    private double avgBombArea;
 
 
     /**
@@ -73,7 +73,7 @@ public class Map {
      * The {@code Map} definition can be followed with a listing of transitions that also have to follow the specification.
      * Transitions have to be in separated lines.
      * <p>
-     * The {@link LineGeometry} and {@link BombGeometry} are calculated.
+     * The {@link LineGeometry} and bombEffect of each tile are calculated.
      *
      * @param width  width of the {@code Map}
      * @param height height of the {@code Map}
@@ -168,8 +168,8 @@ public class Map {
             );
         }
 
-        // compute the static bomb geometry
-        map.bombGeometry = map.new BombGeometry();
+        // compute the bomb effect of each tile; stays the same during the whole game
+        bombGeometry(map);
 
         // compute the static line geometry
         map.lineGeometry = map.new LineGeometry();
@@ -305,19 +305,6 @@ public class Map {
     }
 
     /**
-     * Returns the {@link Tile}s that are affected by a bomb thrown onto the given tile.
-     * <p>
-     * In contrast to {@link BombMove#getAffectedTiles(Tile, int)}, this method uses precomputed lookup tables
-     * to return a set of tiles. Using this method is generally faster than computing the set of affected tiles again.
-     *
-     * @param target the {@code Tile} whose surroundings is to be examined
-     * @return the {@link Set} of {@code Tile}s within bomb radius of the {@code Tile}
-     */
-    Set<Tile> getAffectedTiles(Tile target) {
-        return bombGeometry.getAffectedTilesAt(target.x, target.y);
-    }
-
-    /**
      * Returns the {@link TileLine}s of the {@code Map}.
      *
      * @return a {@link List} of {@code TileLine}s of the {@code Map}
@@ -327,50 +314,20 @@ public class Map {
     }
 
     /**
-     * Contains lookup tables for the {@link Tile}s affected by a {@link BombMove}.
+     * Sets the bomb effect of each tile of the map at the beginning of the game
+     * @param map current map
      */
-    private class BombGeometry {
-
-        /**
-         * Contains the {@link Tile}s that are affected by a {@link BombMove},
-         * for each of the {@code Tile}s on the {@link Map}.
-         * <p>
-         * The two-dimensional list index refers to the target coordinates.
-         */
-        final List<List<Set<Tile>>> affectedTiles;
-
-        /**
-         * Creates a new {@code BombGeometry} instance.
-         * <p>
-         * Computes the static map bomb geometry. The affected areas are not computed, if the map is too large.
-         */
-        private BombGeometry() {
-            this.affectedTiles = new ArrayList<>();
-            for (int x = 0; x < width; x++) {
-                List<Set<Tile>> column = new ArrayList<>();
-                for (int y = 0; y < height; y++) {
-                    if (width * height * Math.pow(2 * Game.getGame().getBombRadius() + 1, 2) > 100000) {
-                        column.add(new HashSet<>());
-                    } else {
-                        column.add(y, BombMove.getAffectedTiles(Map.this.getTileAt(x, y), Game.getGame().getBombRadius()));
-                    }
+    private static void bombGeometry(Map map) {
+        if(map.width * map.height * Math.pow(2 * Game.getGame().getBombRadius() + 1, 2) <= 100000) {
+            for (int x = 0; x < map.width; x++) {
+                for (int y = 0; y < map.height; y++) {
+                    if (map.getTileAt(x,y) != null) map.getTileAt(x, y).setBombEffect(BombMove.getAffectedTiles(map.getTileAt(x, y), Game.getGame().getBombRadius()));
                 }
-                this.affectedTiles.add(x, column);
             }
         }
-
-        /**
-         * Returns the {@link Tile}s that are affected by a bomb thrown onto the given coordinates.
-         *
-         * @param x the horizontal coordinate
-         * @param y the vertical coordinate
-         * @return a {@link Set} of {@code Tile}s that are affected
-         */
-        private Set<Tile> getAffectedTilesAt(int x, int y) {
-            return this.affectedTiles.get(x).get(y);
-        }
-
     }
+
+
 
     /**
      * Contains the {@link TileLine}s of the {@link Map}.

@@ -88,7 +88,7 @@ public class BombMove extends Move {
         int radius = state.getBombRadius();
         Tile target = state.getMap().getTileAt(this.xPos, this.yPos);
 
-        Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
+        Set<Tile> bombSet = target.getBombEffect();
 
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
         bombSet.forEach(Tile::bombTile);

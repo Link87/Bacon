@@ -1,6 +1,7 @@
 package bacon;
 
 import java.util.Arrays;
+import java.util.Set;
 
 /**
  * A tile on the map.
@@ -30,6 +31,8 @@ public class Tile {
     private final int[] arrivals;
     private int ownerId;
     private Property property;
+    // tiles that would be affected if this tile was bombed
+    private Set<Tile> bombEffect;
     // the tile lines this tile is part of
     private TileLine row;
     private TileLine column;
@@ -72,6 +75,24 @@ public class Tile {
     void setTransition(Tile other, int direction, int arrival) {
         this.transitions[direction] = other;
         this.arrivals[direction] = arrival;
+    }
+
+    /**
+     * Returns the tiles within bomb radius of this tile.
+     *
+     * @return the tiles within bomb radius of this tile.
+     */
+    public Set<Tile> getBombEffect() {
+        return bombEffect;
+    }
+
+    /**
+     * Sets the tiles within bomb radius of this tile.
+     *
+     * @param bombEffect the tiles within bomb radius of this tile.
+     */
+    void setBombEffect(Set<Tile> bombEffect) {
+        this.bombEffect = bombEffect;
     }
 
     /**
