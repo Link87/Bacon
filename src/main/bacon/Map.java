@@ -24,6 +24,10 @@ public class Map {
      */
     private int totalTiles;
     /**
+     * The {@link Tile}s that are free, i.e. not occupied by any player nor expansion stone and isn't a hole
+     */
+    private Set<Tile> freeTiles;
+    /**
      * The {@link Tile}s that have an expansion stone on them
      */
     private Set<Tile> expansionTiles;
@@ -50,7 +54,7 @@ public class Map {
      * @param expansionTiles a set containing those tiles, that have an expansion stone on them.
      *                       This is required and asserted to be a subset of {@code tiles}.
      */
-    private Map(Tile[][] tiles, int initOccupied, int totalTiles, Set<Tile> expansionTiles) {
+    private Map(Tile[][] tiles, int initOccupied, int totalTiles, Set<Tile> freeTiles, Set<Tile> expansionTiles) {
         this.tiles = tiles;
 
         assert tiles.length > 0 && tiles[0].length > 0 : "Dimensions of tiles have to be positive";
@@ -61,6 +65,7 @@ public class Map {
         this.occupiedTiles = initOccupied;
         this.totalTiles = totalTiles;
 
+        this.freeTiles = freeTiles;
         this.expansionTiles = expansionTiles;
     }
 
@@ -84,6 +89,7 @@ public class Map {
         Tile[][] tiles = new Tile[width][height];
         int occupiedCount = 0;
         int totalCount = 0;
+        Set<Tile> freeTiles = new HashSet<>();
         Set<Tile> expansionTiles = new HashSet<>();
 
         // putting tile information into the array
@@ -96,6 +102,7 @@ public class Map {
                 if (symbol == '0') {
                     // Tile is empty
                     tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.DEFAULT, w, h);
+                    freeTiles.add(tiles[w][h]);
                 } else if (symbol <= '8' && symbol > '0') {
                     // Tile has a Stone (an owner)
                     int playerId = Character.getNumericValue(symbol);
@@ -109,6 +116,8 @@ public class Map {
                     if (symbol == 'x') {
                         occupiedCount++;
                         expansionTiles.add(tiles[w][h]);
+
+                    if (symbol == 'b' || symbol == 'c' || symbol == 'i') freeTiles.add(tiles[w][h]);
                     }
                 } else {
                     // Tile is a hole
@@ -156,7 +165,7 @@ public class Map {
             }
         }
 
-        Map map = new Map(tiles, occupiedCount, totalCount, expansionTiles);
+        Map map = new Map(tiles, occupiedCount, totalCount, freeTiles, expansionTiles);
 
         // adding additional transitions from map specification
         for (int l = height; l < lines.length; l++) {
@@ -273,6 +282,35 @@ public class Map {
      */
     public void addOccupiedTiles(int d) {
         this.occupiedTiles += d;
+    }
+
+    /**
+     * Adds a free tile to the map
+     * <p>
+     * Use this to undo certain moves.
+     *
+     * @param tile the {@code Tile} that has just been freed
+     */
+    public void addFreeTile(Tile tile) {
+        freeTiles.add(tile);
+    }
+
+    /**
+     * Removes a free tile from the map
+     *
+     * @param tile the {@code Tile} that previously was free
+     */
+    public void removeFreeTile(Tile tile) {
+        freeTiles.remove(tile);
+    }
+
+    /**
+     * Returns current free tiles on the {@code Map}.
+     *
+     * @return a set containing the current free tiles on the {@code Map}
+     */
+    public Set<Tile> getFreeTiles() {
+        return freeTiles;
     }
 
     /**
