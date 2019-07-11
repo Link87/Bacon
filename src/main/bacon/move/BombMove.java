@@ -82,15 +82,12 @@ public class BombMove extends Move {
      * Executes this {@code BombMove}.
      * <p>
      * This method calculates all {@link Tile}s that need to be bombed with {@link Tile#bombTile()}.
-     * Does nothing instead, if {@link #isLegal()} method determines the move to be illegal.
      */
     public void doMove() {
         int radius = state.getBombRadius();
         Tile target = state.getMap().getTileAt(this.xPos, this.yPos);
 
-        Set<Tile> bombSet = target.getBombEffect();
-        // in case precomputation of bombEffect failed (e.g. bomb radius too big), bombEffect is computed again
-        if (bombSet.isEmpty() == true) bombSet = BombMove.getAffectedTiles(target, radius);
+        Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
 
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
         bombSet.forEach(Tile::bombTile);
@@ -107,5 +104,26 @@ public class BombMove extends Move {
     @Override
     public void undoMove() {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Executes this {@code BombMove} using precomputed BombGeometry
+     *
+     * Faster than doMove() but occasionally wrong. Only use for heuristics/random rollouts; DO NOT USE for actual moves,
+     * will lead to disqualifications otherwise
+     */
+    public void quickDoMove() {
+        int radius = state.getBombRadius();
+        Tile target = state.getMap().getTileAt(this.xPos, this.yPos);
+
+        Set<Tile> bombSet = target.getBombEffect();
+        // in case precomputation of bombEffect failed (e.g. bomb radius too big), bombEffect is computed again
+        if (bombSet.isEmpty() == true) bombSet = BombMove.getAffectedTiles(target, radius);
+
+        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
+        bombSet.forEach(Tile::bombTile);
+
+        // Subtract 1 bomb from player's inventory
+        this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
     }
 }
