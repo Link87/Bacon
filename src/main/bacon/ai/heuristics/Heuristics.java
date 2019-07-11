@@ -120,28 +120,43 @@ public class Heuristics {
      */
     public static double bombingPhaseHeuristic(GameState state, BombMove move) {
         int playerStoneCount = state.getPlayerFromId(move.getPlayerId()).getStoneCount();
+        int playerBombCount = state.getPlayerFromId(move.getPlayerId()).getBombCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
+        int[] rankPoints = {-25,-11,-5,-2,-1,0,0,0};
 
         double[] rivalry = new double[totalPlayer]; // rivalry factor between the player and each of his rivals (all other players).
         // The closer in stone count the stronger the rivalry.
-        int[] rivalBombCount = new int[totalPlayer]; // the number of bombs of each rival
         int[] rivalStoneCount = new int[totalPlayer]; // the total number of stones of each rival
+        double[] rivalRankPoints = new double[totalPlayer]; // the rank-points (25p, 11p, ...) of each rival if the game ended now
 
         for (int i = 0; i < totalPlayer; i++) { // calculates global variables of the current state
-            rivalBombCount[i] = state.getPlayerFromId(i + 1).getBombCount();
             rivalStoneCount[i] = state.getPlayerFromId(i + 1).getStoneCount();
+            rivalRankPoints[i] = state.getPlayerFromId(i + 1).getStoneCount();
         }
 
-        assert rivalBombCount[move.getPlayerId() - 1] > 0 :
+        // rivalRankPoints is initialized as stone count and gradually gets replaced by rank-points*(-1) in this loop
+        for (int i = 0; i < totalPlayer; i++) {
+            double maxStoneCount = 0;
+            int maxRankPlayerId = 0;
+            for (int j=0; j < totalPlayer; j++) {
+                if (rivalRankPoints[j] > maxStoneCount) {
+                    maxStoneCount = rivalRankPoints[j];
+                    maxRankPlayerId = j;
+                }
+            }
+            rivalRankPoints[maxRankPlayerId] = rankPoints[i];
+        }
+
+        assert playerBombCount > 0 :
                 "bombingPhaseHeuristic is a move heuristic: cannot make a move without bombs";
 
         for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
             if (i == move.getPlayerId() - 1) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             } else {
-                rivalry[i] = (rivalBombCount[move.getPlayerId() - 1] * (pow(2 * bombRadius + 1, 2))) /
-                        (abs(rivalStoneCount[i] - playerStoneCount) + rivalBombCount[move.getPlayerId() - 1] * pow(2 * bombRadius + 1, 2));
+                rivalry[i] = ((-1) * rivalRankPoints[i] / 25) * (playerBombCount * (pow(2 * bombRadius + 1, 2))) /
+                        (abs(rivalStoneCount[i] - playerStoneCount) + playerBombCount * pow(2 * bombRadius + 1, 2));
             }
         }
 
@@ -152,7 +167,7 @@ public class Heuristics {
         // all tiles within one bomb radius of the bombing target
         Set<Tile> bombSet = state.getMap().getTileAt(move.getX(), move.getY()).getBombEffect();
         // in case precomputation of bombEffect failed (e.g. bomb radius too big), bombEffect is computed again
-        if (bombSet.isEmpty() == true) bombSet = BombMove.getAffectedTiles(state.getMap().getTileAt(move.getX(), move.getY()), bombRadius);
+        if (bombSet.isEmpty()) bombSet = BombMove.getAffectedTiles(state.getMap().getTileAt(move.getX(), move.getY()), bombRadius);
 
         for (Tile t : bombSet) {   // we examine each tile within the bomb radius for ownership
             // and assign damage to each rival in case our stone is bombed

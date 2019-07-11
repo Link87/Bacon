@@ -1,6 +1,7 @@
 package bacon;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -59,6 +60,7 @@ public class Tile {
         this.x = x;
         this.y = y;
 
+        this.bombEffect = new HashSet<>();
         this.transitions = new Tile[Direction.DIRECTION_COUNT];
         this.arrivals = new int[Direction.DIRECTION_COUNT];
         Arrays.fill(this.arrivals, Direction.NULL_DIRECTION_ID);
