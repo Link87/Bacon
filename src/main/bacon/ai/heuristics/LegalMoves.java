@@ -3,9 +3,7 @@ package bacon.ai.heuristics;
 import bacon.*;
 import bacon.move.*;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A collection of methods, that return legal moves in a given game state.
@@ -166,15 +164,15 @@ public class LegalMoves {
      * @param playerId the {@code id} of the current {@link Player} in turn
      * @return a set of all {@link BombMove}s being legal in the given board state
      */
-    public static Set<BombMove> getLegalBombMoves(GameState state, int playerId) {
+    public static List<BombMove> getLegalBombMoves(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_TWO) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
         }
 
-        if (state.getPlayerFromId(playerId).isDisqualified())
-            return Collections.emptySet();
+        if (state.getPlayerFromId(playerId).isDisqualified() || state.getPlayerFromId(playerId).getBombCount() < 1)
+            return Collections.emptyList();
 
-        Set<BombMove> legalMoves = new HashSet<>();
+        List<BombMove> legalMoves = new ArrayList<>();
         for (int x = 0; x < state.getMap().width; x++) {
             for (int y = 0; y < state.getMap().height; y++) { // Going through the whole map
                 Tile tile = state.getMap().getTileAt(x, y);
