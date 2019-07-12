@@ -54,9 +54,9 @@ public class HeuristicsTest {
         Game.getGame().readMap(Maps.EXAMPLE);
 
         //Bombs
-        assertEquals("Bomb bonus heuristic error", 1319.5, Heuristics.bonusBomb(Game.getGame().getCurrentState(), 1), 0.01);
+        assertEquals("Bomb bonus heuristic error", 200, Heuristics.bonusBomb(Game.getGame().getCurrentState(), 1), 0.01);
         //Override stones
-        assertEquals("Override bonus heuristic error", 1051.5, Heuristics.bonusOverride(Game.getGame().getCurrentState(), 1), 0.1);
+        assertEquals("Override bonus heuristic error", 1800, Heuristics.bonusOverride(Game.getGame().getCurrentState(), 1), 0.1);
     }
 
     @Test
