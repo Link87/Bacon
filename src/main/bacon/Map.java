@@ -257,6 +257,24 @@ public class Map {
     }
 
     /**
+     * Returns the average number of {@code Tile}s destroyed with one bomb.
+     *
+     * @return average bomb area
+     */
+    public double getAvgBombArea() {
+        return avgBombArea;
+    }
+
+    /**
+     * Returns the average length of the {@link TileLine}s of the {@link Map}.
+     *
+     * @return the average TileLine length.
+     */
+    public double getAvgTileLineLength() {
+        return lineGeometry.getAvgTileLineLength();
+    }
+
+    /**
      * Returns the total amount of {@code Tile}s that are no holes.
      *
      * @return number of non-hole {@code Tile}s.
@@ -385,6 +403,12 @@ public class Map {
          */
         final List<TileLine> tileLines;
 
+
+        /**
+         * The average length of {@link TileLine}s of the {@link Map}.
+         */
+        final double avgTileLineLength;
+
         /**
          * Creates a new {@code LineGeometry} instance. Calculates all {@link TileLine}s of the {@link Map}.
          */
@@ -450,6 +474,13 @@ public class Map {
                     }
                 }
             }
+
+            // calculate average length of TileLines of this map
+            double tileLineSum = 0;
+            for (TileLine l : tileLines) {
+                tileLineSum += l.getLineSize();
+            }
+            avgTileLineLength = tileLineSum/tileLines.size();
         }
 
         /**
@@ -468,6 +499,15 @@ public class Map {
          */
         private List<TileLine> getTileLines() {
             return Collections.unmodifiableList(tileLines);
+        }
+
+        /**
+         * Returns the average length of the {@link TileLine}s of the {@link Map}.
+         *
+         * @return the average TileLine length.
+         */
+        private double getAvgTileLineLength() {
+            return avgTileLineLength;
         }
     }
 

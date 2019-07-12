@@ -89,9 +89,7 @@ public class Heuristics {
      */
     public static double bonusBomb(GameState state, int playerId) {
         int bombCount = state.getPlayerFromId(playerId).getBombCount();
-        int bombRadius = state.getBombRadius();
-
-        return 2 * (pow(2 * bombRadius + 1, 2)) * bombCount;
+        return state.getMap().getAvgBombArea() * bombCount;
     }
 
     /**
@@ -103,10 +101,7 @@ public class Heuristics {
      */
     public static double bonusOverride(GameState state, int playerId) {
         int overrideStoneCount = state.getPlayerFromId(playerId).getOverrideStoneCount();
-        double mapHeight = state.getMap().height;
-        double mapWidth = state.getMap().width;
-
-        return 20 * sqrt(mapHeight * mapWidth) * overrideStoneCount;
+        return state.getMap().getAvgTileLineLength() * overrideStoneCount;
     }
 
     /**

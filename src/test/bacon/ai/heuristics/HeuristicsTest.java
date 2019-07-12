@@ -25,7 +25,6 @@ public class HeuristicsTest {
     }
 
     @Test
-    @Ignore("Mobility currently counts bonus tile and choice tile options as separate moves.")
     public void mobility() {
         Game.getGame().readMap(Maps.EXAMPLE_MOBILITY);
 
@@ -54,9 +53,9 @@ public class HeuristicsTest {
         Game.getGame().readMap(Maps.EXAMPLE);
 
         //Bombs
-        assertEquals("Bomb bonus heuristic error", 200, Heuristics.bonusBomb(Game.getGame().getCurrentState(), 1), 0.01);
+        assertEquals("Bomb bonus heuristic error", 40, Heuristics.bonusBomb(Game.getGame().getCurrentState(), 1), 0.01);
         //Override stones
-        assertEquals("Override bonus heuristic error", 1800, Heuristics.bonusOverride(Game.getGame().getCurrentState(), 1), 0.1);
+        assertEquals("Override bonus heuristic error", 36, Heuristics.bonusOverride(Game.getGame().getCurrentState(), 1), 0.1);
     }
 
     @Test

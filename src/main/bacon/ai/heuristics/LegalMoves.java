@@ -195,7 +195,7 @@ public class LegalMoves {
 
         int freeTiles = state.getMap().getFreeTiles().size();
         int playerStoneCount = state.getPlayerFromId(playerId).getStoneCount();
-        boolean bombBonus = (2 * pow(2 * state.getBombRadius() + 1, 2) > 20 * sqrt(state.getMap().height * state.getMap().width));
+        boolean bombBonus = (pow(2 * state.getBombRadius() + 1, 2) > 10 * sqrt(state.getMap().height * state.getMap().width));
 
         if (state.getPlayerFromId(playerId).isDisqualified() || freeTiles == 0)
             return null;
