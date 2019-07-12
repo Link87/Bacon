@@ -95,19 +95,20 @@ public class AI {
                 if (BRSNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
             }
         } else {
-            Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());
-            double evalValue;
-            double curBestVal = -Double.MAX_VALUE;
-            for (BombMove move : moves) {
-                Statistics.getStatistics().enterMeasuredState(0);
-                evalValue = Heuristics.bombingPhaseHeuristic(currentGameState, move);
-                if (evalValue > curBestVal) {
-                    curBestVal = evalValue;
-                    bestMove = move;
+            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
+            while (iterationHeuristic.doIteration()){
+                BombNode root = new BombNode(iterationHeuristic.getDepth(),watchdog);
+                root.evaluateNode();
+                if(!watchdog.isTriggered()) {
+                    bestMove = root.getBestMove();
+                }
+                else {
+                    LOGGER.log(Level.WARNING, "Pancake triggered!");
+                    break;
                 }
 
-                Statistics.getStatistics().leaveMeasuredState();
-
+                if(BombNode.reachedDepth < iterationHeuristic.getDepth()) break;
             }
         }
 
