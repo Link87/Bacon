@@ -172,28 +172,12 @@ public class Tile {
     /**
      * Applies a bomb to this {@code Tile}.
      * <p>
-     * Makes a hole out of this {@code Tile} by removing its owner, its transitions to other {@code Tile}s
-     * and other {@code Tile}s transition to it.
+     * Makes a hole out of this {@code Tile}
      * The {@code Property} is set to {@link Property#HOLE}
      */
     public void bombTile() {
         setProperty(Property.HOLE);
         setOwnerId(Player.NULL_PLAYER_ID);
-
-        // remove transition from neighbors to bombed tile
-        for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
-            Tile neighbor = this.getTransition(direction);
-            if (neighbor == null) continue;
-            for (int neighborDirection = 0; neighborDirection < Direction.DIRECTION_COUNT; neighborDirection++) {
-                Tile t = neighbor.getTransition(neighborDirection);
-                if (t == this) neighbor.setTransition(null, neighborDirection, Direction.NULL_DIRECTION_ID);
-            }
-        }
-        // remove transitions from bombed tile to neighbors
-        for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
-            this.setTransition(null, direction, Direction.NULL_DIRECTION_ID);
-        }
-
     }
 
     /**
