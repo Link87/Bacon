@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 /**
  * A collection of methods, that return legal moves in a given game state.
  * <p>
@@ -184,7 +187,7 @@ public class LegalMoves {
         return legalMoves;
     }
 
-    /*
+
     public static RegularMove quickLegalRegularMove(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
@@ -192,50 +195,30 @@ public class LegalMoves {
 
         int freeTiles = state.getMap().getFreeTiles().size();
         int playerStoneCount = state.getPlayerFromId(playerId).getStoneCount();
+        boolean bombBonus = (2 * pow(2 * state.getBombRadius() + 1, 2) > 20 * sqrt(state.getMap().height * state.getMap().width));
 
         if (state.getPlayerFromId(playerId).isDisqualified() || freeTiles == 0)
             return null;
 
-        RegularMove legalMove;
+        RegularMove legalMove = null;
 
         if (freeTiles < playerStoneCount) {
-            for (int i=0; i<state.getMap().width*state.getMap().height; i++) {
-                x = (int) (Math.random() * state.getMap().width);
-                y = (int) (Math.random() * state.getMap().height);
-                Tile tile = state.getMap().getTileAt(x, y);
-                if (tile.getOwnerId() == Player.NULL_PLAYER_ID && tile.getProperty() != Tile.Property.HOLE && tile.getProperty() != Tile.Property.EXPANSION) {
-                    RegularMove move = (RegularMove) MoveFactory.createMove(state, playerId, x, y);
-                    if (move.isLegal()) break;
-            }
-            move =
-
-
-
-
-            for (int y = 0; y < state.getMap().height; y++) {
-                for (int x = 0; x < state.getMap().width; x++) {
-                    Tile tile = state.getMap().getTileAt(x, y);
-                    if (tile.getOwnerId() == Player.NULL_PLAYER_ID && tile.getProperty() != Tile.Property.HOLE && tile.getProperty() != Tile.Property.EXPANSION) {
-                        RegularMove move = (RegularMove) MoveFactory.createMove(state, playerId, x, y);
-                        if (move.isLegal()) {
-                            legalMoves.add(move);
-                        }
-                        move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
-                        if (move.isLegal()) {
-                            legalMoves.add(move);
-                            move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
-                            legalMoves.add(move);
-                        }
-                        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-                            move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(i));
-                            if (move.isLegal()) {
-                                legalMoves.add(move);
-                            }
-                        }
-                    }
+            for (Tile tile : state.getMap().getFreeTiles()) {
+                if (tile.getProperty() == Tile.Property.DEFAULT || tile.getProperty() == Tile.Property.INVERSION) {
+                    legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y);
+                    break;
+                } else if (tile.getProperty() == Tile.Property.BONUS) {
+                    if (bombBonus) legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+                    else legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
+                    break;
+                } else if (tile.getProperty() == Tile.Property.CHOICE) {
+                    int i = (int)(Math.random() * 8);
+                    legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y, new BonusRequest(i));
+                    break;
                 }
             }
-            return legalMoves;
+
+            return legalMove;
         }
 
 
@@ -262,14 +245,16 @@ public class LegalMoves {
                             // checks if the move actually captures any tile
                             // also handle tile property
                             if (steps > 0 && last.getProperty() == Tile.Property.CHOICE) {
-                                for (int i = 1; i <= Game.getGame().getTotalPlayerCount(); i++) {
-                                    legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(i)));
-                                }
+                                int i = (int)(Math.random() * 8);
+                                legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y, new BonusRequest(i));
+                                return legalMove;
                             } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
-                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));
-                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
+                                if (bombBonus) legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+                                else legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
+                                return legalMove;
                             } else if (steps > 0) {
-                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y));
+                                legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y);
+                                return legalMove;
                             }
                             break;
                         }
@@ -280,9 +265,60 @@ public class LegalMoves {
                 }
             }
         }
-        return legalMoves;
+        return legalMove;
 
     }
-    */
+
+
+    public static OverrideMove quickLegalOverrideMove(GameState state, int playerId) {
+        if (state.getGamePhase() != GamePhase.PHASE_ONE) {
+            throw new IllegalArgumentException("Cannot evaluate GameState: GamePhase invalid");
+        }
+
+        if (state.getPlayerFromId(playerId).isDisqualified() || state.getPlayerFromId(playerId).getOverrideStoneCount() <= 0)
+            return null;
+
+        OverrideMove legalMove = null;
+
+        for (Tile ogTile : state.getPlayerFromId(playerId).getStones()) { // iterates over all of the player's stones
+
+            for (int ogDirection = 0; ogDirection < Direction.DIRECTION_COUNT; ogDirection++) {
+                int searchDirection = ogDirection;
+                Tile last = ogTile;
+
+                while (true) {
+                    Tile next = last.getTransition(searchDirection);
+                    if (next == null ||
+                            (next.getOwnerId() == Player.NULL_PLAYER_ID && next.getProperty() != Tile.Property.EXPANSION)) {
+                        // next is hole or unowned
+                        break;
+                    }
+                    if (next != ogTile.getTransition(ogDirection) && next != ogTile) {
+                        // next is not right next to og in search direction or og
+                        legalMove = (OverrideMove) MoveFactory.createMove(state, playerId, next.x, next.y);
+                        return legalMove;
+                    }
+                    if (next.getOwnerId() == playerId) {
+                        break;
+                    }
+                    int oldDirection = searchDirection;
+                    searchDirection = Direction.oppositeOf(last.getArrivalDirection(searchDirection));
+                    last = last.getTransition(oldDirection);
+                }
+            }
+        }
+
+        // independent expansion moves are possible override moves
+        if (!state.getMap().getExpansionTiles().isEmpty()) {
+            Tile expansion = state.getMap().getExpansionTiles().iterator().next();
+            legalMove = (OverrideMove) MoveFactory.createMove(state, playerId, expansion.x, expansion.y);
+        }
+
+        return legalMove;
+    }
+
+
+
+
 
 }
