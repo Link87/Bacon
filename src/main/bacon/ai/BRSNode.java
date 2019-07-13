@@ -564,11 +564,29 @@ public class BRSNode {
             return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
                     + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe())
                     + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
-                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe());
+                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe())
+                    + stoneCountInRating();
         } else if (type == Move.Type.OVERRIDE) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe());
+            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
+                    + stoneCountInRating();
         }
 
         throw new IllegalStateException("Cannot evaluate bomb heuristic in brs tree. I shouldn't be here...");
+    }
+
+    /**
+     * helper method
+     * subtracts stone count of higher ranking players from the ai
+     * @return a value indicating the Ais rank (higher = better)
+     */
+    private double stoneCountInRating() {
+        double value = state.getPlayerFromId(state.getMe()).getStoneCount() * state.getTotalPlayerCount();
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+            if (i == state.getMe()) continue;
+            if (state.getPlayerFromId(state.getMe()).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
+                value = value - state.getPlayerFromId(i).getStoneCount();
+            }
+        }
+        return value / state.getTotalPlayerCount();
     }
 }
