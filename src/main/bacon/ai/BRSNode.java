@@ -25,7 +25,7 @@ public class BRSNode {
     Constant scalar values for the computation of evaluation values.
      */
     private static final double STABILITY_SCALAR = 1;
-    private static final double MOBILITY_SCALAR = 1;
+    private static final double MOBILITY_SCALAR = 10;
     private static final double BONUS_SCALAR = 100;
 
     /**
