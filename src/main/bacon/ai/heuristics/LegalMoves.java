@@ -18,6 +18,7 @@ public class LegalMoves {
 
     /**
      * Returns all legal regular {@link Move}s possible from a certain given board state and player in the first phase.
+     * Bonus {@link Move}s requesting Bombs are omitted!
      *
      * @param state    the {@link GameState} to be examined
      * @param playerId the {@code id} of the current {@link Player} in turn
@@ -47,8 +48,8 @@ public class LegalMoves {
                         move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
                         if (move.isLegal()) {
                             legalMoves.add(move);
-                            move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
-                            legalMoves.add(move);
+//                            move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+//                            legalMoves.add(move);
                         }
                         for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                             move = (RegularMove) MoveFactory.createMove(state, playerId, x, y, new BonusRequest(i));
@@ -91,7 +92,7 @@ public class LegalMoves {
                                 }
                             } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
                                 legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));
-                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
+//                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
                             } else if (steps > 0) {
                                 legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y));
                             }
