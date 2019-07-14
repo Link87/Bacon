@@ -26,7 +26,7 @@ public class AI {
 
     private static final AI INSTANCE = new AI();
 
-    private static int moveCounter = 1;
+    private static int moveCounter = 0;
 
     /**
      * Singleton constructor that does nothing.

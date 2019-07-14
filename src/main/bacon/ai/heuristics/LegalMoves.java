@@ -309,7 +309,7 @@ public class LegalMoves {
         }
 
         // independent expansion moves are possible override moves
-        if (state.getMap().getExpansionTiles().isEmpty() && legalMove == null) {
+        if (!state.getMap().getExpansionTiles().isEmpty() && legalMove == null) {
             Tile expansion = state.getMap().getExpansionTiles().iterator().next();
             legalMove = (OverrideMove) MoveFactory.createMove(state, playerId, expansion.x, expansion.y);
         }
