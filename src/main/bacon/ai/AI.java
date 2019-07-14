@@ -1,6 +1,7 @@
 package bacon.ai;
 
 import bacon.Config;
+import bacon.Game;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
@@ -24,6 +25,8 @@ public class AI {
     private static final Logger LOGGER = Logger.getGlobal();
 
     private static final AI INSTANCE = new AI();
+
+    private static int moveCounter = 1;
 
     /**
      * Singleton constructor that does nothing.
@@ -56,10 +59,26 @@ public class AI {
 
         Statistics.getStatistics().init();
 
+        int currentMoveNumber = currentGameState.getMoveCount();
+        moveCounter++;
+
+
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
-            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
+            int randRollTime = 0;
+            if (moveCounter % 5 == 2 && currentMoveNumber != 1) {
+                LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCounter = " + moveCounter);
+                long startTimeStamp = System.nanoTime();
+                RandomRollout randroll = new RandomRollout(Game.getGame().getCurrentState(), moveCounter / 5 + 1, startTimeStamp);
+                randroll.doRandRoll(currentGameState.getMe());
+                long endTimeStamp = System.nanoTime();
+                randRollTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
+                LOGGER.log(Level.INFO, "RR completed, elapsed time: " + randRollTime + "ms");
+            }
+
+
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout - randRollTime);
+            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout - randRollTime, depth);
 
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;

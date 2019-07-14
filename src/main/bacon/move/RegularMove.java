@@ -72,12 +72,14 @@ public class RegularMove extends BuildMove {
         // After overturning captured stones, we now have to consider the bonus/special effect of our tile
         switch (property) {
             case BONUS:
+                this.state.getMap().addBonusTiles(-1);
                 if (this.request.type == BonusRequest.Type.BOMB_BONUS)
                     this.state.getPlayerFromId(this.playerId).receiveBomb(1);
                 else if (this.request.type == BonusRequest.Type.OVERRIDE_BONUS)
                     this.state.getPlayerFromId(this.playerId).receiveOverrideStone(1);
                 break;
             case INVERSION:
+                this.state.getMap().addInversionTiles(-1);
                 int playerCount = state.getTotalPlayerCount();
                 for (int x = 0; x < state.getMap().width; x++) {
                     for (int y = 0; y < state.getMap().height; y++) {
@@ -95,6 +97,7 @@ public class RegularMove extends BuildMove {
                 break;
 
             case CHOICE:
+                this.state.getMap().addChoiceTiles(-1);
                 for (int x = 0; x < state.getMap().width; x++) {
                     for (int y = 0; y < state.getMap().height; y++) {
                         Tile anyTile = state.getMap().getTileAt(x, y);
@@ -121,6 +124,7 @@ public class RegularMove extends BuildMove {
         //last entry in changeData is always the Tile the move was made on
         switch (changeData[changeData.length - 1].wasProp) {
             case BONUS:
+                this.state.getMap().addBonusTiles(1);
                 if (this.request.type == BonusRequest.Type.BOMB_BONUS)
                     this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
                 else if (this.request.type == BonusRequest.Type.OVERRIDE_BONUS)
@@ -129,6 +133,7 @@ public class RegularMove extends BuildMove {
 
             // TODO: Current approach checks every tile on the map. Increase efficiency by using TileOwnerID swap between players instead
             case INVERSION:
+                this.state.getMap().addInversionTiles(1);
                 int playerCount = state.getTotalPlayerCount();
                 for (int x = 0; x < state.getMap().width; x++) {
                     for (int y = 0; y < state.getMap().height; y++) {
@@ -146,6 +151,7 @@ public class RegularMove extends BuildMove {
                 break;
 
             case CHOICE:
+                this.state.getMap().addChoiceTiles(1);
                 for (int x = 0; x < state.getMap().width; x++) {
                     for (int y = 0; y < state.getMap().height; y++) {
                         Tile anyTile = state.getMap().getTileAt(x, y);

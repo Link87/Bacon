@@ -263,4 +263,11 @@ public class Game {
     public int getTotalPlayerCount() {
         return playerCount;
     }
+
+    /**
+     * Returns the current move count
+     *
+     * @return the current move count
+     */
+    public int getMoveCount() {return moveCount; }
 }

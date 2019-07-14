@@ -212,7 +212,7 @@ public class LegalMoves {
                     else legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
                     break;
                 } else if (tile.getProperty() == Tile.Property.CHOICE) {
-                    int i = (int)(Math.random() * 8);
+                    int i = (int)(Math.random() * state.getTotalPlayerCount() + 1);
                     legalMove = (RegularMove) MoveFactory.createMove(state, playerId, tile.x, tile.y, new BonusRequest(i));
                     break;
                 }
@@ -245,7 +245,7 @@ public class LegalMoves {
                             // checks if the move actually captures any tile
                             // also handle tile property
                             if (steps > 0 && last.getProperty() == Tile.Property.CHOICE) {
-                                int i = (int)(Math.random() * state.getTotalPlayerCount());
+                                int i = (int)(Math.random() * state.getTotalPlayerCount() + 1);
                                 legalMove = (RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(i));
                                 return legalMove;
                             } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
@@ -309,7 +309,7 @@ public class LegalMoves {
         }
 
         // independent expansion moves are possible override moves
-        if (!state.getMap().getExpansionTiles().isEmpty()) {
+        if (state.getMap().getExpansionTiles().isEmpty() && legalMove == null) {
             Tile expansion = state.getMap().getExpansionTiles().iterator().next();
             legalMove = (OverrideMove) MoveFactory.createMove(state, playerId, expansion.x, expansion.y);
         }

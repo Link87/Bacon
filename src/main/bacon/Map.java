@@ -24,6 +24,18 @@ public class Map {
      */
     private int totalTiles;
     /**
+     * Amount of inversion {@link Tile}s on the map
+     */
+    private int inversionTiles;
+    /**
+     * Amount of choice {@link Tile}s on the map
+     */
+    private int choiceTiles;
+    /**
+     * Amount of bonus {@link Tile}s on the map
+     */
+    private int bonusTiles;
+    /**
      * The {@link Tile}s that are free, i.e. not occupied by any player nor expansion stone and isn't a hole
      */
     private Set<Tile> freeTiles;
@@ -31,6 +43,36 @@ public class Map {
      * The {@link Tile}s that have an expansion stone on them
      */
     private Set<Tile> expansionTiles;
+
+    /**
+     * Indicates whether there have been random rollouts yet.
+     */
+    private boolean rollout;
+    /**
+     * Prediction for the number of free tiles at the end of the game
+     * Result of RandomRollouts (weighted sum)
+     */
+    private double finalFreeTiles;
+    /**
+     * Prediction for the number of occupied tiles at the end of the game
+     * Result of RandomRollouts (weighted sum)
+     */
+    private double finalOccupied;
+    /**
+     * Prediction for the number of captured inversion tiles at the end of the game
+     * Result of RandomRollouts (weighted sum)
+     */
+    private double finalInversion;
+    /**
+     * Prediction for the number of captured choice tiles at the end of the game
+     * Result of RandomRollouts (weighted sum)
+     */
+    private double finalChoice;
+    /**
+     * Prediction for the number of captured choice tiles at the end of the game
+     * Result of RandomRollouts (weighted sum)
+     */
+    private double finalBonus;
 
     /**
      * Keeps track of all the {@link TileLine} in the {@code Map}.
@@ -54,7 +96,7 @@ public class Map {
      * @param expansionTiles a set containing those tiles, that have an expansion stone on them.
      *                       This is required and asserted to be a subset of {@code tiles}.
      */
-    private Map(Tile[][] tiles, int initOccupied, int totalTiles, Set<Tile> freeTiles, Set<Tile> expansionTiles) {
+    private Map(Tile[][] tiles, int initOccupied, int totalTiles, int inversionTiles, int choiceTiles, int bonusTiles, Set<Tile> freeTiles, Set<Tile> expansionTiles) {
         this.tiles = tiles;
 
         assert tiles.length > 0 && tiles[0].length > 0 : "Dimensions of tiles have to be positive";
@@ -64,9 +106,18 @@ public class Map {
 
         this.occupiedTiles = initOccupied;
         this.totalTiles = totalTiles;
-
+        this.inversionTiles = inversionTiles;
+        this.choiceTiles = choiceTiles;
+        this.bonusTiles = bonusTiles;
         this.freeTiles = freeTiles;
         this.expansionTiles = expansionTiles;
+
+        this.rollout = false;
+        this.finalFreeTiles = 0;
+        this.finalOccupied = 0;
+        this.finalInversion = 0;
+        this.finalChoice = 0;
+        this.finalBonus = 0;
     }
 
     /**
@@ -91,6 +142,9 @@ public class Map {
         int totalCount = 0;
         Set<Tile> freeTiles = new HashSet<>();
         Set<Tile> expansionTiles = new HashSet<>();
+        int inversionTiles = 0;
+        int choiceTiles = 0;
+        int bonusTiles = 0;
 
         // putting tile information into the array
         for (int h = 0; h < height; h++) {
@@ -112,12 +166,21 @@ public class Map {
                 } else if (symbol != '-') {
                     // Tile is not a hole --> Tile has Property
                     tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.fromChar(symbol), w, h);
-
                     if (symbol == 'x') {
                         occupiedCount++;
                         expansionTiles.add(tiles[w][h]);
-
-                    if (symbol == 'b' || symbol == 'c' || symbol == 'i') freeTiles.add(tiles[w][h]);
+                    }
+                    if (symbol == 'i') {
+                        freeTiles.add(tiles[w][h]);
+                        inversionTiles++;
+                    }
+                    if (symbol == 'c') {
+                        freeTiles.add(tiles[w][h]);
+                        choiceTiles++;
+                    }
+                    if (symbol == 'b') {
+                        freeTiles.add(tiles[w][h]);
+                        bonusTiles++;
                     }
                 } else {
                     // Tile is a hole
@@ -165,7 +228,8 @@ public class Map {
             }
         }
 
-        Map map = new Map(tiles, occupiedCount, totalCount, freeTiles, expansionTiles);
+        Map map = new Map(tiles, occupiedCount, totalCount, inversionTiles, choiceTiles, bonusTiles, freeTiles, expansionTiles);
+
 
         // adding additional transitions from map specification
         for (int l = height; l < lines.length; l++) {
@@ -299,7 +363,115 @@ public class Map {
      * @param d amount of stones that are added, if value is positive, or removed, if value is negative
      */
     public void addOccupiedTiles(int d) {
-        this.occupiedTiles += d;
+        occupiedTiles += d;
+    }
+
+    /**
+     * Returns the amount of inversion {@code Tile}s.
+     *
+     * @return number of inversion {@code Tile}s.
+     */
+    public int getInversionTileCount() {
+        return inversionTiles;
+    }
+
+    /**
+     * Changes the amount of inversion {@code Tile}s.
+     *
+     * @param d amount of inversion {@code Tile} that are added, if value is positive, or removed, if value is negative
+     */
+    public void addInversionTiles(int d) {
+        inversionTiles += d;
+    }
+
+    /**
+     * Returns the amount of inversion {@code Tile}s.
+     *
+     * @return number of inversion {@code Tile}s.
+     */
+    public int getChoiceTileCount() {
+        return choiceTiles;
+    }
+
+    /**
+     * Changes the amount of inversion {@code Tile}s.
+     *
+     * @param d amount of inversion {@code Tile} that are added, if value is positive, or removed, if value is negative
+     */
+    public void addChoiceTiles(int d) {
+        choiceTiles += d;
+    }
+
+    /**
+     * Returns the amount of inversion {@code Tile}s.
+     *
+     * @return number of inversion {@code Tile}s.
+     */
+    public int getBonusTileCount() {
+        return bonusTiles;
+    }
+
+    /**
+     * Changes the amount of inversion {@code Tile}s.
+     *
+     * @param d amount of inversion {@code Tile} that are added, if value is positive, or removed, if value is negative
+     */
+    public void addBonusTiles(int d) {
+        bonusTiles += d;
+    }
+
+    public void confirmRollout() {
+        rollout = true;
+    }
+
+    public double getFinalfreeTiles() {
+        return finalFreeTiles;
+    }
+
+    public void accumulateFinalfreeTiles(double f, double iteration) {
+        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
+        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
+        finalFreeTiles = (finalFreeTiles * a * 0.9 + f) / b;
+    }
+
+    public double getFinalOccupied() {
+        return finalOccupied;
+    }
+
+    public void accumulateFinalOccupied(double f, double iteration) {
+        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
+        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
+        finalOccupied = (finalOccupied * a * 0.9 + f) / b;
+    }
+
+    public double getFinalInversion() {
+        return finalInversion;
+    }
+
+    public void accumulateFinalInversion(double f, double iteration) {
+        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
+        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
+        finalInversion = (finalInversion * a * 0.9 + f) / b;
+    }
+
+    public double getFinalChoice() {
+        return finalChoice;
+    }
+
+    public void accumulateFinalChoice(double f, double iteration) {
+        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
+        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
+        finalChoice = (finalChoice * a * 0.9 + f) / b;
+    }
+
+    public double getFinalBonus() {
+        return finalBonus;
+    }
+
+    public void accumulateFinalBonus(double f, double iteration) {
+        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
+        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
+        finalBonus = (finalBonus * a * 0.9 + f) / b;
     }
 
     /**
