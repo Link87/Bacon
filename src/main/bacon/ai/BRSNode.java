@@ -19,7 +19,7 @@ import java.util.*;
  * This is an implementation of the <i>Best Reply Search</i>, where min and max layers alternate regardless of the
  * player count. In the min layer only one move, the best that any enemy player can do, is evaluated.
  */
-public class BRSNode {
+class BRSNode {
 
     /*
     Constant scalar values for the computation of evaluation values.
@@ -105,7 +105,7 @@ public class BRSNode {
      * @param beta             beta value passed down from ai
      * @param watchdog         a watchdog timer that triggers when time is running out
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, boolean aspWindowEnabled, double alpha, double beta, PancakeWatchdog watchdog) {
+    BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, boolean aspWindowEnabled, double alpha, double beta, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
@@ -165,7 +165,7 @@ public class BRSNode {
      *
      * @return best move that was found
      */
-    public BuildMove getBestMove() {
+    BuildMove getBestMove() {
         return bestMove;
     }
 
@@ -222,7 +222,7 @@ public class BRSNode {
      * <p>
      * This method does <i>time panics</i> if time is running out.
      */
-    public void evaluateNode() {
+    void evaluateNode() {
 
         Set<? extends BuildMove> legalMoves = getLegalMoves();
 
