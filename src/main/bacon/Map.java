@@ -49,6 +49,12 @@ public class Map {
      */
     private RandRollStats randRollStats;
 
+
+    /**
+     * Keeps track of whether there has been a random rollout to base stats on
+     */
+    private boolean randRollavailable;
+
     /**
      * Keeps track of all the {@link TileLine} in the {@code Map}.
      */
@@ -86,6 +92,8 @@ public class Map {
         this.bonusTiles = bonusTiles;
         this.freeTiles = freeTiles;
         this.expansionTiles = expansionTiles;
+
+        this.randRollavailable = false;
     }
 
     /**
@@ -599,6 +607,7 @@ public class Map {
 
     public void newRandRollStats (int maxIteration) {
         randRollStats = new RandRollStats(maxIteration);
+        randRollavailable = true;
     }
 
     public void updateRandRollStats (int iteration, int finalFreeTileCount, int finalOccupiedCount, int finalInversionCount, int finalChoiceCount, int finalBonusCount) {
@@ -610,40 +619,51 @@ public class Map {
         randRollStats.updateFinalBonus(iteration, finalBonusCount);
     }
 
-    public  int getCompletedRRIterations() {
+    public boolean isRandRollavailable() {
+        return randRollavailable;
+    }
+
+    public int getCompletedRRIterations() {
         return randRollStats.completedIterations;
     }
 
     public double getFinalfreeTiles() {
-        return randRollStats.avgFinalFreeTiles;
+        if (randRollStats != null) return randRollStats.avgFinalFreeTiles;
+        else return 0;
     }
 
 
     public double getFinalOccupied() {
-        return randRollStats.avgFinalOccupied;
+        if (randRollStats != null) return randRollStats.avgFinalOccupied;
+        else return 0;
     }
 
 
     public double getFinalInversion() {
-        return randRollStats.avgFinalInversion;
+        if (randRollStats != null) return randRollStats.avgFinalInversion;
+        else return 0;
     }
 
     public double getFinalInversionStdv() {
-        return randRollStats.stdvFinalInversion;
+        if (randRollStats != null) return randRollStats.stdvFinalInversion;
+        else return 0;
     }
 
 
     public double getFinalChoice() {
-        return randRollStats.avgFinalChoice;
+        if (randRollStats != null) return randRollStats.avgFinalChoice;
+        else return 0;
     }
 
     public double getFinalChoiceStdv() {
-        return randRollStats.stdvFinalChoice;
+        if (randRollStats != null) return randRollStats.stdvFinalChoice;
+        else return 0;
     }
 
 
     public double getFinalBonus() {
-        return randRollStats.avgFinalBonus;
+        if (randRollStats != null) return randRollStats.avgFinalBonus;
+        else return 0;
     }
 
     private class RandRollStats {

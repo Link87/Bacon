@@ -38,6 +38,43 @@ public class Heuristics {
         return false;
     }
 
+
+    public static int inversionSwap(GameState state, int playerId) {
+
+        if (!state.getMap().isRandRollavailable()) return playerId;
+
+        int inversionLeft = (int) state.getMap().getFinalInversion() - state.getMap().getInversionTileCount();
+        double inversionStdv = state.getMap().getFinalInversionStdv();
+        double choiceLeft = state.getMap().getFinalChoice() - state.getMap().getChoiceTileCount() + state.getMap().getFinalChoiceStdv();
+        if (inversionStdv < 1 && choiceLeft < (double) state.getTotalPlayerCount() / 4) {
+            int swapPartner = (((playerId - 1) - inversionLeft) % state.getTotalPlayerCount()) + 1;
+            if (swapPartner >= 1 && swapPartner <= state.getTotalPlayerCount()) {
+                System.out.println("INVERSION PREDICTED");
+                return swapPartner;
+            }
+        }
+        return playerId;
+    }
+
+
+    public static double mobilityWeight(GameState state, int playerId) {
+        double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
+        double bonusLeft = (state.getMap().getFinalBonus() - state.getMap().getBonusTileCount());
+        double choiceLeft = (state.getMap().getFinalChoice() - state.getMap().getChoiceTileCount());
+
+        return 0 * (movesLeft / state.getMap().getFinalOccupied())
+                + 0.1 * state.getMap().getOccupiedTileCount()
+                + 10 * bonusLeft
+                + 10 * choiceLeft;
+    }
+
+    public static double stoneCountWeight (GameState state, int playerId) {
+        double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
+
+        return Math.pow(0.5, movesLeft * 0.0010);
+    }
+
+
     /**
      * Calculates the mobility heuristics of the given game state and player.
      *
@@ -74,6 +111,19 @@ public class Heuristics {
         }
 
         return overrideStability;
+    }
+
+    public static double stoneCountInRating(GameState state, int playerId) {
+        double value = state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount();
+        double choiceLeft = (state.getMap().getFinalChoice() - state.getMap().getChoiceTileCount());
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+            if (i == playerId) continue;
+            if (state.getPlayerFromId(playerId).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
+                value = value - state.getPlayerFromId(i).getStoneCount();
+            }
+        }
+        //if (choiceLeft > 0.5 && (int)value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) return -1 * value;
+        return value / state.getTotalPlayerCount();
     }
 
     /**
