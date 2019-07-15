@@ -12,7 +12,7 @@ public class Config {
     private static final boolean ASPIRATION_WINDOWS_DEFAULT = false;
     private static final boolean ENABLE_ERR_DEFAULT = false;
     private static final int RAND_ROLL_FREQUENCY_DEFAULT = 10;
-    private static final int RAND_ROLL_TIME_BUDGET_DEFAULT = 200;
+    private static final int RAND_ROLL_TIME_BUDGET_DEFAULT = 300;
     private static final int MAX_RAND_ROLL_ITERATIONS_DEFAULT = 20;
 
     private final boolean helpRequested;

@@ -1,7 +1,6 @@
 package bacon.ai.heuristics;
 
 import bacon.*;
-import bacon.ai.BRSNode;
 import bacon.move.BombMove;
 
 import java.util.Set;
@@ -43,7 +42,7 @@ public class Heuristics {
 
 
     public static double mobilityWeight(GameState state, int playerId) {
-        if (!state.getMap().isRandRollavailable()) return BRSNode.MOBILITY_SCALAR_DEFAULT;
+        if (!state.getMap().isRandRollavailable()) return 10;
         double bonusCaptured = (state.getMap().getBonusTileCount() - state.getMap().getFinalBonus());
         double choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
 
@@ -51,7 +50,7 @@ public class Heuristics {
     }
 
     public static double stoneCountWeight (GameState state, int playerId) {
-        if (!state.getMap().isRandRollavailable()) return BRSNode.STONE_COUNT_SCALAR_DEFAULT;
+        if (!state.getMap().isRandRollavailable()) return 1;
 
         double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
         double attenuation = 5 * movesLeft / (state.getMap().getFinalOccupied() + 1);

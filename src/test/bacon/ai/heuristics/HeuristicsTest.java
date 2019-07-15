@@ -17,7 +17,6 @@ public class HeuristicsTest {
 
     @Ignore("Mobility currently counts bonus tile and choice tile options as separate moves.")
     @Test
-    @Ignore("Mobility currently counts bonus tile and choice tile options as separate moves.")
     public void mobility() {
         Game.getGame().readMap(Maps.EXAMPLE_MOBILITY);
 

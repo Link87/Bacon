@@ -1,5 +1,7 @@
 package bacon.ai.heuristics;
 
+import bacon.Game;
+
 /**
  * A watchdog timer that triggers, when time is about to run out.
  * This serves as a safety mechanism in cases, where the {@link IterationHeuristic} fails.
@@ -36,8 +38,11 @@ public class PancakeWatchdog {
      */
     public PancakeWatchdog(int timeLimit) {
         this.active = timeLimit != 0;
-        this.deadline = System.nanoTime() / 1000000 + timeLimit - SAFETY_GAP;
+        if (Game.getGame().getMoveCount() != 1) {
+            this.deadline = System.nanoTime() / 1000000 + timeLimit - SAFETY_GAP;
+        } else this.deadline = System.nanoTime() / 1000000 + timeLimit - 1000;
     }
+
 
     /**
      * Measures the time and returns {@code true} if a time panic should happen.
