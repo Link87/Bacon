@@ -17,11 +17,13 @@ import static java.lang.Math.pow;
  */
 public class Heuristics {
 
+    private static final Logger LOGGER = Logger.getGlobal();
+
     private Heuristics() {}
 
     public static int inversionSwap(GameState state, int playerId) {
-        if (!state.getMap().isRandRollavailable()) {
-            System.out.println("RANDOM ROLLOUT NOT AVAILABLE");
+        if (!state.getMap().isRolloutsAvailable()) {
+            LOGGER.log(Level.FINE, "Random Rollout not available!");
             return playerId;
         }
 
@@ -29,13 +31,13 @@ public class Heuristics {
         double inversionCaptured = state.getMap().getInversionTileCount() - state.getMap().getFinalInversion();
         double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
         if (inversionCaptured > 0 && inversionStdv < 0.2 && choiceCaptured <= 0) {
-            System.out.println("INVERSION PREDICTED");
-            int swapPartner = (playerId - (int)inversionCaptured) % state.getTotalPlayerCount();
+            LOGGER.log(Level.FINE, "INVERSION PREDICTED");
+            int swapPartner = (playerId - (int) inversionCaptured) % state.getTotalPlayerCount();
             while (swapPartner < 1) {
                 swapPartner += state.getTotalPlayerCount();
             }
-            if (swapPartner >= 1 && swapPartner <= state.getTotalPlayerCount()) {
-                System.out.println("SWAP SUCCESSFUL");
+            if (swapPartner <= state.getTotalPlayerCount()) {
+                LOGGER.log(Level.FINE, "SWAP SUCCESSFUL");
                 return swapPartner;
             }
         }

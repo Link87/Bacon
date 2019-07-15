@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 
 public class RandomRollout {
 
+    private static final Logger LOGGER = Logger.getGlobal();
+
     private GameState state;
     private int playerCount;
     private long timeout;
@@ -67,11 +69,11 @@ public class RandomRollout {
                     }
                     String after = state.getMap().toString();
 
-                if (!before.equals(after)) {
-                    System.out.println("BEFORE: " + before);
-                    System.out.println("MIDDLE" + middle);
-                    System.out.println("AFTER" + after);
-                }
+                    if (!before.equals(after)) {
+                        LOGGER.log(Level.FINE, "BEFORE: " + before);
+                        LOGGER.log(Level.FINE, "MIDDLE" + middle);
+                        LOGGER.log(Level.FINE, "AFTER" + after);
+                    }
 
                 } else {
                     playerHasMove[playerInTurn - 1] = false;
