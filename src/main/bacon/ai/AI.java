@@ -108,7 +108,7 @@ public class AI {
                     break;
                 }
 
-                if(BombNode.reachedDepth < iterationHeuristic.getDepth()) break;
+                if(BombNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
             }
         }
 

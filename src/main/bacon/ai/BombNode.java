@@ -8,20 +8,26 @@ import bacon.ai.heuristics.PancakeWatchdog;
 import bacon.move.BombMove;
 import bacon.move.Move;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class BombNode {
-    private static int maxDepth;
-    public static int reachedDepth;
-    private static PancakeWatchdog watchdog;
+class BombNode {
     private final static GameState state = Game.getGame().getCurrentState();
+
+    private static int maxDepth;
+    private static PancakeWatchdog watchdog;
+    /**
+     * The maximum depth that was reached in the search.
+     */
+    private static int reachedDepth;
 
     private int layer;
     private Move bestMove;
     private double[] values;
     private int player;
 
-    public BombNode(int maxDepth, PancakeWatchdog watchdog) {
+    BombNode(int maxDepth, PancakeWatchdog watchdog) {
         BombNode.maxDepth = maxDepth;
         BombNode.watchdog = watchdog;
         BombNode.reachedDepth = 0;
@@ -34,9 +40,9 @@ public class BombNode {
         this.player = player;
     }
 
-    public void evaluateNode() {
+    void evaluateNode() {
         int initialPlayer = player;
-        List<BombMove> legalMoves = Collections.emptyList();
+        List<BombMove> legalMoves;
         do {
             legalMoves = LegalMoves.getLegalBombMoves(state, player);
             if (!legalMoves.isEmpty()) break;
@@ -57,9 +63,9 @@ public class BombNode {
         if (this.layer < maxDepth) {
             Statistics.getStatistics().enterState(layer - 1);
 
-            List<BombMove> bestMoves = getBestMoves(legalMoves, (int) (legalMoves.size()*0.2));
+            List<BombMove> bestMoves = getBestMoves(legalMoves, (int) (legalMoves.size() * 0.2));
             for (BombMove move : bestMoves) {
-                if(watchdog.isPancake()) break;
+                if (watchdog.isPancake()) break;
 
                 BombNode childNode = new BombNode(this.layer + 1, (this.player % state.getTotalPlayerCount()) + 1);
                 move.doMove();
@@ -85,7 +91,7 @@ public class BombNode {
                     this.bestMove = move;
                 }
                 Statistics.getStatistics().leaveMeasuredState();
-                if(watchdog.isPancake()) break;
+                if (watchdog.isPancake()) break;
             }
         }
     }
@@ -135,12 +141,7 @@ public class BombNode {
             temp[i - 1] = state.getPlayerFromId(i).getStoneCount() * 2;
         }
 
-        ranking.sort(new Comparator<Player>() {
-            @Override
-            public int compare(Player player, Player p1) {
-                return p1.getStoneCount() - player.getStoneCount();
-            }
-        });
+        ranking.sort((p1, p2) -> p2.getStoneCount() - p1.getStoneCount());
 
         for (int rank = 0; rank < ranking.size(); rank++) {
             Player rankingPlayer = ranking.get(rank);
@@ -158,7 +159,16 @@ public class BombNode {
         return temp;
     }
 
-    public Move getBestMove() {
+    Move getBestMove() {
         return this.bestMove;
+    }
+
+    /**
+     * Returns the maximum depth that was reached in the search.
+     *
+     * @return the maximum reached search depth
+     */
+    static int getMaximumReachedDepth() {
+        return BombNode.reachedDepth;
     }
 }
