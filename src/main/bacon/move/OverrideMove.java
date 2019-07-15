@@ -16,7 +16,7 @@ public class OverrideMove extends BuildMove {
      * @param x        the horizontal coordinate
      * @param y        the vertical coordinate
      */
-    OverrideMove(GameState state, int playerId, int x, int y) {
+    public OverrideMove(GameState state, int playerId, int x, int y) {
         super(state, playerId, x, y);
         this.type = Type.OVERRIDE;
     }

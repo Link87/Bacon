@@ -24,7 +24,7 @@ public class Config {
     private final boolean aspirationWindows;
     private final boolean enableErr;
 
-    private final int randRollfrequency;
+    private final int randRollFrequency;
     private final int randRollTimeBudget;
     private final int maxRandRollIterations;
 
@@ -45,7 +45,7 @@ public class Config {
         this.aspirationWindows = ASPIRATION_WINDOWS_DEFAULT;
         this.enableErr = ENABLE_ERR_DEFAULT;
 
-        this.randRollfrequency = RAND_ROLL_FREQUENCY_DEFAULT;
+        this.randRollFrequency = RAND_ROLL_FREQUENCY_DEFAULT;
         this.randRollTimeBudget = RAND_ROLL_TIME_BUDGET_DEFAULT;
         this.maxRandRollIterations = MAX_RAND_ROLL_ITERATIONS_DEFAULT;
     }
@@ -60,10 +60,11 @@ public class Config {
      * @param beamWidth         width of beam used in beam search or {@code 0} if no beam search should be done.
      *                          This is ignored if {@code moveSorting} is set to {@code false}.
      * @param aspirationWindows {@code true} if aspiration windows should be used, {@code false} otherwise
+     * @param rolloutFrequency  number of turns after which to do a random rollout or {@code 0} to disable random rollouts
      * @param enableErr         {@code true} if errors and warnings should be printed to {@code stderr}, {@code false} otherwise.
      *                          Use this when running the ai locally.
      */
-    public Config(String host, int port, boolean pruning, boolean moveSorting, int beamWidth, boolean aspirationWindows, boolean enableErr) {
+    public Config(String host, int port, boolean pruning, boolean moveSorting, int beamWidth, boolean aspirationWindows, int rolloutFrequency, boolean enableErr) {
         this.host = host;
         this.port = port;
         this.pruning = pruning;
@@ -74,7 +75,7 @@ public class Config {
 
         this.helpRequested = false;
 
-        this.randRollfrequency = RAND_ROLL_FREQUENCY_DEFAULT;
+        this.randRollFrequency = rolloutFrequency;
         this.randRollTimeBudget = RAND_ROLL_TIME_BUDGET_DEFAULT;
         this.maxRandRollIterations = MAX_RAND_ROLL_ITERATIONS_DEFAULT;
 
@@ -168,11 +169,17 @@ public class Config {
         return enableErr;
     }
 
-    public int getRandRollFrequency () { return randRollfrequency; }
+    public int getRandRollFrequency() {
+        return randRollFrequency;
+    }
 
-    public int getRandRollTimeBudget() { return randRollTimeBudget; }
+    public int getRandRollTimeBudget() {
+        return randRollTimeBudget;
+    }
 
-    public int getMaxRandRollIterations() { return maxRandRollIterations; }
+    public int getMaxRandRollIterations() {
+        return maxRandRollIterations;
+    }
 
     /**
      * Parser that parses command line arguments and returns a {@link Config}.
@@ -197,6 +204,7 @@ public class Config {
             int beamWidth = BEAM_WIDTH_DEFAULT;
             boolean enableErr = ENABLE_ERR_DEFAULT;
             boolean aspiration = ASPIRATION_WINDOWS_DEFAULT;
+            int rollout = RAND_ROLL_FREQUENCY_DEFAULT;
 
             // the type of token that is expected to follow -- state machine lite
             State expect = State.EXPECT_ARG;
@@ -236,6 +244,11 @@ public class Config {
                             case "--no-asp":
                                 aspiration = false;
                                 break;
+                            case "--rollout":
+                                expect = State.EXPECT_ROLLOUT_FREQ;
+                                break;
+                            case "--no-rollout":
+                                rollout = 0;
                             case "--err":
                                 enableErr = true;
                                 break;
@@ -272,13 +285,24 @@ public class Config {
                         }
                         expect = State.EXPECT_ARG;
                         break;
+                    case EXPECT_ROLLOUT_FREQ:
+                        // read rollout frequency
+                        if (arg.charAt(0) == '-')
+                            throw new IllegalArgumentException();
+                        try {
+                            rollout = Integer.parseInt(arg);
+                        } catch (NumberFormatException nfe) {
+                            throw new IllegalArgumentException();
+                        }
+                        expect = State.EXPECT_ARG;
+                        break;
                 }
             }
 
             // host and port have to be both present
             if (host == null || port == -1)
                 throw new IllegalArgumentException();
-            return new Config(host, port, pruning, moveSorting, beamWidth, aspiration, enableErr);
+            return new Config(host, port, pruning, moveSorting, beamWidth, aspiration, rollout, enableErr);
         }
 
         /**
@@ -289,6 +313,7 @@ public class Config {
             EXPECT_HOST,
             EXPECT_PORT,
             EXPECT_BEAM_WIDTH,
+            EXPECT_ROLLOUT_FREQ,
         }
     }
 }

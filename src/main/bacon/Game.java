@@ -228,17 +228,24 @@ public class Game {
         for (int i = 1; i <= getTotalPlayerCount(); i++) {
             players.add(currentGameState.getPlayerFromId(i));
         }
-        players.sort(Comparator.comparing((Player p) -> p.getStones().size()).reversed());
+        players.sort(Comparator.comparing(Player::getStoneCount).reversed());
 
-        if (players.get(0).id == currentGameState.getMe())
+        if (players.get(0).getStoneCount() == currentGameState.getPlayerFromId(currentGameState.getMe()).getStoneCount())
             LOGGER.log(Level.INFO, "I have won! 🎉🎉🎉");
         else LOGGER.log(Level.INFO, "I have not won! \uD83D\uDE14");
 
         LOGGER.log(Level.INFO, "The game results are:");
         String[] suffixes = {"st", "nd", "rd", "th", "th", "th", "th", "th"};
+        int lastStoneCount = Integer.MAX_VALUE;
+        int lastRank = 0;
         for (int i = 1; i <= getTotalPlayerCount(); i++) {
+            int realRank = i;
+            if (players.get(i - 1).getStoneCount() == lastStoneCount)
+                realRank = lastRank;
             LOGGER.log(Level.INFO, "{0}: Player {1} owns {2} tiles.",
-                    new Object[]{i + suffixes[i - 1], players.get(i - 1).id, players.get(i - 1).getStones().size()});
+                    new Object[]{realRank + suffixes[realRank - 1], players.get(i - 1).id, players.get(i - 1).getStoneCount()});
+            lastRank = realRank;
+            lastStoneCount = players.get(i - 1).getStoneCount();
         }
     }
 

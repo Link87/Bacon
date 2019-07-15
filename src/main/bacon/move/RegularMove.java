@@ -22,12 +22,24 @@ public class RegularMove extends BuildMove {
      * @param y        the vertical coordinate
      * @param request  a special bonus the player asks for, applicable for choice and bonus {@link Tile}s
      */
-    RegularMove(GameState state, int playerId, int x, int y, BonusRequest request) {
+    public RegularMove(GameState state, int playerId, int x, int y, BonusRequest request) {
         super(state, playerId, x, y);
         this.type = Type.REGULAR;
         this.request = request;
         if (request == null)
             this.request = new BonusRequest(BonusRequest.Type.NONE);
+    }
+
+    /**
+     * Creates an instance of {@code RegularMove} without an {@link BonusRequest}.
+     *
+     * @param state    the {@link GameState} on which the move operates
+     * @param playerId the {@code id} of the {@link Player} of the move
+     * @param x        the horizontal coordinate
+     * @param y        the vertical coordinate
+     */
+    public RegularMove(GameState state, int playerId, int x, int y) {
+        this(state, playerId, x, y, null);
     }
 
 
