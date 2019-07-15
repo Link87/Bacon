@@ -7,6 +7,7 @@ import bacon.ai.heuristics.LegalMoves;
 import bacon.ai.heuristics.PancakeWatchdog;
 import bacon.move.Move;
 import bacon.move.RegularMove;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Set;
@@ -16,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 
 public class BRSTest {
 
+    @Ignore
     @Test
     public void legal() {
         Game.getGame().readMap(Maps.EXAMPLE_CERTAIN);
@@ -33,6 +35,7 @@ public class BRSTest {
         assertTrue("BRS returns illegal move", bestMove.isLegal());
     }
 
+    @Ignore
     @Test
     public void bonusCapture() {
         //Does BRS try to capture bonus tiles ?

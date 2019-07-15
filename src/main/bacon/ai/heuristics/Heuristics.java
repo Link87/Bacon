@@ -1,6 +1,7 @@
 package bacon.ai.heuristics;
 
 import bacon.*;
+import bacon.ai.BRSNode;
 import bacon.move.BombMove;
 
 import java.util.Set;
@@ -16,27 +17,47 @@ public class Heuristics {
 
     private Heuristics() {}
 
-    /**
-     * Returns whether the game is still in uncertainty phase.
-     * <p>
-     * This is the case, if there are still inversion or choice tiles on the map and hints
-     * uncertainty about stone ownership.
-     *
-     * @param state the {@link GameState} to be examined
-     * @return whether this game state is in the uncertainty phase
-     */
-    static boolean isUncertaintyPhase(GameState state) {
-        // TODO Optimize this methods by including inversion/choice tile coordinates as stateful attribute of Game
-        for (int x = 0; x < state.getMap().width; x++) {
-            for (int y = 0; y < state.getMap().height; y++) {
-                if (state.getMap().getTileAt(x, y).getProperty() == Tile.Property.CHOICE ||
-                        state.getMap().getTileAt(x, y).getProperty() == Tile.Property.INVERSION) {
-                    return true;
-                }
+
+    public static int inversionSwap(GameState state, int playerId) {
+        if (!state.getMap().isRandRollavailable()) {
+            System.out.println("RANDOM ROLLOUT NOT AVAILABLE");
+            return playerId;
+        }
+
+        double inversionStdv = state.getMap().getFinalInversionStdv();
+        double inversionCaptured = state.getMap().getInversionTileCount() - state.getMap().getFinalInversion();
+        double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
+        if (inversionCaptured > 0 && inversionStdv < 0.2 && choiceCaptured <= 0) {
+            System.out.println("INVERSION PREDICTED");
+            int swapPartner = (playerId - (int)inversionCaptured) % state.getTotalPlayerCount();
+            while (swapPartner < 1) {
+                swapPartner += state.getTotalPlayerCount();
+            }
+            if (swapPartner >= 1 && swapPartner <= state.getTotalPlayerCount()) {
+                System.out.println("SWAP SUCCESSFUL");
+                return swapPartner;
             }
         }
-        return false;
+        return playerId;
     }
+
+
+    public static double mobilityWeight(GameState state, int playerId) {
+        if (!state.getMap().isRandRollavailable()) return BRSNode.MOBILITY_SCALAR_DEFAULT;
+        double bonusCaptured = (state.getMap().getBonusTileCount() - state.getMap().getFinalBonus());
+        double choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
+
+        return 10 + bonusCaptured + choiceCaptured;
+    }
+
+    public static double stoneCountWeight (GameState state, int playerId) {
+        if (!state.getMap().isRandRollavailable()) return BRSNode.STONE_COUNT_SCALAR_DEFAULT;
+
+        double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
+        double attenuation = 5 * movesLeft / (state.getMap().getFinalOccupied() + 1);
+        return 1 * Math.pow(0.5, attenuation);
+    }
+
 
     /**
      * Calculates the mobility heuristics of the given game state and player.
@@ -74,6 +95,34 @@ public class Heuristics {
         }
 
         return overrideStability;
+    }
+
+    public static double stoneCountInRating(GameState state, int playerId) {
+        double value = state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount();
+        double choiceCaptured = 0;
+        if (state.getMap().isRandRollavailable()) choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+            if (i == playerId) continue;
+            if (state.getPlayerFromId(playerId).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
+                value = value - state.getPlayerFromId(i).getStoneCount();
+            }
+        }
+        if (choiceCaptured > 0.5 && (int)value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
+            return (-1) * value / state.getTotalPlayerCount();
+        }
+
+        return value / state.getTotalPlayerCount();
+    }
+
+    public static double lineClustering(GameState state, int playerId) {
+        int playerShareSum = 0;
+        for (Tile stone : state.getPlayerFromId(playerId).getStones()) {
+            playerShareSum += stone.getRow().getPlayerShare();
+            playerShareSum += stone.getColumn().getPlayerShare();
+            playerShareSum += stone.getDiagonal().getPlayerShare();
+            playerShareSum += stone.getIndiagonal().getPlayerShare();
+        }
+        return playerShareSum / (state.getPlayerFromId(playerId).getStoneCount() + 1);
     }
 
     /**

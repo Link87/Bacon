@@ -93,8 +93,8 @@ public class LegalMoves {
                                     legalMoves.add(new RegularMove(state, playerId, last.x, last.y, new BonusRequest(i)));
                                 }
                             } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
-                                legalMoves.add(new RegularMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));
-//                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
+                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));
+                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
                             } else if (steps > 0) {
                                 legalMoves.add(new RegularMove(state, playerId, last.x, last.y));
                             }

@@ -21,12 +21,23 @@ import java.util.*;
  */
 class BRSNode {
 
+    private static double stabilityScalar;
+    private static double mobilityScalar;
+    private static double overrideStabilityScalar;
+    private static double stoneCountScalar;
+    private static double lineClusteringScalar;
+
+
     /*
-    Constant scalar values for the computation of evaluation values.
+    Constant default scalar values for the computation of evaluation values.
      */
-    private static final double STABILITY_SCALAR = 1;
-    private static final double MOBILITY_SCALAR = 10;
-    private static final double BONUS_SCALAR = 100;
+    public static final double STABILITY_SCALAR_DEFAULT = 1;
+    public static final double MOBILITY_SCALAR_DEFAULT = 10;
+    public static final double OVERRIDE_STABILITY_SCALAR_DEFAULT = 10;
+    public static final double STONE_COUNT_SCALAR_DEFAULT = 1;
+    public static final double LINE_CLUSTERING_SCALAR_DEFAULT = -1;
+    public static final double BOMB_BONUS_SCALAR = 2;
+    public static final double OVERRIDE_BONUS_SCALAR = 100;
 
     /**
      * The maximum search depth.
@@ -117,6 +128,12 @@ class BRSNode {
         BRSNode.stateStdv = 0;
         BRSNode.stateValues = new ArrayList<>();
         BRSNode.reachedDepth = 0;
+
+        BRSNode.stabilityScalar = STABILITY_SCALAR_DEFAULT;
+        BRSNode.mobilityScalar = MOBILITY_SCALAR_DEFAULT;
+        BRSNode.overrideStabilityScalar = OVERRIDE_STABILITY_SCALAR_DEFAULT;
+        BRSNode.stoneCountScalar = STONE_COUNT_SCALAR_DEFAULT;
+        BRSNode.lineClusteringScalar = LINE_CLUSTERING_SCALAR_DEFAULT;
 
         this.layer = 0;
         this.isMaxNode = true;
@@ -561,32 +578,23 @@ class BRSNode {
      */
     private double evaluateCurrentState(Move.Type type) {
         if (type == Move.Type.REGULAR) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
-                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe())
-                    + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
-                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe())
-                    + stoneCountInRating();
+
+            int playerId = Heuristics.inversionSwap(state, state.getMe());
+            mobilityScalar = Heuristics.mobilityWeight(state, playerId);
+            stoneCountScalar = Heuristics.stoneCountWeight(state, playerId);
+
+            return stabilityScalar * StabilityHeuristic.stability(state, playerId)
+                    + mobilityScalar * Heuristics.mobility(state, playerId)
+                    + overrideStabilityScalar * Heuristics.overrideStability(state, playerId)
+                    + stoneCountScalar * Heuristics.stoneCountInRating(state, playerId)
+                    + lineClusteringScalar * Heuristics.lineClustering(state, playerId)
+                    + BOMB_BONUS_SCALAR * Heuristics.bonusBomb(state, playerId)
+                    + OVERRIDE_BONUS_SCALAR * Heuristics.bonusOverride(state, playerId);
         } else if (type == Move.Type.OVERRIDE) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
-                    + stoneCountInRating();
+            return  StabilityHeuristic.stability(state, state.getMe())
+                    + Heuristics.stoneCountInRating(state, state.getMe());
         }
 
         throw new IllegalStateException("Cannot evaluate bomb heuristic in brs tree. I shouldn't be here...");
-    }
-
-    /**
-     * helper method
-     * subtracts stone count of higher ranking players from the ai
-     * @return a value indicating the Ais rank (higher = better)
-     */
-    private double stoneCountInRating() {
-        double value = state.getPlayerFromId(state.getMe()).getStoneCount() * state.getTotalPlayerCount();
-        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-            if (i == state.getMe()) continue;
-            if (state.getPlayerFromId(state.getMe()).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
-                value = value - state.getPlayerFromId(i).getStoneCount();
-            }
-        }
-        return value / state.getTotalPlayerCount();
     }
 }

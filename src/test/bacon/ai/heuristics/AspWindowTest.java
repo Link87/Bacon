@@ -3,12 +3,14 @@ package bacon.ai.heuristics;
 import bacon.*;
 import bacon.ai.AI;
 import bacon.move.Move;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class AspWindowTest {
 
+    @Ignore
     @Test
     public void aspWindowTest() {
         Game.getGame().readMap(Maps.COMP_SQUARE);

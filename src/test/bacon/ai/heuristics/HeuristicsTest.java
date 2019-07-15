@@ -15,16 +15,7 @@ import static org.junit.Assert.*;
 
 public class HeuristicsTest {
 
-    @Test
-    public void uncertaintyPhase() {
-        Game.getGame().readMap(Maps.EXAMPLE);
-        assertTrue("Uncertainty Phase false negative", Heuristics.isUncertaintyPhase(Game.getGame().getCurrentState()));
-
-        Game.getGame().readMap(Maps.EXAMPLE_CERTAIN);
-        assertFalse("Uncertainty Phase false positive", Heuristics.isUncertaintyPhase(Game.getGame().getCurrentState()));
-    }
-
-
+    @Ignore("Mobility currently counts bonus tile and choice tile options as separate moves.")
     @Test
     @Ignore("Mobility currently counts bonus tile and choice tile options as separate moves.")
     public void mobility() {
