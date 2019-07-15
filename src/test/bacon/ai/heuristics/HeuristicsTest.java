@@ -5,13 +5,12 @@ import bacon.GamePhase;
 import bacon.GameState;
 import bacon.Maps;
 import bacon.move.BombMove;
-import bacon.move.MoveFactory;
 import bacon.move.OverrideMove;
 import bacon.move.RegularMove;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class HeuristicsTest {
 
@@ -37,7 +36,7 @@ public class HeuristicsTest {
         Game.getGame().readMap(Maps.EXAMPLE_OVERRIDE_STABILITY);
         Game.getGame().getCurrentState().setMe(1);
         Game.getGame().getCurrentState().getMap().assignLineGeometryPlayers();
-        assertEquals("Override stability heuristic error", 14, Heuristics.overrideStability(Game.getGame().getCurrentState(), 1), 0.1);
+        assertEquals("Override stability heuristic error", 14, Heuristics.overrideStability(Game.getGame().getCurrentState()), 0.1);
     }
 
     @Test

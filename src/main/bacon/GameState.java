@@ -56,13 +56,6 @@ public class GameState {
     }
 
     /**
-     * Returns the current move count
-     *
-     * @return the current move count
-     */
-    public int getMoveCount() {return Game.getGame().getMoveCount(); }
-
-    /**
      * Returns the radius bombs have in the game.
      * <p>
      * This value is constant throughout the game.
