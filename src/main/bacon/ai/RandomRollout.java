@@ -40,33 +40,38 @@ public class RandomRollout {
                 Move move = LegalMoves.quickRegularMove(this.state, playerInTurn);
                 if (move == null) move = LegalMoves.quickOverrideMove(this.state, playerInTurn);
                 if (move != null) {
-                    //String before = state.getMap().toString();
+                    String before = state.getMap().toString();
                     //System.out.println(before);
                     boolean inversionMove = (state.getMap().getTileAt(move.getX(), move.getY()).getProperty() == Tile.Property.INVERSION);
                     boolean choiceMove = (state.getMap().getTileAt(move.getX(), move.getY()).getProperty() == Tile.Property.CHOICE);
-                    boolean bonusMove = (state.getMap().getTileAt(move.getX(), move.getY()).getProperty() == Tile.Property.BONUS);
-                    boolean expansionMove = (state.getMap().getTileAt(move.getX(), move.getY()).getProperty() == Tile.Property.EXPANSION);
-                    state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.DEFAULT);
+                    if (inversionMove) {
+                        state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.DEFAULT);
+                        state.getMap().addInversionTiles(-1);
+                    }
+                    else if (choiceMove) {
+                        state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.DEFAULT);
+                        state.getMap().addChoiceTiles(-1);
+                    }
                     move.doMove();
-                    //String middle = state.getMap().toString();
+                    String middle = state.getMap().toString();
                     doRandRoll((playerInTurn % playerCount) + 1, iteration, playerHasMove);
                     move.undoMove();
-                    if (inversionMove)
+                    if (inversionMove) {
                         state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.INVERSION);
-                    else if (choiceMove)
+                        state.getMap().addInversionTiles(1);
+                    }
+                    else if (choiceMove) {
                         state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.CHOICE);
-                    else if (bonusMove)
-                        state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.BONUS);
-                    else if (expansionMove)
-                        state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.EXPANSION);
-                    //String after = state.getMap().toString();
-                /*
+                        state.getMap().addChoiceTiles(1);
+                    }
+                    String after = state.getMap().toString();
+
                 if (!before.equals(after)) {
                     System.out.println("BEFORE: " + before);
                     System.out.println("MIDDLE" + middle);
                     System.out.println("AFTER" + after);
                 }
-                */
+
                 } else {
                     playerHasMove[playerInTurn - 1] = false;
                     doRandRoll((playerInTurn % playerCount) + 1, iteration, playerHasMove);

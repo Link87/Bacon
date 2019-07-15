@@ -1,6 +1,7 @@
 package bacon.ai.heuristics;
 
 import bacon.*;
+import bacon.ai.BRSNode;
 import bacon.move.BombMove;
 
 import java.util.Set;
@@ -16,40 +17,24 @@ public class Heuristics {
 
     private Heuristics() {}
 
-    /**
-     * Returns whether the game is still in uncertainty phase.
-     * <p>
-     * This is the case, if there are still inversion or choice tiles on the map and hints
-     * uncertainty about stone ownership.
-     *
-     * @param state the {@link GameState} to be examined
-     * @return whether this game state is in the uncertainty phase
-     */
-    static boolean isUncertaintyPhase(GameState state) {
-        // TODO Optimize this methods by including inversion/choice tile coordinates as stateful attribute of Game
-        for (int x = 0; x < state.getMap().width; x++) {
-            for (int y = 0; y < state.getMap().height; y++) {
-                if (state.getMap().getTileAt(x, y).getProperty() == Tile.Property.CHOICE ||
-                        state.getMap().getTileAt(x, y).getProperty() == Tile.Property.INVERSION) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     public static int inversionSwap(GameState state, int playerId) {
+        if (!state.getMap().isRandRollavailable()) {
+            System.out.println("RANDOM ROLLOUT NOT AVAILABLE");
+            return playerId;
+        }
 
-        if (!state.getMap().isRandRollavailable()) return playerId;
-
-        int inversionLeft = (int) state.getMap().getFinalInversion() - state.getMap().getInversionTileCount();
         double inversionStdv = state.getMap().getFinalInversionStdv();
-        double choiceLeft = state.getMap().getFinalChoice() - state.getMap().getChoiceTileCount() + state.getMap().getFinalChoiceStdv();
-        if (inversionStdv < 1 && choiceLeft < (double) state.getTotalPlayerCount() / 4) {
-            int swapPartner = (((playerId - 1) - inversionLeft) % state.getTotalPlayerCount()) + 1;
+        double inversionCaptured = state.getMap().getInversionTileCount() - state.getMap().getFinalInversion();
+        double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
+        if (inversionCaptured > 0 && inversionStdv < 0.2 && choiceCaptured <= 0) {
+            System.out.println("INVERSION PREDICTED");
+            int swapPartner = (playerId - (int)inversionCaptured) % state.getTotalPlayerCount();
+            while (swapPartner < 1) {
+                swapPartner += state.getTotalPlayerCount();
+            }
             if (swapPartner >= 1 && swapPartner <= state.getTotalPlayerCount()) {
-                System.out.println("INVERSION PREDICTED");
+                System.out.println("SWAP SUCCESSFUL");
                 return swapPartner;
             }
         }
@@ -58,20 +43,19 @@ public class Heuristics {
 
 
     public static double mobilityWeight(GameState state, int playerId) {
-        double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
-        double bonusLeft = (state.getMap().getFinalBonus() - state.getMap().getBonusTileCount());
-        double choiceLeft = (state.getMap().getFinalChoice() - state.getMap().getChoiceTileCount());
+        if (!state.getMap().isRandRollavailable()) return BRSNode.MOBILITY_SCALAR_DEFAULT;
+        double bonusCaptured = (state.getMap().getBonusTileCount() - state.getMap().getFinalBonus());
+        double choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
 
-        return 0 * (movesLeft / state.getMap().getFinalOccupied())
-                + 0.1 * state.getMap().getOccupiedTileCount()
-                + 10 * bonusLeft
-                + 10 * choiceLeft;
+        return 10 + bonusCaptured + choiceCaptured;
     }
 
     public static double stoneCountWeight (GameState state, int playerId) {
-        double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
+        if (!state.getMap().isRandRollavailable()) return BRSNode.STONE_COUNT_SCALAR_DEFAULT;
 
-        return Math.pow(0.5, movesLeft * 0.0010);
+        double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
+        double attenuation = 5 * movesLeft / (state.getMap().getFinalOccupied() + 1);
+        return 1 * Math.pow(0.5, attenuation);
     }
 
 
@@ -115,14 +99,18 @@ public class Heuristics {
 
     public static double stoneCountInRating(GameState state, int playerId) {
         double value = state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount();
-        double choiceLeft = (state.getMap().getFinalChoice() - state.getMap().getChoiceTileCount());
+        double choiceCaptured = 0;
+        if (state.getMap().isRandRollavailable()) choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
         for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
             if (i == playerId) continue;
             if (state.getPlayerFromId(playerId).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
                 value = value - state.getPlayerFromId(i).getStoneCount();
             }
         }
-        //if (choiceLeft > 0.5 && (int)value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) return -1 * value;
+        if (choiceCaptured > 0.5 && (int)value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
+            return (-1) * value / state.getTotalPlayerCount();
+        }
+
         return value / state.getTotalPlayerCount();
     }
 
@@ -134,8 +122,7 @@ public class Heuristics {
             playerShareSum += stone.getDiagonal().getPlayerShare();
             playerShareSum += stone.getIndiagonal().getPlayerShare();
         }
-        return playerShareSum / (state.getPlayerFromId(playerId).getStoneCount());
-        //* state.getMap().getAvgTileLineLength());
+        return playerShareSum / (state.getPlayerFromId(playerId).getStoneCount() + 1);
     }
 
     /**

@@ -79,7 +79,7 @@ public class AI {
                         + "  avgInv: " + currentGameState.getMap().getFinalInversion()
                         + "  stdvInv: " + currentGameState.getMap().getFinalInversionStdv()
                         + "  avgCho: " + currentGameState.getMap().getFinalChoice()
-                        + "  avgCho: " + currentGameState.getMap().getFinalChoiceStdv()
+                        + "  stdvCho: " + currentGameState.getMap().getFinalChoiceStdv()
                         + "  avgBon: " + currentGameState.getMap().getFinalBonus() );
             }
 

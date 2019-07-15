@@ -607,10 +607,10 @@ public class Map {
 
     public void newRandRollStats (int maxIteration) {
         randRollStats = new RandRollStats(maxIteration);
-        randRollavailable = true;
     }
 
     public void updateRandRollStats (int iteration, int finalFreeTileCount, int finalOccupiedCount, int finalInversionCount, int finalChoiceCount, int finalBonusCount) {
+        randRollavailable = true;
         randRollStats.completedIterations = iteration;
         randRollStats.updateFinalFreeTiles(iteration, finalFreeTileCount);
         randRollStats.updateFinalOccupied(iteration, finalOccupiedCount);
