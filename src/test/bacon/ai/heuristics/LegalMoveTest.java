@@ -4,10 +4,12 @@ import bacon.Game;
 import bacon.GamePhase;
 import bacon.Maps;
 import bacon.Tile;
+import bacon.move.BombMove;
 import bacon.move.Move;
 import org.junit.Test;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
@@ -102,8 +104,8 @@ public class LegalMoveTest {
 
         Game.getGame().getCurrentState().setGamePhase(GamePhase.PHASE_TWO);
 
-        evaluatedMoves1 = LegalMoves.getLegalBombMoves(Game.getGame().getCurrentState(), 1);
-        for (Move mv : evaluatedMoves1) {
+        List<BombMove> evaluatedMoves = LegalMoves.getLegalBombMoves(Game.getGame().getCurrentState(), 1);
+        for (Move mv : evaluatedMoves) {
             assertTrue("Illegal Bomb Move at: (" + mv.getX() + "," + mv.getX() + ")", legalTiles1.contains(map.getTileAt(mv.getX(), mv.getY())));
         }
     }

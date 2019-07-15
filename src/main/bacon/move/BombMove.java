@@ -14,6 +14,8 @@ import java.util.Set;
  */
 public class BombMove extends Move {
 
+    ChangeData changeData[];
+
     /**
      * Creates a new instance of {@code BombMove} from the given values.
      *
@@ -50,7 +52,7 @@ public class BombMove extends Move {
         for (int i = 0; i < radius; i++) {
             for (Tile t : currentTiles) {
                 for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
-                    if (t.getTransition(direction) != null) {
+                    if (t.getTransition(direction) != null && t.getTransition(direction).getProperty() != Tile.Property.HOLE) {
                         if (!bombSet.contains(t.getTransition(direction))) {
                             bombSet.add(t.getTransition(direction));
                             nextTiles.add(t.getTransition(direction));
@@ -89,6 +91,13 @@ public class BombMove extends Move {
 
         Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
 
+        changeData = new ChangeData[bombSet.size()];
+        int index = 0;
+        for (Tile t : bombSet) {
+            changeData[index] = new ChangeData(t,t.getOwnerId(),t.getProperty());
+            index++;
+        }
+
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
         bombSet.forEach(Tile::bombTile);
 
@@ -97,13 +106,17 @@ public class BombMove extends Move {
     }
 
     /**
-     * {@code BombMove}s cannot be undone. This method throws an {@link UnsupportedOperationException}.
-     *
-     * @throws UnsupportedOperationException always
+     *Undoes this {@code BombMove}.
      */
     @Override
     public void undoMove() {
-        throw new UnsupportedOperationException();
+        for (ChangeData datum:changeData) {
+            Tile tile = datum.tile;
+            tile.setProperty(datum.wasProp);
+            tile.setOwnerId(datum.ogPlayerId);
+        }
+        this.state.getPlayerFromId(this.playerId).receiveBomb(1);
+        changeData = null;
     }
 
     /**
@@ -118,7 +131,14 @@ public class BombMove extends Move {
 
         Set<Tile> bombSet = target.getBombEffect();
         // in case precomputation of bombEffect failed (e.g. bomb radius too big), bombEffect is computed again
-        if (bombSet.isEmpty() == true) bombSet = BombMove.getAffectedTiles(target, radius);
+        if (bombSet.isEmpty()) bombSet = BombMove.getAffectedTiles(target, radius);
+
+        changeData = new ChangeData[bombSet.size()];
+        int index = 0;
+        for (Tile t : bombSet) {
+            changeData[index] = new ChangeData(t,t.getOwnerId(),t.getProperty());
+            index++;
+        }
 
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
         bombSet.forEach(Tile::bombTile);
