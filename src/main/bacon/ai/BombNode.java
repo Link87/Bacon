@@ -40,6 +40,15 @@ class BombNode {
         this.player = player;
     }
 
+    /**
+     * Returns the maximum depth that was reached in the search.
+     *
+     * @return the maximum reached search depth
+     */
+    static int getMaximumReachedDepth() {
+        return BombNode.reachedDepth;
+    }
+
     void evaluateNode() {
         int initialPlayer = player;
         List<BombMove> legalMoves;
@@ -50,7 +59,7 @@ class BombNode {
         } while (initialPlayer != player);
 
         if (legalMoves.isEmpty()) {
-            //game ends nobody can bomb
+            // game ends nobody can bomb
             Statistics.getStatistics().enterState(layer - 1);
             values = evaluateState();
             return;
@@ -78,7 +87,7 @@ class BombNode {
             }
 
         } else {
-            //this.layer == maxDepth
+            // this.layer == maxDepth
 
             for (BombMove move : legalMoves) {
                 Statistics.getStatistics().enterMeasuredState(this.layer - 1);
@@ -161,14 +170,5 @@ class BombNode {
 
     Move getBestMove() {
         return this.bestMove;
-    }
-
-    /**
-     * Returns the maximum depth that was reached in the search.
-     *
-     * @return the maximum reached search depth
-     */
-    static int getMaximumReachedDepth() {
-        return BombNode.reachedDepth;
     }
 }

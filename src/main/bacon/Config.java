@@ -60,7 +60,7 @@ public class Config {
      * @param beamWidth         width of beam used in beam search or {@code 0} if no beam search should be done.
      *                          This is ignored if {@code moveSorting} is set to {@code false}.
      * @param aspirationWindows {@code true} if aspiration windows should be used, {@code false} otherwise
-     * @param rolloutFrequency  number of turns after which to do a random rollout or {@code 0} to disable random rollouts
+     * @param rolloutFrequency  number of turns after which to do a random rollout
      * @param enableErr         {@code true} if errors and warnings should be printed to {@code stderr}, {@code false} otherwise.
      *                          Use this when running the ai locally.
      */
@@ -169,14 +169,29 @@ public class Config {
         return enableErr;
     }
 
+    /**
+     * Returns the frequency of random rollouts.
+     *
+     * @return frequency of random rollouts
+     */
     public int getRandRollFrequency() {
         return randRollFrequency;
     }
 
+    /**
+     * Returns the time budget for a single rollout.
+     *
+     * @return the maximum time that should be used for random rollouts in milliseconds
+     */
     public int getRandRollTimeBudget() {
         return randRollTimeBudget;
     }
 
+    /**
+     * Returns the maximum amount of times, random rollouts should be done at once.
+     *
+     * @return the maximum number of random rollout iterations
+     */
     public int getMaxRandRollIterations() {
         return maxRandRollIterations;
     }

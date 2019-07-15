@@ -5,6 +5,9 @@ import bacon.Tile;
 import bacon.ai.heuristics.LegalMoves;
 import bacon.move.Move;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class RandomRollout {
 
     private GameState state;
@@ -22,21 +25,21 @@ public class RandomRollout {
         state.getMap().newRandRollStats(maxIterations);
         while (System.nanoTime() < timeout && totalIteration <= maxIterations) {
             boolean[] playerHasMove = new boolean[playerCount];
-            for (int i=0; i<playerCount; i++) {
+            for (int i = 0; i < playerCount; i++) {
                 playerHasMove[i] = true;
             }
-            doRandRoll(state.getMe(), totalIteration, playerHasMove);
+            doRollout(state.getMe(), totalIteration, playerHasMove);
         }
     }
 
-    public void doRandRoll(int playerInTurn, int iteration, boolean[] playerHasMove) {
+    private void doRollout(int playerInTurn, int iteration, boolean[] playerHasMove) {
         if (System.nanoTime() < timeout) {
             boolean anyoneHasMove = false;
             for (int i = 0; i < this.playerCount; i++) {
-                if (playerHasMove[i] == true) anyoneHasMove = true;
+                if (playerHasMove[i]) anyoneHasMove = true;
             }
 
-            if (anyoneHasMove == true) {
+            if (anyoneHasMove) {
                 Move move = LegalMoves.quickRegularMove(this.state, playerInTurn);
                 if (move == null) move = LegalMoves.quickOverrideMove(this.state, playerInTurn);
                 if (move != null) {
@@ -47,20 +50,18 @@ public class RandomRollout {
                     if (inversionMove) {
                         state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.DEFAULT);
                         state.getMap().addInversionTiles(-1);
-                    }
-                    else if (choiceMove) {
+                    } else if (choiceMove) {
                         state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.DEFAULT);
                         state.getMap().addChoiceTiles(-1);
                     }
                     move.doMove();
                     String middle = state.getMap().toString();
-                    doRandRoll((playerInTurn % playerCount) + 1, iteration, playerHasMove);
+                    doRollout((playerInTurn % playerCount) + 1, iteration, playerHasMove);
                     move.undoMove();
                     if (inversionMove) {
                         state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.INVERSION);
                         state.getMap().addInversionTiles(1);
-                    }
-                    else if (choiceMove) {
+                    } else if (choiceMove) {
                         state.getMap().getTileAt(move.getX(), move.getY()).setProperty(Tile.Property.CHOICE);
                         state.getMap().addChoiceTiles(1);
                     }
@@ -74,7 +75,7 @@ public class RandomRollout {
 
                 } else {
                     playerHasMove[playerInTurn - 1] = false;
-                    doRandRoll((playerInTurn % playerCount) + 1, iteration, playerHasMove);
+                    doRollout((playerInTurn % playerCount) + 1, iteration, playerHasMove);
                 }
             } else {
                 //System.out.println(this.state.getMap().toString());
@@ -85,7 +86,7 @@ public class RandomRollout {
                 int finalChoiceCount = state.getMap().getChoiceTileCount();
                 int finalBonusCount = state.getMap().getBonusTileCount();
 
-                state.getMap().updateRandRollStats(iteration, finalFreeTileCount, finalOccupiedCount, finalInversionCount, finalChoiceCount, finalBonusCount);
+                state.getMap().updateRolloutStats(iteration, finalFreeTileCount, finalOccupiedCount, finalInversionCount, finalChoiceCount, finalBonusCount);
                 totalIteration++;
             }
         }

@@ -4,15 +4,11 @@ import bacon.Config;
 import bacon.Game;
 import bacon.GamePhase;
 import bacon.GameState;
-import bacon.ai.heuristics.Heuristics;
 import bacon.ai.heuristics.IterationHeuristic;
-import bacon.ai.heuristics.LegalMoves;
 import bacon.ai.heuristics.PancakeWatchdog;
-import bacon.move.BombMove;
 import bacon.move.Move;
 
 import java.util.IntSummaryStatistics;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -26,7 +22,15 @@ public class AI {
 
     private static final AI INSTANCE = new AI();
 
-    private static int moveCounter = 0;
+    /**
+     * Amount of moves that we made.
+     */
+    private static int moveCount = 0;
+
+    /**
+     * Amount of times the PancakeWatchdog was triggered.
+     */
+    private static int pancakeCounter = 0;
 
     /**
      * Singleton constructor that does nothing.
@@ -40,6 +44,10 @@ public class AI {
      */
     public static AI getAI() {
         return INSTANCE;
+    }
+
+    public static int getPancakeCounter() {
+        return pancakeCounter;
     }
 
     /**
@@ -60,32 +68,31 @@ public class AI {
         Statistics.getStatistics().init();
 
         int currentMoveNumber = currentGameState.getMoveCount();
-        moveCounter++;
-
+        moveCount++;
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            int randRollTime = 0;
-            if (moveCounter % cfg.getRandRollFrequency() == 2 && currentMoveNumber != 1) {
-                LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCounter = " + moveCounter);
+            int rolloutTime = 0;
+            if (moveCount % cfg.getRandRollFrequency() == 2 && currentMoveNumber != 1) {
+                LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCount = " + moveCount);
                 long startTimeStamp = System.nanoTime();
-                RandomRollout randroll = new RandomRollout(Game.getGame().getCurrentState(), cfg.getMaxRandRollIterations(),
+                RandomRollout rollout = new RandomRollout(Game.getGame().getCurrentState(), cfg.getMaxRandRollIterations(),
                         startTimeStamp + cfg.getRandRollTimeBudget() * 1000000);
                 long endTimeStamp = System.nanoTime();
-                randRollTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
-                LOGGER.log(Level.INFO, "RR completed, elapsed time: " + randRollTime + "ms, completed iterations: " + (randroll.getTotalIteration() - 1));
-                System.out.println("avgFree: " + currentGameState.getMap().getFinalfreeTiles()
+                rolloutTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
+                LOGGER.log(Level.INFO, "RR completed, elapsed time: " + rolloutTime + "ms, completed iterations: " + (rollout.getTotalIteration() - 1));
+                LOGGER.log(Level.FINE, "avgFree: " + currentGameState.getMap().getFinalFreeTiles()
                         + "  avgOcc: " + currentGameState.getMap().getFinalOccupied()
                         + "  avgInv: " + currentGameState.getMap().getFinalInversion()
                         + "  stdvInv: " + currentGameState.getMap().getFinalInversionStdv()
                         + "  avgCho: " + currentGameState.getMap().getFinalChoice()
                         + "  stdvCho: " + currentGameState.getMap().getFinalChoiceStdv()
-                        + "  avgBon: " + currentGameState.getMap().getFinalBonus() );
+                        + "  avgBon: " + currentGameState.getMap().getFinalBonus());
             }
 
 
-            PancakeWatchdog watchdog = new PancakeWatchdog(timeout - randRollTime);
-            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout - randRollTime, depth);
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout - rolloutTime);
+            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout - rolloutTime, depth);
 
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;
@@ -114,6 +121,7 @@ public class AI {
 
                 if (watchdog.isTriggered()) {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
+                    AI.pancakeCounter++;
                     break;
                 }
 
@@ -123,18 +131,18 @@ public class AI {
         } else {
             IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
             PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
-            while (iterationHeuristic.doIteration()){
-                BombNode root = new BombNode(iterationHeuristic.getDepth(),watchdog);
+            while (iterationHeuristic.doIteration()) {
+                BombNode root = new BombNode(iterationHeuristic.getDepth(), watchdog);
                 root.evaluateNode();
-                if(!watchdog.isTriggered()) {
+                if (!watchdog.isTriggered()) {
                     bestMove = root.getBestMove();
-                }
-                else {
+                } else {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
+                    AI.pancakeCounter++;
                     break;
                 }
 
-                if(BombNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
+                if (BombNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
             }
         }
 

@@ -4,8 +4,11 @@ import bacon.*;
 import bacon.move.BombMove;
 
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 
 /**
  * A collection of heuristic methods.
@@ -15,7 +18,6 @@ import static java.lang.Math.*;
 public class Heuristics {
 
     private Heuristics() {}
-
 
     public static int inversionSwap(GameState state, int playerId) {
         if (!state.getMap().isRandRollavailable()) {
@@ -42,15 +44,15 @@ public class Heuristics {
 
 
     public static double mobilityWeight(GameState state, int playerId) {
-        if (!state.getMap().isRandRollavailable()) return 10;
+        if (!state.getMap().isRolloutsAvailable()) return 10;
         double bonusCaptured = (state.getMap().getBonusTileCount() - state.getMap().getFinalBonus());
         double choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
 
         return 10 + bonusCaptured + choiceCaptured;
     }
 
-    public static double stoneCountWeight (GameState state, int playerId) {
-        if (!state.getMap().isRandRollavailable()) return 1;
+    public static double stoneCountWeight(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) return 1;
 
         double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
         double attenuation = 5 * movesLeft / (state.getMap().getFinalOccupied() + 1);
@@ -99,14 +101,15 @@ public class Heuristics {
     public static double stoneCountInRating(GameState state, int playerId) {
         double value = state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount();
         double choiceCaptured = 0;
-        if (state.getMap().isRandRollavailable()) choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
+        if (state.getMap().isRolloutsAvailable())
+            choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
         for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
             if (i == playerId) continue;
             if (state.getPlayerFromId(playerId).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
                 value = value - state.getPlayerFromId(i).getStoneCount();
             }
         }
-        if (choiceCaptured > 0.5 && (int)value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
+        if (choiceCaptured > 0.5 && (int) value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
             return (-1) * value / state.getTotalPlayerCount();
         }
 
@@ -157,12 +160,12 @@ public class Heuristics {
      * @param move  the {@link BombMove} to rate
      * @return a real number as clustering heuristics
      */
-    public static double bombingPhaseHeuristic(GameState state, BombMove move) {
+    static double bombingPhaseHeuristic(GameState state, BombMove move) {
         int playerStoneCount = state.getPlayerFromId(move.getPlayerId()).getStoneCount();
         int playerBombCount = state.getPlayerFromId(move.getPlayerId()).getBombCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
-        int[] rankPoints = {-25,-11,-5,-2,-1,0,0,0};
+        int[] rankPoints = {-25, -11, -5, -2, -1, 0, 0, 0};
 
         double[] rivalry = new double[totalPlayer]; // rivalry factor between the player and each of his rivals (all other players).
         // The closer in stone count the stronger the rivalry.
@@ -178,7 +181,7 @@ public class Heuristics {
         for (int i = 0; i < totalPlayer; i++) {
             double maxStoneCount = 0;
             int maxRankPlayerId = 0;
-            for (int j=0; j < totalPlayer; j++) {
+            for (int j = 0; j < totalPlayer; j++) {
                 if (rivalRankPoints[j] > maxStoneCount) {
                     maxStoneCount = rivalRankPoints[j];
                     maxRankPlayerId = j;
@@ -206,7 +209,8 @@ public class Heuristics {
         // all tiles within one bomb radius of the bombing target
         Set<Tile> bombSet = state.getMap().getTileAt(move.getX(), move.getY()).getBombEffect();
         // in case precomputation of bombEffect failed (e.g. bomb radius too big), bombEffect is computed again
-        if (bombSet.isEmpty()) bombSet = BombMove.getAffectedTiles(state.getMap().getTileAt(move.getX(), move.getY()), bombRadius);
+        if (bombSet.isEmpty())
+            bombSet = BombMove.getAffectedTiles(state.getMap().getTileAt(move.getX(), move.getY()), bombRadius);
 
         for (Tile t : bombSet) {   // we examine each tile within the bomb radius for ownership
             // and assign damage to each rival in case our stone is bombed

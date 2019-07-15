@@ -20,6 +20,9 @@ public class IterationHeuristic {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
+    /**
+     * Maximum depth at which iterative deepening is terminated.
+     */
     private static final int MAX_DEPTH = 15;
     private static final double SAFETY_FACTOR = 0.90;
 

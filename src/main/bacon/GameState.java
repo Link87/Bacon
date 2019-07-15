@@ -85,22 +85,6 @@ public class GameState {
     }
 
     /**
-     * Returns the total amount of non-hole {@link Tile}s on the {@link Map}.
-     * <p>
-     * This value is constant throughout the game.
-     *
-     * @return the total non-hole tile count
-     */
-    public int getTotalTileCount() { return this.map.getTotalTileCount(); }
-
-    /**
-     * Returns the amount of occupied {@link Tile}s on the {@link Map}, including expansion tiles.
-     *
-     * @return the occupied tile count
-     */
-    public int getOccupiedTileCount() { return this.map.getOccupiedTileCount(); }
-
-    /**
      * Returns the {@link Map} this game is played on.
      *
      * @return the {@code Map} of this game

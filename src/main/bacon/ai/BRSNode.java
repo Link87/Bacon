@@ -21,13 +21,6 @@ import java.util.*;
  */
 class BRSNode {
 
-    private static double stabilityScalar;
-    private static double mobilityScalar;
-    private static double overrideStabilityScalar;
-    private static double stoneCountScalar;
-    private static double lineClusteringScalar;
-
-
     /*
     Constant default scalar values for the computation of evaluation values.
      */
@@ -39,6 +32,11 @@ class BRSNode {
     public static final double BOMB_BONUS_SCALAR = 2;
     public static final double OVERRIDE_BONUS_SCALAR = 100;
 
+    private static double stabilityScalar;
+    private static double mobilityScalar;
+    private static double overrideStabilityScalar;
+    private static double stoneCountScalar;
+    private static double lineClusteringScalar;
     /**
      * The maximum search depth.
      */
@@ -591,7 +589,7 @@ class BRSNode {
                     + BOMB_BONUS_SCALAR * Heuristics.bonusBomb(state, playerId)
                     + OVERRIDE_BONUS_SCALAR * Heuristics.bonusOverride(state, playerId);
         } else if (type == Move.Type.OVERRIDE) {
-            return  StabilityHeuristic.stability(state, state.getMe())
+            return StabilityHeuristic.stability(state, state.getMe())
                     + Heuristics.stoneCountInRating(state, state.getMe());
         }
 

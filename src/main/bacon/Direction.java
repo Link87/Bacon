@@ -56,6 +56,7 @@ public enum Direction {
      * The integer representation of the direction.
      */
     public final int id;
+
     Direction(int id) {
         this.id = id;
     }

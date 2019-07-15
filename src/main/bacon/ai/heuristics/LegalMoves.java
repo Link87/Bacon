@@ -214,14 +214,16 @@ public class LegalMoves {
                         else backUpMove = legalMove;
                     }
                 } else if (tile.getProperty() == Tile.Property.BONUS) {
-                    if (bombBonus) legalMove = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
-                    else legalMove = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
+                    if (bombBonus)
+                        legalMove = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+                    else
+                        legalMove = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
                     if (legalMove.isLegal()) {
                         if (!repeat) break;
                         else backUpMove = legalMove;
                     }
                 } else if (tile.getProperty() == Tile.Property.CHOICE) {
-                    int i = (int)(Math.random() * state.getTotalPlayerCount() + 1);
+                    int i = (int) (Math.random() * state.getTotalPlayerCount() + 1);
                     legalMove = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(i));
                     if (legalMove.isLegal()) {
                         if (!repeat) break;
@@ -259,16 +261,21 @@ public class LegalMoves {
                             // checks if the move actually captures any tile
                             // also handle tile property
                             if (steps > 0 && last.getProperty() == Tile.Property.CHOICE) {
-                                int i = (int)(Math.random() * state.getTotalPlayerCount() + 1);
+                                int i = (int) (Math.random() * state.getTotalPlayerCount() + 1);
                                 legalMove = new RegularMove(state, playerId, last.x, last.y, new BonusRequest(i));
-                                if (!repeat) return legalMove; else break;
+                                if (!repeat) return legalMove;
+                                else break;
                             } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
-                                if (bombBonus) legalMove = new RegularMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
-                                else legalMove = new RegularMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
-                                if (!repeat) return legalMove; else break;
+                                if (bombBonus)
+                                    legalMove = new RegularMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+                                else
+                                    legalMove = new RegularMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
+                                if (!repeat) return legalMove;
+                                else break;
                             } else if (steps > 0) {
                                 legalMove = new RegularMove(state, playerId, last.x, last.y);
-                                if (!repeat) return legalMove; else break;
+                                if (!repeat) return legalMove;
+                                else break;
                             }
                             break;
                         }
@@ -282,7 +289,6 @@ public class LegalMoves {
         return legalMove;
 
     }
-
 
     public static OverrideMove quickOverrideMove(GameState state, int playerId) {
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
@@ -330,9 +336,5 @@ public class LegalMoves {
 
         return legalMove;
     }
-
-
-
-
 
 }

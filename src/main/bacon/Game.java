@@ -220,7 +220,7 @@ public class Game {
     }
 
     /**
-     * Prints a game summary to the log.
+     * Prints a game summary to the log. This contains the ranking of each player.
      */
     private void printSummary() {
 
@@ -233,6 +233,8 @@ public class Game {
         if (players.get(0).getStoneCount() == currentGameState.getPlayerFromId(currentGameState.getMe()).getStoneCount())
             LOGGER.log(Level.INFO, "I have won! 🎉🎉🎉");
         else LOGGER.log(Level.INFO, "I have not won! \uD83D\uDE14");
+
+        LOGGER.log(Level.INFO, "Total {0} pancake(s) triggered", AI.getPancakeCounter());
 
         LOGGER.log(Level.INFO, "The game results are:");
         String[] suffixes = {"st", "nd", "rd", "th", "th", "th", "th", "th"};
@@ -276,5 +278,7 @@ public class Game {
      *
      * @return the current move count
      */
-    public int getMoveCount() {return moveCount; }
+    public int getMoveCount() {
+        return moveCount;
+    }
 }
