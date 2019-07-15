@@ -32,10 +32,10 @@ public class BRSNode {
     Constant default scalar values for the computation of evaluation values.
      */
     private static final double STABILITY_SCALAR_DEFAULT = 1;
-    private static final double MOBILITY_SCALAR_DEFAULT = 10;
+    private static final double MOBILITY_SCALAR_DEFAULT = 178;
     private static final double OVERRIDE_STABILITY_SCALAR_DEFAULT = 1;
     private static final double STONE_COUNT_SCALAR_DEFAULT = 1;
-    private static final double LINE_CLUSTERING_SCALAR_DEFAULT = 1;
+    private static final double LINE_CLUSTERING_SCALAR_DEFAULT = -1;
     private static final double BOMB_BONUS_SCALAR = 2;
     private static final double OVERRIDE_BONUS_SCALAR = 100;
 

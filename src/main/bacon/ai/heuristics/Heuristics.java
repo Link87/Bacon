@@ -126,6 +126,18 @@ public class Heuristics {
         return value / state.getTotalPlayerCount();
     }
 
+    public static double lineClustering(GameState state, int playerId) {
+        int playerShareSum = 0;
+        for (Tile stone : state.getPlayerFromId(playerId).getStones()) {
+            playerShareSum += stone.getRow().getPlayerShare();
+            playerShareSum += stone.getColumn().getPlayerShare();
+            playerShareSum += stone.getDiagonal().getPlayerShare();
+            playerShareSum += stone.getIndiagonal().getPlayerShare();
+        }
+        return playerShareSum / (state.getPlayerFromId(playerId).getStoneCount());
+        //* state.getMap().getAvgTileLineLength());
+    }
+
     /**
      * Calculates the bomb bonus heuristics of the given game state and player.
      *
