@@ -24,9 +24,30 @@ public class Map {
      */
     private int totalTiles;
     /**
+     * Amount of inversion {@link Tile}s on the map
+     */
+    private int inversionTiles;
+    /**
+     * Amount of choice {@link Tile}s on the map
+     */
+    private int choiceTiles;
+    /**
+     * Amount of bonus {@link Tile}s on the map
+     */
+    private int bonusTiles;
+    /**
+     * The {@link Tile}s that are free, i.e. not occupied by any player nor expansion stone and isn't a hole
+     */
+    private Set<Tile> freeTiles;
+    /**
      * The {@link Tile}s that have an expansion stone on them
      */
     private Set<Tile> expansionTiles;
+
+    /**
+     * Result of Random Rollouts
+     */
+    private RandRollStats randRollStats;
 
     /**
      * Keeps track of all the {@link TileLine} in the {@code Map}.
@@ -50,7 +71,7 @@ public class Map {
      * @param expansionTiles a set containing those tiles, that have an expansion stone on them.
      *                       This is required and asserted to be a subset of {@code tiles}.
      */
-    private Map(Tile[][] tiles, int initOccupied, int totalTiles, Set<Tile> expansionTiles) {
+    private Map(Tile[][] tiles, int initOccupied, int totalTiles, int inversionTiles, int choiceTiles, int bonusTiles, Set<Tile> freeTiles, Set<Tile> expansionTiles) {
         this.tiles = tiles;
 
         assert tiles.length > 0 && tiles[0].length > 0 : "Dimensions of tiles have to be positive";
@@ -60,7 +81,10 @@ public class Map {
 
         this.occupiedTiles = initOccupied;
         this.totalTiles = totalTiles;
-
+        this.inversionTiles = inversionTiles;
+        this.choiceTiles = choiceTiles;
+        this.bonusTiles = bonusTiles;
+        this.freeTiles = freeTiles;
         this.expansionTiles = expansionTiles;
     }
 
@@ -84,7 +108,11 @@ public class Map {
         Tile[][] tiles = new Tile[width][height];
         int occupiedCount = 0;
         int totalCount = 0;
+        Set<Tile> freeTiles = new HashSet<>();
         Set<Tile> expansionTiles = new HashSet<>();
+        int inversionTiles = 0;
+        int choiceTiles = 0;
+        int bonusTiles = 0;
 
         // putting tile information into the array
         for (int h = 0; h < height; h++) {
@@ -96,6 +124,7 @@ public class Map {
                 if (symbol == '0') {
                     // Tile is empty
                     tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.DEFAULT, w, h);
+                    freeTiles.add(tiles[w][h]);
                 } else if (symbol <= '8' && symbol > '0') {
                     // Tile has a Stone (an owner)
                     int playerId = Character.getNumericValue(symbol);
@@ -105,10 +134,21 @@ public class Map {
                 } else if (symbol != '-') {
                     // Tile is not a hole --> Tile has Property
                     tiles[w][h] = new Tile(Player.NULL_PLAYER_ID, Tile.Property.fromChar(symbol), w, h);
-
                     if (symbol == 'x') {
                         occupiedCount++;
                         expansionTiles.add(tiles[w][h]);
+                    }
+                    if (symbol == 'i') {
+                        freeTiles.add(tiles[w][h]);
+                        inversionTiles++;
+                    }
+                    if (symbol == 'c') {
+                        freeTiles.add(tiles[w][h]);
+                        choiceTiles++;
+                    }
+                    if (symbol == 'b') {
+                        freeTiles.add(tiles[w][h]);
+                        bonusTiles++;
                     }
                 } else {
                     // Tile is a hole
@@ -156,7 +196,8 @@ public class Map {
             }
         }
 
-        Map map = new Map(tiles, occupiedCount, totalCount, expansionTiles);
+        Map map = new Map(tiles, occupiedCount, totalCount, inversionTiles, choiceTiles, bonusTiles, freeTiles, expansionTiles);
+
 
         // adding additional transitions from map specification
         for (int l = height; l < lines.length; l++) {
@@ -248,6 +289,24 @@ public class Map {
     }
 
     /**
+     * Returns the average number of {@code Tile}s destroyed with one bomb.
+     *
+     * @return average bomb area
+     */
+    public double getAvgBombArea() {
+        return avgBombArea;
+    }
+
+    /**
+     * Returns the average length of the {@link TileLine}s of the {@link Map}.
+     *
+     * @return the average TileLine length.
+     */
+    public double getAvgTileLineLength() {
+        return lineGeometry.getAvgTileLineLength();
+    }
+
+    /**
      * Returns the total amount of {@code Tile}s that are no holes.
      *
      * @return number of non-hole {@code Tile}s.
@@ -272,7 +331,90 @@ public class Map {
      * @param d amount of stones that are added, if value is positive, or removed, if value is negative
      */
     public void addOccupiedTiles(int d) {
-        this.occupiedTiles += d;
+        occupiedTiles += d;
+    }
+
+    /**
+     * Returns the amount of inversion {@code Tile}s.
+     *
+     * @return number of inversion {@code Tile}s.
+     */
+    public int getInversionTileCount() {
+        return inversionTiles;
+    }
+
+    /**
+     * Changes the amount of inversion {@code Tile}s.
+     *
+     * @param d amount of inversion {@code Tile} that are added, if value is positive, or removed, if value is negative
+     */
+    public void addInversionTiles(int d) {
+        inversionTiles += d;
+    }
+
+    /**
+     * Returns the amount of inversion {@code Tile}s.
+     *
+     * @return number of inversion {@code Tile}s.
+     */
+    public int getChoiceTileCount() {
+        return choiceTiles;
+    }
+
+    /**
+     * Changes the amount of inversion {@code Tile}s.
+     *
+     * @param d amount of inversion {@code Tile} that are added, if value is positive, or removed, if value is negative
+     */
+    public void addChoiceTiles(int d) {
+        choiceTiles += d;
+    }
+
+    /**
+     * Returns the amount of inversion {@code Tile}s.
+     *
+     * @return number of inversion {@code Tile}s.
+     */
+    public int getBonusTileCount() {
+        return bonusTiles;
+    }
+
+    /**
+     * Changes the amount of inversion {@code Tile}s.
+     *
+     * @param d amount of inversion {@code Tile} that are added, if value is positive, or removed, if value is negative
+     */
+    public void addBonusTiles(int d) {
+        bonusTiles += d;
+    }
+
+    /**
+     * Adds a free tile to the map
+     * <p>
+     * Use this to undo certain moves.
+     *
+     * @param tile the {@code Tile} that has just been freed
+     */
+    public void addFreeTile(Tile tile) {
+        freeTiles.add(tile);
+    }
+
+    /**
+     * Removes a free tile from the map
+     *
+     * @param tile the {@code Tile} that previously was free
+     */
+    public void removeFreeTile(Tile tile) {
+        freeTiles.remove(tile);
+    }
+
+    /**
+     * Returns current free tiles on the {@code Map}.
+     *
+     * @return a set containing the current free tiles on the {@code Map}
+     */
+    public Set<Tile> getFreeTiles() {
+        return freeTiles;
     }
 
     /**
@@ -347,6 +489,12 @@ public class Map {
          */
         final List<TileLine> tileLines;
 
+
+        /**
+         * The average length of {@link TileLine}s of the {@link Map}.
+         */
+        final double avgTileLineLength;
+
         /**
          * Creates a new {@code LineGeometry} instance. Calculates all {@link TileLine}s of the {@link Map}.
          */
@@ -412,6 +560,13 @@ public class Map {
                     }
                 }
             }
+
+            // calculate average length of TileLines of this map
+            double tileLineSum = 0;
+            for (TileLine l : tileLines) {
+                tileLineSum += l.getLineSize();
+            }
+            avgTileLineLength = tileLineSum/tileLines.size();
         }
 
         /**
@@ -430,6 +585,149 @@ public class Map {
          */
         private List<TileLine> getTileLines() {
             return Collections.unmodifiableList(tileLines);
+        }
+
+        /**
+         * Returns the average length of the {@link TileLine}s of the {@link Map}.
+         *
+         * @return the average TileLine length.
+         */
+        private double getAvgTileLineLength() {
+            return avgTileLineLength;
+        }
+    }
+
+    public void newRandRollStats (int maxIteration) {
+        randRollStats = new RandRollStats(maxIteration);
+    }
+
+    public void updateRandRollStats (int iteration, int finalFreeTileCount, int finalOccupiedCount, int finalInversionCount, int finalChoiceCount, int finalBonusCount) {
+        randRollStats.completedIterations = iteration;
+        randRollStats.updateFinalFreeTiles(iteration, finalFreeTileCount);
+        randRollStats.updateFinalOccupied(iteration, finalOccupiedCount);
+        randRollStats.updateFinalInversion(iteration, finalInversionCount);
+        randRollStats.updateFinalChoice(iteration, finalChoiceCount);
+        randRollStats.updateFinalBonus(iteration, finalBonusCount);
+    }
+
+    public  int getCompletedRRIterations() {
+        return randRollStats.completedIterations;
+    }
+
+    public double getFinalfreeTiles() {
+        return randRollStats.avgFinalFreeTiles;
+    }
+
+
+    public double getFinalOccupied() {
+        return randRollStats.avgFinalOccupied;
+    }
+
+
+    public double getFinalInversion() {
+        return randRollStats.avgFinalInversion;
+    }
+
+    public double getFinalInversionStdv() {
+        return randRollStats.stdvFinalInversion;
+    }
+
+
+    public double getFinalChoice() {
+        return randRollStats.avgFinalChoice;
+    }
+
+    public double getFinalChoiceStdv() {
+        return randRollStats.stdvFinalChoice;
+    }
+
+
+    public double getFinalBonus() {
+        return randRollStats.avgFinalBonus;
+    }
+
+    private class RandRollStats {
+
+        private int completedIterations;
+
+        private int[] finalFreeTileCounts;
+        private int[] finalOccupiedCounts;
+        private int[] finalInversionCounts;
+        private int[] finalChoiceCounts;
+        private int[] finalBonusCounts;
+
+
+        private double avgFinalFreeTiles;
+        private double avgFinalOccupied;
+        private double avgFinalInversion;
+        private double avgFinalChoice;
+        private double avgFinalBonus;
+
+        private double stdvFinalInversion;
+        private double stdvFinalChoice;
+
+        private RandRollStats(int maxIteration) {
+            this.completedIterations = 0;
+            this.finalFreeTileCounts = new int[maxIteration];
+            this.finalOccupiedCounts = new int[maxIteration];
+            this.finalInversionCounts = new int[maxIteration];
+            this.finalChoiceCounts = new int[maxIteration];
+            this.finalBonusCounts = new int[maxIteration];
+        }
+
+        private void updateFinalFreeTiles (int iteration, int finalFreeTileCount) {
+            this.finalFreeTileCounts[iteration-1] = finalFreeTileCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalFreeTileCounts[i];
+            }
+            this.avgFinalFreeTiles = sum / iteration;
+        }
+
+        private void updateFinalOccupied (int iteration, int finalOccupiedCount) {
+            this.finalOccupiedCounts[iteration-1] = finalOccupiedCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalOccupiedCounts[i];
+            }
+            this.avgFinalOccupied = sum / iteration;
+        }
+
+        private void updateFinalInversion (int iteration, int finalInversionCount) {
+            this.finalInversionCounts[iteration-1] = finalInversionCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalInversionCounts[i];
+            }
+            this.avgFinalInversion = sum / iteration;
+            double varsum = 0;
+            for (int i=0; i<iteration; i++) {
+                varsum += Math.pow(this.finalInversionCounts[i] - this.avgFinalInversion, 2);
+            }
+            this.stdvFinalInversion = Math.pow(varsum / iteration, 0.5);
+        }
+
+        private void updateFinalChoice (int iteration, int finalChoiceCount) {
+            this.finalChoiceCounts[iteration-1] = finalChoiceCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalChoiceCounts[i];
+            }
+            this.avgFinalChoice = sum / iteration;
+            double varsum = 0;
+            for (int i=0; i<iteration; i++) {
+                varsum += Math.pow(this.finalChoiceCounts[i] - this.avgFinalChoice, 2);
+            }
+            this.stdvFinalChoice = Math.pow(varsum / iteration, 0.5);
+        }
+
+        private void updateFinalBonus (int iteration, int finalBonusCount) {
+            this.finalBonusCounts[iteration-1] = finalBonusCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalBonusCounts[i];
+            }
+            this.avgFinalBonus = sum / iteration;
         }
     }
 

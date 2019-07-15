@@ -1,6 +1,7 @@
 package bacon.ai;
 
 import bacon.Config;
+import bacon.Game;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
@@ -24,6 +25,8 @@ public class AI {
     private static final Logger LOGGER = Logger.getGlobal();
 
     private static final AI INSTANCE = new AI();
+
+    private static int moveCounter = 0;
 
     /**
      * Singleton constructor that does nothing.
@@ -56,10 +59,33 @@ public class AI {
 
         Statistics.getStatistics().init();
 
+        int currentMoveNumber = currentGameState.getMoveCount();
+        moveCounter++;
+
+
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
-            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
+            int randRollTime = 0;
+            if (moveCounter % cfg.getRandRollFrequency() == 2 && currentMoveNumber != 1) {
+                LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCounter = " + moveCounter);
+                long startTimeStamp = System.nanoTime();
+                RandomRollout randroll = new RandomRollout(Game.getGame().getCurrentState(), cfg.getMaxRandRollIterations(),
+                        startTimeStamp + cfg.getRandRollTimeBudget() * 1000000);
+                long endTimeStamp = System.nanoTime();
+                randRollTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
+                LOGGER.log(Level.INFO, "RR completed, elapsed time: " + randRollTime + "ms, completed iterations: " + (randroll.getTotalIteration() - 1));
+                System.out.println("avgFree: " + currentGameState.getMap().getFinalfreeTiles()
+                        + "  avgOcc: " + currentGameState.getMap().getFinalOccupied()
+                        + "  avgInv: " + currentGameState.getMap().getFinalInversion()
+                        + "  stdvInv: " + currentGameState.getMap().getFinalInversionStdv()
+                        + "  avgCho: " + currentGameState.getMap().getFinalChoice()
+                        + "  avgCho: " + currentGameState.getMap().getFinalChoiceStdv()
+                        + "  avgBon: " + currentGameState.getMap().getFinalBonus() );
+            }
+
+
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout - randRollTime);
+            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout - randRollTime, depth);
 
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;
