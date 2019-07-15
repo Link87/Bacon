@@ -66,14 +66,21 @@ public class AI {
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
             int randRollTime = 0;
-            if (moveCounter % 5 == 2 && currentMoveNumber != 1) {
+            if (moveCounter % cfg.getRandRollFrequency() == 2 && currentMoveNumber != 1) {
                 LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCounter = " + moveCounter);
                 long startTimeStamp = System.nanoTime();
-                RandomRollout randroll = new RandomRollout(Game.getGame().getCurrentState(), moveCounter / 5 + 1, startTimeStamp);
-                randroll.doRandRoll(currentGameState.getMe());
+                RandomRollout randroll = new RandomRollout(Game.getGame().getCurrentState(), cfg.getMaxRandRollIterations(),
+                        startTimeStamp + cfg.getRandRollTimeBudget() * 1000000);
                 long endTimeStamp = System.nanoTime();
                 randRollTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
-                LOGGER.log(Level.INFO, "RR completed, elapsed time: " + randRollTime + "ms");
+                LOGGER.log(Level.INFO, "RR completed, elapsed time: " + randRollTime + "ms, completed iterations: " + (randroll.getTotalIteration() - 1));
+                System.out.println("avgFree: " + currentGameState.getMap().getFinalfreeTiles()
+                        + "  avgOcc: " + currentGameState.getMap().getFinalOccupied()
+                        + "  avgInv: " + currentGameState.getMap().getFinalInversion()
+                        + "  stdvInv: " + currentGameState.getMap().getFinalInversionStdv()
+                        + "  avgCho: " + currentGameState.getMap().getFinalChoice()
+                        + "  avgCho: " + currentGameState.getMap().getFinalChoiceStdv()
+                        + "  avgBon: " + currentGameState.getMap().getFinalBonus() );
             }
 
 

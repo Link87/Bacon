@@ -45,34 +45,9 @@ public class Map {
     private Set<Tile> expansionTiles;
 
     /**
-     * Indicates whether there have been random rollouts yet.
+     * Result of Random Rollouts
      */
-    private boolean rollout;
-    /**
-     * Prediction for the number of free tiles at the end of the game
-     * Result of RandomRollouts (weighted sum)
-     */
-    private double finalFreeTiles;
-    /**
-     * Prediction for the number of occupied tiles at the end of the game
-     * Result of RandomRollouts (weighted sum)
-     */
-    private double finalOccupied;
-    /**
-     * Prediction for the number of captured inversion tiles at the end of the game
-     * Result of RandomRollouts (weighted sum)
-     */
-    private double finalInversion;
-    /**
-     * Prediction for the number of captured choice tiles at the end of the game
-     * Result of RandomRollouts (weighted sum)
-     */
-    private double finalChoice;
-    /**
-     * Prediction for the number of captured choice tiles at the end of the game
-     * Result of RandomRollouts (weighted sum)
-     */
-    private double finalBonus;
+    private RandRollStats randRollStats;
 
     /**
      * Keeps track of all the {@link TileLine} in the {@code Map}.
@@ -111,13 +86,6 @@ public class Map {
         this.bonusTiles = bonusTiles;
         this.freeTiles = freeTiles;
         this.expansionTiles = expansionTiles;
-
-        this.rollout = false;
-        this.finalFreeTiles = 0;
-        this.finalOccupied = 0;
-        this.finalInversion = 0;
-        this.finalChoice = 0;
-        this.finalBonus = 0;
     }
 
     /**
@@ -420,60 +388,6 @@ public class Map {
         bonusTiles += d;
     }
 
-    public void confirmRollout() {
-        rollout = true;
-    }
-
-    public double getFinalfreeTiles() {
-        return finalFreeTiles;
-    }
-
-    public void accumulateFinalfreeTiles(double f, double iteration) {
-        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
-        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
-        finalFreeTiles = (finalFreeTiles * a * 0.9 + f) / b;
-    }
-
-    public double getFinalOccupied() {
-        return finalOccupied;
-    }
-
-    public void accumulateFinalOccupied(double f, double iteration) {
-        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
-        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
-        finalOccupied = (finalOccupied * a * 0.9 + f) / b;
-    }
-
-    public double getFinalInversion() {
-        return finalInversion;
-    }
-
-    public void accumulateFinalInversion(double f, double iteration) {
-        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
-        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
-        finalInversion = (finalInversion * a * 0.9 + f) / b;
-    }
-
-    public double getFinalChoice() {
-        return finalChoice;
-    }
-
-    public void accumulateFinalChoice(double f, double iteration) {
-        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
-        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
-        finalChoice = (finalChoice * a * 0.9 + f) / b;
-    }
-
-    public double getFinalBonus() {
-        return finalBonus;
-    }
-
-    public void accumulateFinalBonus(double f, double iteration) {
-        double a = (1 - Math.pow(0.8, iteration - 1)) / (1 - 0.8);
-        double b = (1 - Math.pow(0.8, iteration)) / (1 - 0.8);
-        finalBonus = (finalBonus * a * 0.9 + f) / b;
-    }
-
     /**
      * Adds a free tile to the map
      * <p>
@@ -680,6 +594,140 @@ public class Map {
          */
         private double getAvgTileLineLength() {
             return avgTileLineLength;
+        }
+    }
+
+    public void newRandRollStats (int maxIteration) {
+        randRollStats = new RandRollStats(maxIteration);
+    }
+
+    public void updateRandRollStats (int iteration, int finalFreeTileCount, int finalOccupiedCount, int finalInversionCount, int finalChoiceCount, int finalBonusCount) {
+        randRollStats.completedIterations = iteration;
+        randRollStats.updateFinalFreeTiles(iteration, finalFreeTileCount);
+        randRollStats.updateFinalOccupied(iteration, finalOccupiedCount);
+        randRollStats.updateFinalInversion(iteration, finalInversionCount);
+        randRollStats.updateFinalChoice(iteration, finalChoiceCount);
+        randRollStats.updateFinalBonus(iteration, finalBonusCount);
+    }
+
+    public  int getCompletedRRIterations() {
+        return randRollStats.completedIterations;
+    }
+
+    public double getFinalfreeTiles() {
+        return randRollStats.avgFinalFreeTiles;
+    }
+
+
+    public double getFinalOccupied() {
+        return randRollStats.avgFinalOccupied;
+    }
+
+
+    public double getFinalInversion() {
+        return randRollStats.avgFinalInversion;
+    }
+
+    public double getFinalInversionStdv() {
+        return randRollStats.stdvFinalInversion;
+    }
+
+
+    public double getFinalChoice() {
+        return randRollStats.avgFinalChoice;
+    }
+
+    public double getFinalChoiceStdv() {
+        return randRollStats.stdvFinalChoice;
+    }
+
+
+    public double getFinalBonus() {
+        return randRollStats.avgFinalBonus;
+    }
+
+    private class RandRollStats {
+
+        private int completedIterations;
+
+        private int[] finalFreeTileCounts;
+        private int[] finalOccupiedCounts;
+        private int[] finalInversionCounts;
+        private int[] finalChoiceCounts;
+        private int[] finalBonusCounts;
+
+
+        private double avgFinalFreeTiles;
+        private double avgFinalOccupied;
+        private double avgFinalInversion;
+        private double avgFinalChoice;
+        private double avgFinalBonus;
+
+        private double stdvFinalInversion;
+        private double stdvFinalChoice;
+
+        private RandRollStats(int maxIteration) {
+            this.completedIterations = 0;
+            this.finalFreeTileCounts = new int[maxIteration];
+            this.finalOccupiedCounts = new int[maxIteration];
+            this.finalInversionCounts = new int[maxIteration];
+            this.finalChoiceCounts = new int[maxIteration];
+            this.finalBonusCounts = new int[maxIteration];
+        }
+
+        private void updateFinalFreeTiles (int iteration, int finalFreeTileCount) {
+            this.finalFreeTileCounts[iteration-1] = finalFreeTileCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalFreeTileCounts[i];
+            }
+            this.avgFinalFreeTiles = sum / iteration;
+        }
+
+        private void updateFinalOccupied (int iteration, int finalOccupiedCount) {
+            this.finalOccupiedCounts[iteration-1] = finalOccupiedCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalOccupiedCounts[i];
+            }
+            this.avgFinalOccupied = sum / iteration;
+        }
+
+        private void updateFinalInversion (int iteration, int finalInversionCount) {
+            this.finalInversionCounts[iteration-1] = finalInversionCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalInversionCounts[i];
+            }
+            this.avgFinalInversion = sum / iteration;
+            double varsum = 0;
+            for (int i=0; i<iteration; i++) {
+                varsum += Math.pow(this.finalInversionCounts[i] - this.avgFinalInversion, 2);
+            }
+            this.stdvFinalInversion = Math.pow(varsum / iteration, 0.5);
+        }
+
+        private void updateFinalChoice (int iteration, int finalChoiceCount) {
+            this.finalChoiceCounts[iteration-1] = finalChoiceCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalChoiceCounts[i];
+            }
+            this.avgFinalChoice = sum / iteration;
+            double varsum = 0;
+            for (int i=0; i<iteration; i++) {
+                varsum += Math.pow(this.finalChoiceCounts[i] - this.avgFinalChoice, 2);
+            }
+            this.stdvFinalChoice = Math.pow(varsum / iteration, 0.5);
+        }
+
+        private void updateFinalBonus (int iteration, int finalBonusCount) {
+            this.finalBonusCounts[iteration-1] = finalBonusCount;
+            double sum = 0;
+            for (int i=0; i<iteration; i++) {
+                sum += this.finalBonusCounts[i];
+            }
+            this.avgFinalBonus = sum / iteration;
         }
     }
 

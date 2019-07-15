@@ -11,6 +11,9 @@ public class Config {
     private static final int BEAM_WIDTH_DEFAULT = 5;
     private static final boolean ASPIRATION_WINDOWS_DEFAULT = false;
     private static final boolean ENABLE_ERR_DEFAULT = false;
+    private static final int RAND_ROLL_FREQUENCY_DEFAULT = 10;
+    private static final int RAND_ROLL_TIME_BUDGET_DEFAULT = 500;
+    private static final int MAX_RAND_ROLL_ITERATIONS_DEFAULT = 20;
 
     private final boolean helpRequested;
     private final String host;
@@ -20,6 +23,10 @@ public class Config {
     private final int beamWidth;
     private final boolean aspirationWindows;
     private final boolean enableErr;
+
+    private final int randRollfrequency;
+    private final int randRollTimeBudget;
+    private final int maxRandRollIterations;
 
     /**
      * Creates an empty configuration, that only indicates a help request via {@code --help}.
@@ -37,6 +44,10 @@ public class Config {
         this.beamWidth = BEAM_WIDTH_DEFAULT;
         this.aspirationWindows = ASPIRATION_WINDOWS_DEFAULT;
         this.enableErr = ENABLE_ERR_DEFAULT;
+
+        this.randRollfrequency = RAND_ROLL_FREQUENCY_DEFAULT;
+        this.randRollTimeBudget = RAND_ROLL_TIME_BUDGET_DEFAULT;
+        this.maxRandRollIterations = MAX_RAND_ROLL_ITERATIONS_DEFAULT;
     }
 
     /**
@@ -62,6 +73,10 @@ public class Config {
         this.enableErr = enableErr;
 
         this.helpRequested = false;
+
+        this.randRollfrequency = RAND_ROLL_FREQUENCY_DEFAULT;
+        this.randRollTimeBudget = RAND_ROLL_TIME_BUDGET_DEFAULT;
+        this.maxRandRollIterations = MAX_RAND_ROLL_ITERATIONS_DEFAULT;
 
     }
 
@@ -152,6 +167,12 @@ public class Config {
     boolean isErrEnabled() {
         return enableErr;
     }
+
+    public int getRandRollFrequency () { return randRollfrequency; }
+
+    public int getRandRollTimeBudget() { return randRollTimeBudget; }
+
+    public int getMaxRandRollIterations() { return maxRandRollIterations; }
 
     /**
      * Parser that parses command line arguments and returns a {@link Config}.
