@@ -5,10 +5,7 @@ import bacon.GameState;
 import bacon.Player;
 import bacon.Tile;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A {@link Move} that places a stone on a {@link Tile}.
@@ -18,7 +15,7 @@ public class BuildMove extends Move {
     /**
      * Changes made by {@link #doMove()}. Used by {@link #undoMove()}.
      */
-    ChangeData[] changeData;
+    List<ChangeData> changes;
 
     /**
      * Creates a new {@code BuildMove} from the given values.
@@ -139,14 +136,12 @@ public class BuildMove extends Move {
         }
 
         // save previous owner information
-        changeData = new ChangeData[turnOver.size() + 1];
-        int index = 0;
+        changes = new LinkedList<>();
         for (Tile tile : turnOver) {
-            changeData[index] = new ChangeData(tile, tile.getOwnerId(), tile.getProperty());
-            index++;
+            changes.add(new ChangeData(tile));
         }
 
-        changeData[index] = new ChangeData(originTile, originTile.getOwnerId(), originTile.getProperty());
+        changes.add(new ChangeData(originTile));
 
         // now actually turn all stones over
         for (Tile t : turnOver) {
@@ -168,9 +163,9 @@ public class BuildMove extends Move {
      */
     public void undoMove() {
 
-        assert changeData != null : "Move has to be done before undo!";
+        assert changes != null : "Move has to be done before undo!";
 
-        for (ChangeData datum : changeData) {
+        for (ChangeData datum : changes) {
             datum.tile.setOwnerId(datum.ogPlayerId);
             datum.tile.setProperty(datum.wasProp);
 
@@ -180,6 +175,6 @@ public class BuildMove extends Move {
             }
         }
 
-        changeData = null;
+        changes = null;
     }
 }

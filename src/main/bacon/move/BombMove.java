@@ -4,17 +4,19 @@ import bacon.Direction;
 import bacon.GameState;
 import bacon.Tile;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A class which represents a move placing a bomb on a {@link Tile}.
  */
 public class BombMove extends Move {
 
-    ChangeData changeData[];
+    /**
+     * Changes made by calling {@link #doMove()}.
+     * <p>
+     * Is {@code null} if {@code doMove()} has not been called yet.
+     */
+    private List<ChangeData> changes;
 
     /**
      * Creates a new instance of {@code BombMove} from the given values.
@@ -91,11 +93,9 @@ public class BombMove extends Move {
 
         Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
 
-        changeData = new ChangeData[bombSet.size()];
-        int index = 0;
+        changes = new LinkedList<>();
         for (Tile t : bombSet) {
-            changeData[index] = new ChangeData(t,t.getOwnerId(),t.getProperty());
-            index++;
+            changes.add(new ChangeData(t));
         }
 
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
@@ -106,44 +106,17 @@ public class BombMove extends Move {
     }
 
     /**
-     *Undoes this {@code BombMove}.
+     * Undoes this {@code BombMove}.
      */
     @Override
     public void undoMove() {
-        for (ChangeData datum:changeData) {
+        for (ChangeData datum : changes) {
             Tile tile = datum.tile;
             tile.setProperty(datum.wasProp);
             tile.setOwnerId(datum.ogPlayerId);
         }
         this.state.getPlayerFromId(this.playerId).receiveBomb(1);
-        changeData = null;
+        changes = null;
     }
 
-    /**
-     * Executes this {@code BombMove} using precomputed BombGeometry
-     *
-     * Faster than doMove() but occasionally wrong. Only use for heuristics/random rollouts; DO NOT USE for actual moves,
-     * will lead to disqualifications otherwise
-     */
-    public void quickDoMove() {
-        int radius = state.getBombRadius();
-        Tile target = state.getMap().getTileAt(this.xPos, this.yPos);
-
-        Set<Tile> bombSet = target.getBombEffect();
-        // in case precomputation of bombEffect failed (e.g. bomb radius too big), bombEffect is computed again
-        if (bombSet.isEmpty()) bombSet = BombMove.getAffectedTiles(target, radius);
-
-        changeData = new ChangeData[bombSet.size()];
-        int index = 0;
-        for (Tile t : bombSet) {
-            changeData[index] = new ChangeData(t,t.getOwnerId(),t.getProperty());
-            index++;
-        }
-
-        //"Bomb away" tiles, i.e. turning them into holes and removing transitions
-        bombSet.forEach(Tile::bombTile);
-
-        // Subtract 1 bomb from player's inventory
-        this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
-    }
 }

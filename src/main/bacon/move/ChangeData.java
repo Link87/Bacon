@@ -13,19 +13,23 @@ import bacon.Tile;
 class ChangeData {
 
     final Tile tile;
+    /**
+     * the {@code id} of the former owner of the {@code Tile}
+     */
     final int ogPlayerId;
+    /**
+     * the {@link Tile.Property} the {@code Tile} previously had
+     */
     final Tile.Property wasProp;
 
     /**
      * Creates a new {@code ChangeData} instance from the given values.
      *
      * @param tile       the {@link Tile} that is affected
-     * @param ogPlayerId the {@code id} of the former owner of the {@code Tile}
-     * @param wasProp    the {@link Tile.Property} the {@code Tile} previously had
      */
-    ChangeData(Tile tile, int ogPlayerId, Tile.Property wasProp) {
+    ChangeData(Tile tile) {
         this.tile = tile;
-        this.ogPlayerId = ogPlayerId;
-        this.wasProp = wasProp;
+        this.ogPlayerId = tile.getOwnerId();
+        this.wasProp = tile.getProperty();
     }
 }
