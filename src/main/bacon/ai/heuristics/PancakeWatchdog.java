@@ -14,7 +14,7 @@ public class PancakeWatchdog {
      * Time in milliseconds to abort, before the hard time limit applies.
      * This is used to be able to still unwind the tree and return a move.
      */
-    static final int SAFETY_GAP = 200;
+    static final int SAFETY_GAP = 500;
 
     /**
      * The deadline (in system time) after which to trigger.

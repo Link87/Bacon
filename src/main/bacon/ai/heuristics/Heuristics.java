@@ -43,20 +43,16 @@ public class Heuristics {
      *
      * @param state    the {@link GameState} to be examined
      * @param playerId {@code id} of the {@link Player} in turn
-     * @return a real number as mobility heuristics
+     * @return a integer number as mobility heuristics
      */
     public static int mobility(GameState state, int playerId) {
-        int mobility;
 
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
         }
 
-        mobility = LegalMoves.getLegalRegularMoves(state, playerId).size();
-        //TODO: Weight regular move mobility against override move mobility
-        mobility += LegalMoves.getLegalOverrideMoves(state, playerId).size();
+        return LegalMoves.getLegalRegularMoves(state, playerId).size();
 
-        return mobility;
     }
 
     /**
