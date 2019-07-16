@@ -37,7 +37,7 @@ public class Game {
     /**
      * Amount of moves done by any player.
      */
-    private int moveCount = 1;
+    private int moveCount = 0;
 
     /**
      * Private dummy constructor because singleton.
@@ -207,6 +207,7 @@ public class Game {
      * @param moveData byte array holding a move
      */
     private void executeMove(byte[] moveData) {
+        moveCount++;
         Move move = MoveFactory.decodeBinary(moveData, currentGameState);
 
         if (move.isLegal()) {
@@ -216,7 +217,6 @@ public class Game {
         } else LOGGER.log(Level.SEVERE, "Move #{0}: Can't execute move by player {1} on ({2}, {3}): is illegal!",
                 new Object[]{moveCount, move.getPlayerId(), move.getX(), move.getY()});
 
-        moveCount++;
     }
 
     /**
