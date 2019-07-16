@@ -159,21 +159,7 @@ public class Map {
         }
 
         // compute the bomb effect of each tile; stays the same during the whole game
-        bombGeometry(map);
-
-        // compute the static line geometry
-        map.lineGeometry = map.new LineGeometry();
-
-        return map;
-    }
-
-    /**
-     * Sets the bomb effect of each tile of the map at the beginning of the game.
-     * Also calculates the average bomb area for this map.
-     *
-     * @param map current map
-     */
-    private static void bombGeometry(Map map) {
+        // also calculate average size of affected area
         int tileCount = 1;
         int bombEffectSum = 0;
         if (map.width * map.height * Math.pow(2 * Game.getGame().getBombRadius() + 1, 2) <= 100000) {
@@ -188,6 +174,11 @@ public class Map {
             }
             map.avgBombArea = bombEffectSum / tileCount;
         }
+
+        // compute the static line geometry
+        map.lineGeometry = map.new LineGeometry();
+
+        return map;
     }
 
     /**
