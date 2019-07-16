@@ -4,19 +4,15 @@ import bacon.Direction;
 import bacon.GameState;
 import bacon.Tile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A class which represents a move placing a bomb on a {@link Tile}.
  */
 public class BombMove extends Move {
-
-    /**
-     * Changes made by calling {@link #doMove()}.
-     * <p>
-     * Is {@code null} if {@code doMove()} has not been called yet.
-     */
-    private List<ChangeData> changes;
 
     /**
      * Creates a new instance of {@code BombMove} from the given values.
@@ -54,7 +50,7 @@ public class BombMove extends Move {
         for (int i = 0; i < radius; i++) {
             for (Tile t : currentTiles) {
                 for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
-                    if (t.getTransition(direction) != null && t.getTransition(direction).getProperty() != Tile.Property.HOLE) {
+                    if (t.getTransition(direction) != null) {
                         if (!bombSet.contains(t.getTransition(direction))) {
                             bombSet.add(t.getTransition(direction));
                             nextTiles.add(t.getTransition(direction));
@@ -93,11 +89,6 @@ public class BombMove extends Move {
 
         Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
 
-        changes = new LinkedList<>();
-        for (Tile t : bombSet) {
-            changes.add(new ChangeData(t));
-        }
-
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
         bombSet.forEach(Tile::bombTile);
 
@@ -106,17 +97,13 @@ public class BombMove extends Move {
     }
 
     /**
-     * Undoes this {@code BombMove}.
+     * {@code BombMove}s cannot be undone. This method throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException always
      */
     @Override
     public void undoMove() {
-        for (ChangeData datum : changes) {
-            Tile tile = datum.tile;
-            tile.setProperty(datum.wasProp);
-            tile.setOwnerId(datum.ogPlayerId);
-        }
-        this.state.getPlayerFromId(this.playerId).receiveBomb(1);
-        changes = null;
+        throw new UnsupportedOperationException();
     }
 
 }
