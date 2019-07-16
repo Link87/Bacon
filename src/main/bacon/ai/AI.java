@@ -115,7 +115,7 @@ public class AI {
 
                 if (cfg.isAspirationWindowsEnabled()) {
                     // update aspiration window for next BRS-iteration
-                    root.aspWindow();
+                    BRSNode.analyseAspirationWindow();
                     alpha = root.getAspWindowAlpha();
                     beta = root.getAspWindowBeta();
                 }

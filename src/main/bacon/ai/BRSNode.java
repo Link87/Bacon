@@ -172,7 +172,7 @@ class BRSNode {
     /**
      * Analysis of node values of layer 1 nodes (average and standard deviation)
      */
-    void aspWindow() {
+    static void analyseAspirationWindow() {
         if (stateValues.size() != 0) {
             double sum = 0;
             for (Double value : stateValues) {
