@@ -161,16 +161,7 @@ class BRSNode {
     }
 
     /**
-     * Returns the best move found in all child nodes.
-     *
-     * @return best move that was found
-     */
-    BuildMove getBestMove() {
-        return bestMove;
-    }
-
-    /**
-     * Analysis of node values of layer 1 nodes (average and standard deviation)
+     * Analyses the average values and standard deviation of nodes in the first layer.
      */
     static void analyseAspirationWindow() {
         if (stateValues.size() != 0) {
@@ -190,9 +181,20 @@ class BRSNode {
     }
 
     /**
-     * Aspiration Window value for alpha for the next BRS-iteration; if no nodes were found in layer 1, use default value
+     * Returns the best move found in all child nodes.
      *
-     * @return alpha value
+     * @return best move that was found
+     */
+    BuildMove getBestMove() {
+        return bestMove;
+    }
+
+    /**
+     * Returns the aspiration window alpha value for the next BRS-iteration.
+     * <p>
+     * Returns the default value {@code -}{@link Double#MAX_VALUE}, if no nodes were found in first layer.
+     *
+     * @return the aspiration window alpha value or {@code -Double.MAX_VALUE}
      */
     double getAspWindowAlpha() {
         if (stateStdv == 0) {
@@ -202,9 +204,11 @@ class BRSNode {
     }
 
     /**
-     * Aspiration Window value for beta for the next BRS-iteration; if no nodes were found in layer 1, use default value
+     * Returns the aspiration window beta value for the next BRS-iteration.
+     * <p>
+     * Returns the default value {@code -}{@link Double#MAX_VALUE}, if no nodes were found in first layer.
      *
-     * @return beta value
+     * @return the aspiration window beta value or {@code -Double.MAX_VALUE}
      */
     double getAspWindowBeta() {
         if (stateStdv == 0) {

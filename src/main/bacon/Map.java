@@ -16,11 +16,11 @@ public class Map {
      */
     private final Tile[][] tiles;
     /**
-     * The {@link Tile}s that are free, i.e. not occupied by any player nor expansion stone and isn't a hole
+     * The {@link Tile}s that are free, i.e. not occupied by any player nor expansion stone and isn't a hole.
      */
     private Set<Tile> freeTiles;
     /**
-     * The {@link Tile}s that have an expansion stone on them
+     * The {@link Tile}s that have an expansion stone on them.
      */
     private Set<Tile> expansionTiles;
 
@@ -30,7 +30,7 @@ public class Map {
     private LineGeometry lineGeometry;
 
     /**
-     * Average number of tiles bombed in a bomb move
+     * Average number of tiles bombed in a bomb move.
      */
     private double avgBombArea;
 
@@ -40,6 +40,7 @@ public class Map {
      * both being required to be positive.
      *
      * @param tiles          an array containing the {@code Tile}s of the new {@code Map}
+     * @param freeTiles      a set containing the unoccupied {@code Tiles} of the new {@code Map}
      * @param expansionTiles a set containing those tiles, that have an expansion stone on them.
      *                       This is required and asserted to be a subset of {@code tiles}.
      */
@@ -270,7 +271,7 @@ public class Map {
     }
 
     /**
-     * Adds a free tile to the map
+     * Adds a free tile to the map.
      * <p>
      * Use this to undo certain moves.
      *
@@ -281,7 +282,7 @@ public class Map {
     }
 
     /**
-     * Removes a free tile from the map
+     * Removes a free tile from the map.
      *
      * @param tile the {@code Tile} that previously was free
      */

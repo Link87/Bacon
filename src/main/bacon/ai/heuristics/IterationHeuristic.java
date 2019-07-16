@@ -25,18 +25,42 @@ public class IterationHeuristic {
      */
     private static final double SAFETY_FACTOR = 0.90;
 
+    /**
+     * Contains the average computing times for each layer.
+     */
     private static final Map<Integer, Long> avgTimes = new HashMap<>();
+    /**
+     * Contains the amount of recorded values for each layer.
+     */
     private static final Map<Integer, Integer> layerCount = new HashMap<>();
 
+    /**
+     * {@code true} if the search is time-limited.
+     */
     private final boolean useTimeLimit;
+    /**
+     * The current maximum search depth.
+     */
     private int currentDepth;
 
     // time only
+    /**
+     * The start time stamp for the whole calculation.
+     */
     private long startTimeStamp;
+    /**
+     * The start time stamp for the current iteration.
+     */
     private long iterationTimeStamp;
+    /**
+     * The time limit for the calculation.
+     */
     private int timeLimit;
 
     // depth only
+    /**
+     * The depth limit that applies.
+     */
     private int maxDepth;
 
     /**

@@ -31,6 +31,7 @@ public class BombMove extends Move {
      * Returns the {@link Tile}s that are affected by a bomb thrown onto the given tile.
      *
      * @param target the {@code Tile} whose surroundings is to be examined
+     * @param radius the strength of the bomb
      * @return the {@link Set} of {@code Tile}s within bomb radius of the {@code Tile}
      */
     public static Set<Tile> getAffectedTiles(Tile target, int radius) {

@@ -12,11 +12,10 @@ import java.util.*;
  */
 public class LegalMoves {
 
-    private LegalMoves() {
-    }
+    private LegalMoves() {}
 
     /**
-     * Returns all legal regular {@link Move}s possible from a certain given board state and player in the first phase.
+     * Returns all legal {@link RegularMove}s possible from a certain given board state and player in the first phase.
      * Bonus {@link Move}s requesting Bombs are omitted!
      *
      * @param state    the {@link GameState} to be examined
@@ -106,7 +105,7 @@ public class LegalMoves {
     }
 
     /**
-     * Returns all legal override {@link Move}s possible from a certain given board state and player in the first phase.
+     * Returns all legal {@link OverrideMove}s possible from a certain given board state and player in the first phase.
      *
      * @param state    the {@link GameState} to be examined
      * @param playerId the {@code id} of the current {@link Player} in turn
@@ -158,7 +157,7 @@ public class LegalMoves {
     }
 
     /**
-     * Returns all legal moves possible from a certain given board state and player in the second phase.
+     * Returns all legal {@link BombMove}s possible from a certain given board state and player in the second phase.
      *
      * @param state    the {@link GameState} to be examined
      * @param playerId the {@code id} of the current {@link Player} in turn
