@@ -86,7 +86,7 @@ public class Heuristics {
      * @param move  the {@link BombMove} to rate
      * @return a real number as clustering heuristics
      */
-    static double bombingPhaseHeuristic(GameState state, BombMove move) {
+    public static double bombingPhaseHeuristic(GameState state, BombMove move) {
         int playerStoneCount = state.getPlayerFromId(move.getPlayerId()).getStoneCount();
         int playerBombCount = state.getPlayerFromId(move.getPlayerId()).getBombCount();
         int bombRadius = state.getBombRadius();

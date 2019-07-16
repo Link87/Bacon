@@ -3,11 +3,15 @@ package bacon.ai;
 import bacon.Config;
 import bacon.GamePhase;
 import bacon.GameState;
+import bacon.ai.heuristics.Heuristics;
 import bacon.ai.heuristics.IterationHeuristic;
+import bacon.ai.heuristics.LegalMoves;
 import bacon.ai.heuristics.PancakeWatchdog;
+import bacon.move.BombMove;
 import bacon.move.Move;
 
 import java.util.IntSummaryStatistics;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -106,20 +110,18 @@ public class AI {
                 if (BRSNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
             }
         } else {
-            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
-            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
-            while (iterationHeuristic.doIteration()) {
-                BombNode root = new BombNode(iterationHeuristic.getDepth(), watchdog);
-                root.evaluateNode();
-                if (!watchdog.isTriggered()) {
-                    bestMove = root.getBestMove();
-                } else {
-                    LOGGER.log(Level.WARNING, "Pancake triggered!");
-                    AI.pancakeCounter++;
-                    break;
+            List<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());
+            double evalValue;
+            double curBestVal = -Double.MAX_VALUE;
+            for (BombMove move : moves) {
+                Statistics.getStatistics().enterMeasuredState(0);
+                evalValue = Heuristics.bombingPhaseHeuristic(currentGameState, move);
+                if (evalValue > curBestVal) {
+                    curBestVal = evalValue;
+                    bestMove = move;
                 }
 
-                if (BombNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
+                Statistics.getStatistics().leaveMeasuredState();
             }
         }
 

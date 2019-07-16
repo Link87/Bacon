@@ -172,7 +172,7 @@ public class LegalMoves {
         if (state.getPlayerFromId(playerId).isDisqualified() || state.getPlayerFromId(playerId).getBombCount() < 1)
             return Collections.emptyList();
 
-        List<BombMove> legalMoves = new ArrayList<>();
+        List<BombMove> legalMoves = new LinkedList<>();
         for (int x = 0; x < state.getMap().width; x++) {
             for (int y = 0; y < state.getMap().height; y++) { // Going through the whole map
                 Tile tile = state.getMap().getTileAt(x, y);
