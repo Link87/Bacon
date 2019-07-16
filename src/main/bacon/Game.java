@@ -234,7 +234,10 @@ public class Game {
             LOGGER.log(Level.INFO, "I have won! 🎉🎉🎉");
         else LOGGER.log(Level.INFO, "I have not won! \uD83D\uDE14");
 
-        LOGGER.log(Level.INFO, "Total {0} pancake(s) triggered", AI.getPancakeCounter());
+        LOGGER.log(Level.INFO, "Total {0} moves in game, {1} by me ({2}%)",
+                new Object[]{this.moveCount, AI.getMoveCount(), (double) AI.getMoveCount() / this.moveCount * 100});
+        LOGGER.log(Level.INFO, "Total {0} pancake(s) triggered ({1}%)",
+                new Object[]{AI.getPancakeCount(), (double) AI.getPancakeCount() / AI.getMoveCount() * 100});
 
         LOGGER.log(Level.INFO, "The game results are:");
         String[] suffixes = {"st", "nd", "rd", "th", "th", "th", "th", "th"};

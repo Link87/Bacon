@@ -28,7 +28,12 @@ public class AI {
     /**
      * Amount of times the {@link PancakeWatchdog} was triggered.
      */
-    private static int pancakeCounter = 0;
+    private static int pancakeCount = 0;
+
+    /**
+     * Amount of moves the ai has computed.
+     */
+    private static int moveCount = 0;
 
     /**
      * Singleton constructor that does nothing.
@@ -49,8 +54,17 @@ public class AI {
      *
      * @return the number of triggers of the {@code PancakeWatchdog}
      */
-    public static int getPancakeCounter() {
-        return pancakeCounter;
+    public static int getPancakeCount() {
+        return pancakeCount;
+    }
+
+    /**
+     * Returns the amount of moves the ai has computed.
+     *
+     * @return the amount of moves the ai has computed
+     */
+    public static int getMoveCount() {
+        return moveCount;
     }
 
     /**
@@ -69,6 +83,7 @@ public class AI {
         LOGGER.log(Level.INFO, "Time limit " + timeout + "ms.");
 
         Statistics.getStatistics().init();
+        AI.moveCount++;
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
@@ -102,7 +117,7 @@ public class AI {
 
                 if (watchdog.isTriggered()) {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
-                    AI.pancakeCounter++;
+                    AI.pancakeCount++;
                     break;
                 }
 

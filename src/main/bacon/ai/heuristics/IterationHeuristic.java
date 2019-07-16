@@ -77,9 +77,9 @@ public class IterationHeuristic {
             // time limit => iterative deepening
 
             if (this.currentDepth == 0) {
-                LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}", new Object[]{this.currentDepth, this.startTimeStamp, this.iterationTimeStamp});
                 this.iterationTimeStamp = System.nanoTime();
                 this.currentDepth += 1;
+                LOGGER.log(Level.FINER, "Max depth: {0}, start time t={1}, iteration start time t={2}", new Object[]{this.currentDepth, this.startTimeStamp, this.iterationTimeStamp});
                 return true;
             }
 
@@ -95,10 +95,11 @@ public class IterationHeuristic {
             long estimate = (long) ((float) elapsed / avgTimes.get(this.currentDepth) * avgTimes.get(this.currentDepth + 1));
             boolean doAnother = (this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000L * SAFETY_FACTOR >= elapsedSinceStart + estimate && this.currentDepth < MAX_DEPTH;
 
-            LOGGER.log(Level.FINE, "Depth: {0}, Start: {1}, It_Start: {2}", new Object[]{this.currentDepth, this.startTimeStamp, this.iterationTimeStamp, estimate});
-            LOGGER.log(Level.FINE, "Limit: {0}, Elapsed(start): {1}, Est: {2}, Elapsed(it): {3}, avg(this): {4}, avg(next): {5}",
+            LOGGER.log(Level.FINER, "Max depth: {0}, start time t={1}, iteration start time t={2}", new Object[]{this.currentDepth + 1, this.startTimeStamp, this.iterationTimeStamp});
+            LOGGER.log(Level.FINER, "Safe time limit: {0}, elapsed since start Δt={1}, estimate Δt={2}, elapsed in iteration Δt={3}, avg time (this): {4}, avg time (next): {5}{6}",
                     new Object[]{(this.timeLimit - PancakeWatchdog.SAFETY_GAP) * 1_000_000L, elapsedSinceStart,
-                            estimate, elapsed, avgTimes.get(this.currentDepth), avgTimes.get(this.currentDepth + 1)});
+                            estimate, elapsed, avgTimes.get(this.currentDepth), avgTimes.get(this.currentDepth + 1),
+                            doAnother ? "" : " (abort here)"});
 
             // avg' = (layer_count * avg + time) / layer_count'
             avgTimes.put(this.currentDepth, (layerCount.get(this.currentDepth) * avgTimes.get(this.currentDepth) + elapsed) /

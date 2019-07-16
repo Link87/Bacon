@@ -38,7 +38,7 @@ public class Main {
         }
 
         // Replace all present root logger handler with our own ConsoleHandler
-        LOGGER.setLevel(Level.FINE);
+        LOGGER.setLevel(Level.FINER);
         Arrays.stream(Logger.getLogger("").getHandlers()).forEach(value -> Logger.getLogger("").removeHandler(value));
         DualConsoleHandler handler = new DualConsoleHandler(new PrivacyFormatter(), config.isErrEnabled());
         handler.setLevel(Level.ALL);
