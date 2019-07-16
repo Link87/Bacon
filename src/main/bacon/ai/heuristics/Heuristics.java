@@ -54,6 +54,23 @@ public class Heuristics {
     }
 
     /**
+     * Calculates a heuristic value from the stone count of other players that own more stones than we do.
+     *
+     * @param state the {@link GameState} to be examined
+     * @return a value indicating the Ais rank, where higher is better
+     */
+    public static double relativeStoneCount(GameState state) {
+        double value = state.getPlayerFromId(state.getMe()).getStoneCount() * state.getTotalPlayerCount();
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+            if (i == state.getMe()) continue;
+            if (state.getPlayerFromId(state.getMe()).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
+                value = value - state.getPlayerFromId(i).getStoneCount();
+            }
+        }
+        return value / state.getTotalPlayerCount();
+    }
+
+    /**
      * Calculates the bomb bonus heuristics of the given game state and player.
      *
      * @param state    the {@link GameState} to be examined
