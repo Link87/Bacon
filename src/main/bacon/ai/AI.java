@@ -85,9 +85,14 @@ public class AI {
         Statistics.getStatistics().init();
         AI.moveCount++;
 
+        PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
+        //very first move needs sometimes more time because of jit and stuff
+        if(AI.moveCount == 1){
+            watchdog = new PancakeWatchdog(timeout-200);
+        }
+
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
             IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
 
             double alpha = -Double.MAX_VALUE;
@@ -137,6 +142,7 @@ public class AI {
                 }
 
                 Statistics.getStatistics().leaveMeasuredState();
+                if(watchdog.isPancake()) break;
             }
         }
 
@@ -148,7 +154,7 @@ public class AI {
         IntSummaryStatistics stats = Statistics.getStatistics().getStateMeasurementResults();
 
         LOGGER.log(Level.INFO, "Computing best move took {0} ms, {1} μs avg per state.",
-                new Object[]{totalTimeNanos / 1000000, totalTimeNanos / (1000 * Statistics.getStatistics().getTotalStateCount())});
+                new Object[]{totalTimeNanos / 1000000, (totalTimeNanos / 1000) / Statistics.getStatistics().getTotalStateCount()});
         LOGGER.log(Level.INFO, "Computing times per leaf: avg {0} μs, min {1} μs, max {2} μs, leaf time total {3} μs.",
                 new Object[]{(int) (stats.getAverage() / 1000), stats.getMin() / 1000, stats.getMax() / 1000, stats.getSum() / 1000});
 
