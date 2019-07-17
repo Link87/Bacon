@@ -22,12 +22,21 @@ import java.util.*;
 class BRSNode {
 
     /*
-    Constant scalar values for the computation of evaluation values.
+    Constant default scalar values for the computation of evaluation values.
      */
-    private static final double STABILITY_SCALAR = 1;
-    private static final double MOBILITY_SCALAR = 10;
-    private static final double BONUS_SCALAR = 100;
+    public static final double STABILITY_SCALAR_DEFAULT = 1;
+    public static final double MOBILITY_SCALAR_DEFAULT = 10;
+    public static final double OVERRIDE_STABILITY_SCALAR_DEFAULT = 10;
+    public static final double STONE_COUNT_SCALAR_DEFAULT = 1;
+    public static final double LINE_CLUSTERING_SCALAR_DEFAULT = -1;
+    public static final double BOMB_BONUS_SCALAR = 2;
+    public static final double OVERRIDE_BONUS_SCALAR = 100;
 
+    private static double stabilityScalar;
+    private static double mobilityScalar;
+    private static double overrideStabilityScalar;
+    private static double stoneCountScalar;
+    private static double lineClusteringScalar;
     /**
      * The maximum search depth.
      */
@@ -117,6 +126,12 @@ class BRSNode {
         BRSNode.stateStdv = 0;
         BRSNode.stateValues = new ArrayList<>();
         BRSNode.reachedDepth = 0;
+
+        BRSNode.stabilityScalar = STABILITY_SCALAR_DEFAULT;
+        BRSNode.mobilityScalar = MOBILITY_SCALAR_DEFAULT;
+        BRSNode.overrideStabilityScalar = OVERRIDE_STABILITY_SCALAR_DEFAULT;
+        BRSNode.stoneCountScalar = STONE_COUNT_SCALAR_DEFAULT;
+        BRSNode.lineClusteringScalar = LINE_CLUSTERING_SCALAR_DEFAULT;
 
         this.layer = 0;
         this.isMaxNode = true;
@@ -565,14 +580,20 @@ class BRSNode {
      */
     private double evaluateCurrentState(Move.Type type) {
         if (type == Move.Type.REGULAR) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
-                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe())
-                    + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
-                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe())
-                    + Heuristics.relativeStoneCount(state);
+            int playerId = Heuristics.inversionSwap(state, state.getMe());
+            mobilityScalar = Heuristics.mobilityWeight(state, playerId);
+            stoneCountScalar = Heuristics.stoneCountWeight(state, playerId);
+
+            return stabilityScalar * StabilityHeuristic.stability(state, playerId)
+                    + mobilityScalar * Heuristics.mobility(state, playerId)
+                    + overrideStabilityScalar * Heuristics.overrideStability(state, playerId)
+                    + stoneCountScalar * Heuristics.stoneCountInRating(state, playerId)
+                    + lineClusteringScalar * Heuristics.lineClustering(state, playerId)
+                    + BOMB_BONUS_SCALAR * Heuristics.bonusBomb(state, playerId)
+                    + OVERRIDE_BONUS_SCALAR * Heuristics.bonusOverride(state, playerId);
         } else if (type == Move.Type.OVERRIDE) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
-                    + Heuristics.relativeStoneCount(state);
+            return StabilityHeuristic.stability(state, state.getMe())
+                    + Heuristics.stoneCountInRating(state, state.getMe());
         }
 
         throw new IllegalStateException("Cannot evaluate bomb heuristic in brs tree. I shouldn't be here...");

@@ -1,6 +1,7 @@
 package bacon.ai;
 
 import bacon.Config;
+import bacon.Game;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
@@ -26,7 +27,7 @@ public class AI {
     private static final AI INSTANCE = new AI();
 
     /**
-     * Amount of times the {@link PancakeWatchdog} was triggered.
+     * Amount of times the PancakeWatchdog was triggered.
      */
     private static int pancakeCount = 0;
 
@@ -83,17 +84,37 @@ public class AI {
         LOGGER.log(Level.INFO, "Time limit " + timeout + "ms.");
 
         Statistics.getStatistics().init();
+        int currentMoveNumber = currentGameState.getMoveCount();
         AI.moveCount++;
-
-        PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
-        //very first move needs sometimes more time because of jit and stuff
-        if(AI.moveCount == 1){
-            watchdog = new PancakeWatchdog(timeout-200);
-        }
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
+            int rolloutTime = 0;
+            if (moveCount % cfg.getRandRollFrequency() == 2 && currentMoveNumber != 1) {
+                LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCount = " + moveCount);
+                long startTimeStamp = System.nanoTime();
+                RandomRollout rollout = new RandomRollout(Game.getGame().getCurrentState(), cfg.getMaxRandRollIterations(),
+                        startTimeStamp + cfg.getRandRollTimeBudget() * 1000000);
+                long endTimeStamp = System.nanoTime();
+                rolloutTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
+                LOGGER.log(Level.INFO, "RR completed, elapsed time: " + rolloutTime + "ms, completed iterations: " + (rollout.getTotalIteration() - 1));
+                LOGGER.log(Level.FINE, "avgFree: " + currentGameState.getMap().getFinalFreeTiles()
+                        + "  avgOcc: " + currentGameState.getMap().getFinalOccupied()
+                        + "  avgInv: " + currentGameState.getMap().getFinalInversion()
+                        + "  stdvInv: " + currentGameState.getMap().getFinalInversionStdv()
+                        + "  avgCho: " + currentGameState.getMap().getFinalChoice()
+                        + "  stdvCho: " + currentGameState.getMap().getFinalChoiceStdv()
+                        + "  avgBon: " + currentGameState.getMap().getFinalBonus());
+            }
+
+
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout - rolloutTime);
+            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout - rolloutTime, depth);
+
+            //very first move needs sometimes more time because of jit and stuff
+            if(AI.moveCount == 1){
+                watchdog = new PancakeWatchdog(timeout-200);
+            }
 
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;
@@ -130,6 +151,7 @@ public class AI {
                 if (BRSNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
             }
         } else {
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
             List<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());
             double evalValue;
             double curBestVal = -Double.MAX_VALUE;

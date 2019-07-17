@@ -4,6 +4,8 @@ import bacon.*;
 import bacon.move.BombMove;
 
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
@@ -15,7 +17,54 @@ import static java.lang.Math.pow;
  */
 public class Heuristics {
 
+    private static final Logger LOGGER = Logger.getGlobal();
+
     private Heuristics() {}
+
+    public static int inversionSwap(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) {
+            LOGGER.log(Level.FINE, "Random Rollout not available!");
+            return playerId;
+        }
+
+        double inversionStdv = state.getMap().getFinalInversionStdv();
+        double inversionCaptured = state.getMap().getInversionTileCount() - state.getMap().getFinalInversion();
+        double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
+        if (inversionCaptured > 0 && inversionStdv < 0.2 && choiceCaptured <= 0) {
+            LOGGER.log(Level.FINE, "INVERSION PREDICTED");
+            int swapPartner = (playerId - (int) inversionCaptured) % state.getTotalPlayerCount();
+            while (swapPartner < 1) {
+                swapPartner += state.getTotalPlayerCount();
+            }
+            if (swapPartner <= state.getTotalPlayerCount()) {
+                LOGGER.log(Level.FINE, "SWAP SUCCESSFUL");
+                return swapPartner;
+            }
+        }
+        return playerId;
+    }
+
+
+    public static double mobilityWeight(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) return 10;
+        double bonusCaptured = (state.getMap().getBonusTileCount() - state.getMap().getFinalBonus());
+        double choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
+
+        double basevalue = state.getMap().getAvgTileLineLength();
+        if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000 && choiceCaptured < 1000 && basevalue > 0 && basevalue < 100)
+            return basevalue + 0.1 * bonusCaptured + 0.1 * choiceCaptured;
+        else return 10;
+    }
+
+    public static double stoneCountWeight(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) return 1;
+
+        double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
+        double attenuation = 5 * movesLeft / (state.getMap().getFinalOccupied() + 1);
+        if (attenuation >= 0 && attenuation < 1) return Math.pow(0.5, attenuation);
+        else return 1;
+    }
+
 
     /**
      * Calculates the mobility heuristics of the given game state and player.
@@ -31,15 +80,17 @@ public class Heuristics {
         }
 
         return LegalMoves.getLegalRegularMoves(state, playerId).size();
+
     }
 
     /**
      * Calculates the override stability heuristics of the given game state and player.
      *
      * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
      * @return a real number as override stability heuristics
      */
-    static int overrideStability(GameState state) {
+    public static int overrideStability(GameState state, int playerId) {
         int overrideStability = 0;
 
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
@@ -51,6 +102,35 @@ public class Heuristics {
         }
 
         return overrideStability;
+    }
+
+    public static double stoneCountInRating(GameState state, int playerId) {
+        double value = state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount();
+        double choiceCaptured = 0;
+        if (state.getMap().isRolloutsAvailable())
+            choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+            if (i == playerId) continue;
+            if (state.getPlayerFromId(playerId).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
+                value = value - state.getPlayerFromId(i).getStoneCount();
+            }
+        }
+        if (choiceCaptured > 0.5 && (int) value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
+            return (-1) * value / state.getTotalPlayerCount();
+        }
+
+        return value / state.getTotalPlayerCount();
+    }
+
+    public static double lineClustering(GameState state, int playerId) {
+        int playerShareSum = 0;
+        for (Tile stone : state.getPlayerFromId(playerId).getStones()) {
+            playerShareSum += stone.getRow().getPlayerShare();
+            playerShareSum += stone.getColumn().getPlayerShare();
+            playerShareSum += stone.getDiagonal().getPlayerShare();
+            playerShareSum += stone.getIndiagonal().getPlayerShare();
+        }
+        return playerShareSum * state.getMap().getAvgTileLineLength() / (state.getPlayerFromId(playerId).getStoneCount() + 1);
     }
 
     /**
