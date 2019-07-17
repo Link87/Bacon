@@ -1,7 +1,6 @@
 package bacon.ai;
 
 import bacon.Config;
-import bacon.Game;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
@@ -39,8 +38,7 @@ public class AI {
     /**
      * Singleton constructor that does nothing.
      */
-    private AI() {
-    }
+    private AI() {}
 
     /**
      * Returns the singleton {@code AI} instance.
@@ -89,8 +87,8 @@ public class AI {
 
         PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
         //very first move needs sometimes more time because of jit and stuff
-        if (Game.getGame().getMoveCount() == 0) {
-            watchdog = new PancakeWatchdog(timeout - 500);
+        if(AI.moveCount == 1){
+            watchdog = new PancakeWatchdog(timeout-200);
         }
 
         Move bestMove = null;
@@ -144,7 +142,7 @@ public class AI {
                 }
 
                 Statistics.getStatistics().leaveMeasuredState();
-                if (watchdog.isPancake()) break;
+                if(watchdog.isPancake()) break;
             }
         }
 
