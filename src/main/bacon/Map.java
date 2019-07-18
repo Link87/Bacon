@@ -466,13 +466,14 @@ public class Map {
         rolloutStats = new RolloutStats(maxIteration);
     }
 
-    public void updateRolloutStats(int iteration, int finalFreeTileCount, int finalOccupiedCount, int finalInversionCount, int finalChoiceCount, int finalBonusCount) {
+    public void updateRolloutStats(int iteration, int finalFreeTileCount, int finalOccupiedCount, int finalInversionCount, int finalChoiceCount, int finalBonusCount, int unusedOverrideCount) {
         rolloutsAvailable = true;
         rolloutStats.updateFinalFreeTiles(iteration, finalFreeTileCount);
         rolloutStats.updateFinalOccupied(iteration, finalOccupiedCount);
         rolloutStats.updateFinalInversion(iteration, finalInversionCount);
         rolloutStats.updateFinalChoice(iteration, finalChoiceCount);
         rolloutStats.updateFinalBonus(iteration, finalBonusCount);
+        rolloutStats.updateUnusedOverride(iteration, unusedOverrideCount);
     }
 
     public boolean isRolloutsAvailable() {
@@ -511,6 +512,11 @@ public class Map {
 
     public double getFinalBonus() {
         if (rolloutStats != null) return rolloutStats.avgFinalBonus;
+        else return 0;
+    }
+
+    public double getUnusedOverride() {
+        if (rolloutStats != null) return rolloutStats.avgUnusedOverride;
         else return 0;
     }
 
@@ -639,6 +645,7 @@ public class Map {
         private int[] finalInversionCounts;
         private int[] finalChoiceCounts;
         private int[] finalBonusCounts;
+        private int[] unusedOverrideCounts;
 
 
         private double avgFinalFreeTiles;
@@ -646,6 +653,7 @@ public class Map {
         private double avgFinalInversion;
         private double avgFinalChoice;
         private double avgFinalBonus;
+        private double avgUnusedOverride;
 
         private double stdvFinalInversion;
         private double stdvFinalChoice;
@@ -656,6 +664,7 @@ public class Map {
             this.finalInversionCounts = new int[maxIteration];
             this.finalChoiceCounts = new int[maxIteration];
             this.finalBonusCounts = new int[maxIteration];
+            this.unusedOverrideCounts = new int[maxIteration];
         }
 
         private void updateFinalFreeTiles(int iteration, int finalFreeTileCount) {
@@ -711,6 +720,15 @@ public class Map {
                 sum += this.finalBonusCounts[i];
             }
             this.avgFinalBonus = sum / iteration;
+        }
+
+        private void updateUnusedOverride(int iteration, int unusedOverrideCount) {
+            this.unusedOverrideCounts[iteration - 1] = unusedOverrideCount;
+            double sum = 0;
+            for (int i = 0; i < iteration; i++) {
+                sum += this.finalBonusCounts[i];
+            }
+            this.avgUnusedOverride = sum / iteration;
         }
     }
 

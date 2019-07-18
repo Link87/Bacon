@@ -87,8 +87,12 @@ public class RandomRollout {
                 int finalInversionCount = state.getMap().getInversionTileCount();
                 int finalChoiceCount = state.getMap().getChoiceTileCount();
                 int finalBonusCount = state.getMap().getBonusTileCount();
+                int unusedOverrideCount = 0;
+                for (int i = 0; i < playerCount; i++) {
+                    unusedOverrideCount += state.getPlayerFromId(i+1).getOverrideStoneCount();
+                }
 
-                state.getMap().updateRolloutStats(iteration, finalFreeTileCount, finalOccupiedCount, finalInversionCount, finalChoiceCount, finalBonusCount);
+                state.getMap().updateRolloutStats(iteration, finalFreeTileCount, finalOccupiedCount, finalInversionCount, finalChoiceCount, finalBonusCount, unusedOverrideCount);
                 totalIteration++;
             }
         }

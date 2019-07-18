@@ -23,7 +23,6 @@ public class Heuristics {
 
     public static int inversionSwap(GameState state, int playerId) {
         if (!state.getMap().isRolloutsAvailable()) {
-            LOGGER.log(Level.FINE, "Random Rollout not available!");
             return playerId;
         }
 
@@ -47,11 +46,14 @@ public class Heuristics {
 
     public static double mobilityWeight(GameState state, int playerId) {
         if (!state.getMap().isRolloutsAvailable()) return 10;
-        double bonusCaptured = (state.getMap().getBonusTileCount() - state.getMap().getFinalBonus());
-        double choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
+        double movesLeft = state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount();
+        double bonusCaptured = state.getMap().getBonusTileCount() - state.getMap().getFinalBonus();
+        double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
 
-        double basevalue = state.getMap().getAvgTileLineLength();
-        if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000 && choiceCaptured < 1000 && basevalue > 0 && basevalue < 100)
+        double basevalue = 10 * movesLeft / (state.getMap().getFinalOccupied() + 1);
+        if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000
+                && choiceCaptured < 1000 && basevalue > 0 && basevalue < 100
+                && basevalue <= 10 && basevalue >= 0)
             return basevalue + 0.1 * bonusCaptured + 0.1 * choiceCaptured;
         else return 10;
     }
@@ -61,8 +63,16 @@ public class Heuristics {
 
         double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
         double attenuation = 5 * movesLeft / (state.getMap().getFinalOccupied() + 1);
-        if (attenuation >= 0 && attenuation < 1) return Math.pow(0.5, attenuation);
+        if (attenuation >= 0 && attenuation < 1) return 2 * Math.pow(0.5, attenuation);
         else return 1;
+    }
+
+    public static double bonusOverrideWeight(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) return 100;
+
+        double weight = Math.pow(0.9, state.getMap().getUnusedOverride());
+        if (weight >= 0 && weight <= 1) return weight;
+        else return 100;
     }
 
 
@@ -104,7 +114,13 @@ public class Heuristics {
         return overrideStability;
     }
 
-    public static double stoneCountInRating(GameState state, int playerId) {
+    /**
+     * Calculates a heuristic value from the stone count of other players that own more stones than we do.
+     *
+     * @param state the {@link GameState} to be examined
+     * @return a value indicating the Ais rank, where higher is better
+     */
+    public static double relativeStoneCount(GameState state, int playerId) {
         double value = state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount();
         double choiceCaptured = 0;
         if (state.getMap().isRolloutsAvailable())
@@ -116,7 +132,7 @@ public class Heuristics {
             }
         }
         if (choiceCaptured > 0.5 && (int) value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
-            return (-1) * value / state.getTotalPlayerCount();
+            return 0;
         }
 
         return value / state.getTotalPlayerCount();
@@ -131,23 +147,6 @@ public class Heuristics {
             playerShareSum += stone.getIndiagonal().getPlayerShare();
         }
         return playerShareSum * state.getMap().getAvgTileLineLength() / (state.getPlayerFromId(playerId).getStoneCount() + 1);
-    }
-
-    /**
-     * Calculates a heuristic value from the stone count of other players that own more stones than we do.
-     *
-     * @param state the {@link GameState} to be examined
-     * @return a value indicating the Ais rank, where higher is better
-     */
-    public static double relativeStoneCount(GameState state) {
-        double value = state.getPlayerFromId(state.getMe()).getStoneCount() * state.getTotalPlayerCount();
-        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
-            if (i == state.getMe()) continue;
-            if (state.getPlayerFromId(state.getMe()).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
-                value = value - state.getPlayerFromId(i).getStoneCount();
-            }
-        }
-        return value / state.getTotalPlayerCount();
     }
 
     /**

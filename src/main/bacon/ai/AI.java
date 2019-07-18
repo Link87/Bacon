@@ -112,9 +112,10 @@ public class AI {
             IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout - rolloutTime, depth);
 
             //very first move needs sometimes more time because of jit and stuff
-            if(AI.moveCount == 1){
-                watchdog = new PancakeWatchdog(timeout-200);
+            if (Game.getGame().getMoveCount() == 0) {
+                watchdog = new PancakeWatchdog(timeout - 500);
             }
+
 
             double alpha = -Double.MAX_VALUE;
             double beta = Double.MAX_VALUE;
