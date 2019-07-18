@@ -51,9 +51,7 @@ public class Heuristics {
         double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
 
         double basevalue = 10 * movesLeft / (state.getMap().getFinalOccupied() + 1);
-        if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000
-                && choiceCaptured < 1000 && basevalue > 0 && basevalue < 100
-                && basevalue <= 10 && basevalue >= 0)
+        if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000 && choiceCaptured < 1000 && basevalue > 0 && basevalue <= 10 && basevalue >= 0)
             return basevalue + 0.1 * bonusCaptured + 0.1 * choiceCaptured;
         else return 10;
     }
