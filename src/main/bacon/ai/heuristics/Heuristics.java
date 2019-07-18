@@ -45,15 +45,15 @@ public class Heuristics {
 
 
     public static double mobilityWeight(GameState state, int playerId) {
-        if (!state.getMap().isRolloutsAvailable()) return 10;
-        double movesLeft = state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount();
+        if (!state.getMap().isRolloutsAvailable()) return 30;
+        //double movesLeft = state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount();
         double bonusCaptured = state.getMap().getBonusTileCount() - state.getMap().getFinalBonus();
         double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
 
-        double basevalue = 10 * movesLeft / (state.getMap().getFinalOccupied() + 1);
-        if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000 && choiceCaptured < 1000 && basevalue > 0 && basevalue <= 10 && basevalue >= 0)
-            return basevalue + 0.1 * bonusCaptured + 0.1 * choiceCaptured;
-        else return 10;
+        //double basevalue = 10 * movesLeft / (state.getMap().getFinalOccupied() + 1);
+        //if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000 && choiceCaptured < 1000 && basevalue > 0 && basevalue <= 10 && basevalue >= 0)
+            return 30 + bonusCaptured + choiceCaptured;
+        //else return 10;
     }
 
     public static double stoneCountWeight(GameState state, int playerId) {
@@ -81,14 +81,13 @@ public class Heuristics {
      * @param playerId {@code id} of the {@link Player} in turn
      * @return a integer number as mobility heuristics
      */
-    public static int mobility(GameState state, int playerId) {
+    public static double mobility(GameState state, int playerId) {
 
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
         }
-
-        return LegalMoves.getLegalRegularMoves(state, playerId).size();
-
+        double legalMoveCount = LegalMoves.getLegalRegularMoves(state, playerId).size();
+        return Math.pow(legalMoveCount, 0.5);
     }
 
     /**
@@ -129,11 +128,12 @@ public class Heuristics {
                 value = value - state.getPlayerFromId(i).getStoneCount();
             }
         }
+        value = value / state.getTotalPlayerCount();
         if (choiceCaptured > 0.5 && (int) value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
-            return 0;
+            return value * 0.5;
         }
 
-        return value / state.getTotalPlayerCount();
+        return value;
     }
 
     public static double lineClustering(GameState state, int playerId) {
@@ -144,7 +144,7 @@ public class Heuristics {
             playerShareSum += stone.getDiagonal().getPlayerShare();
             playerShareSum += stone.getIndiagonal().getPlayerShare();
         }
-        return playerShareSum * state.getMap().getAvgTileLineLength() / (state.getPlayerFromId(playerId).getStoneCount() + 1);
+        return playerShareSum / (state.getPlayerFromId(playerId).getStoneCount() + 1);
     }
 
     /**
