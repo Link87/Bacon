@@ -51,9 +51,9 @@ public class Heuristics {
         double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
 
         //double basevalue = 10 * movesLeft / (state.getMap().getFinalOccupied() + 1);
-        //if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000 && choiceCaptured < 1000 && basevalue > 0 && basevalue <= 10 && basevalue >= 0)
+        if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000 && choiceCaptured < 1000)
             return 30 + bonusCaptured + choiceCaptured;
-        //else return 10;
+        else return 30;
     }
 
     public static double stoneCountWeight(GameState state, int playerId) {
@@ -128,12 +128,12 @@ public class Heuristics {
                 value = value - state.getPlayerFromId(i).getStoneCount();
             }
         }
-        value = value / state.getTotalPlayerCount();
+
         if (choiceCaptured > 0.5 && (int) value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
-            return value * 0.5;
+            return 0.5 * value / state.getTotalPlayerCount();
         }
 
-        return value;
+        return value / state.getTotalPlayerCount();
     }
 
     public static double lineClustering(GameState state, int playerId) {
