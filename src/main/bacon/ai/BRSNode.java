@@ -583,21 +583,21 @@ class BRSNode {
     private double evaluateCurrentState(Move.Type type) {
         if (type == Move.Type.REGULAR) {
             int playerId = Heuristics.inversionSwap(state, state.getMe());
-            mobilityScalar = Heuristics.mobilityWeight(state, playerId);
+            //stabilityScalar = Heuristics.stabilityWeight(state, playerId);
+            mobilityScalar = Heuristics.mobilityWeight(state, state.getMe());
             stoneCountScalar = Heuristics.stoneCountWeight(state, playerId);
             overrideBonusScalar = Heuristics.bonusOverrideWeight(state, playerId);
 
             return stabilityScalar * StabilityHeuristic.stability(state, playerId)
-                    + mobilityScalar * Heuristics.mobility(state, playerId)
-                    + overrideStabilityScalar * Heuristics.overrideStability(state, playerId)
+                    + mobilityScalar * Heuristics.mobility(state, state.getMe())
+                    //+ overrideStabilityScalar * Heuristics.overrideStability(state, playerId)
                     + stoneCountScalar * Heuristics.relativeStoneCount(state, playerId)
                     + lineClusteringScalar * Heuristics.lineClustering(state, playerId)
                     + BOMB_BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
                     + overrideBonusScalar * Heuristics.bonusOverride(state, state.getMe());
         } else if (type == Move.Type.OVERRIDE) {
             int playerId = Heuristics.inversionSwap(state, state.getMe());
-            return Heuristics.relativeStoneCount(state, playerId)
-                    + overrideStabilityScalar * Heuristics.overrideStability(state, playerId);
+            return Heuristics.relativeStoneCount(state, playerId);
         }
 
         throw new IllegalStateException("Cannot evaluate bomb heuristic in brs tree. I shouldn't be here...");

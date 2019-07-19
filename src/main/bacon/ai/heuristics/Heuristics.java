@@ -44,6 +44,10 @@ public class Heuristics {
     }
 
 
+    public static double stabilityWeight(GameState state, int playerId) {
+        return state.getMap().getAvgTileLineLength() / 10;
+    }
+
     public static double mobilityWeight(GameState state, int playerId) {
         if (!state.getMap().isRolloutsAvailable()) return 30;
         //double movesLeft = state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount();
