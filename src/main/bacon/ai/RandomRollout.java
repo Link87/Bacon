@@ -89,7 +89,6 @@ public class RandomRollout {
                 int finalBonusCount = state.getMap().getBonusTileCount();
                 int unusedOverrideCount = 0;
                 for (int i = 0; i < playerCount; i++) {
-                    if (state.getPlayerFromId(i+1).getStoneCount() != 0)
                         unusedOverrideCount += state.getPlayerFromId(i+1).getOverrideStoneCount();
                 }
 

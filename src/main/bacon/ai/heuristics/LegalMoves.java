@@ -49,8 +49,8 @@ public class LegalMoves {
                 move = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS));
                 if (move.isLegal()) {
                     legalMoves.add(move);
-//                    move = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
-//                    legalMoves.add(move);
+                    move = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS));
+                    legalMoves.add(move);
                 }
                 for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                     move = new RegularMove(state, playerId, tile.x, tile.y, new BonusRequest(i));
@@ -91,7 +91,7 @@ public class LegalMoves {
                                 }
                             } else if (steps > 0 && last.getProperty() == Tile.Property.BONUS) {
                                 legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.OVERRIDE_BONUS)));
-//                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
+                                legalMoves.add((RegularMove) MoveFactory.createMove(state, playerId, last.x, last.y, new BonusRequest(BonusRequest.Type.BOMB_BONUS)));
                             } else if (steps > 0) {
                                 legalMoves.add(new RegularMove(state, playerId, last.x, last.y));
                             }

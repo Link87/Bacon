@@ -73,7 +73,7 @@ public class Heuristics {
         if (!state.getMap().isRolloutsAvailable()) return 100;
 
         double weight = Math.pow(0.9, state.getMap().getUnusedOverride());
-        if (weight >= 0 && weight <= 1) return weight;
+        if (weight >= 0 && weight <= 1) return 100 * weight;
         else return 100;
     }
 

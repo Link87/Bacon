@@ -94,7 +94,7 @@ public class AI {
                 LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCount = " + moveCount);
                 long startTimeStamp = System.nanoTime();
                 RandomRollout rollout = new RandomRollout(Game.getGame().getCurrentState(), cfg.getMaxRandRollIterations(),
-                        startTimeStamp + cfg.getRandRollTimeBudget() * 1000000);
+                        startTimeStamp + (long)cfg.getRandRollTimeBudget() * timeout);
                 long endTimeStamp = System.nanoTime();
                 rolloutTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
                 LOGGER.log(Level.INFO, "RR completed, elapsed time: " + rolloutTime + "ms, completed iterations: " + (rollout.getTotalIteration() - 1));
