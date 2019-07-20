@@ -90,11 +90,12 @@ public class AI {
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
             int rolloutTime = 0;
+            double timebudget = cfg.getRandRollTimeBudget() * timeout * 1000000;
             if (moveCount % cfg.getRandRollFrequency() == 2 && currentMoveNumber != 1) {
                 LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCount = " + moveCount);
                 long startTimeStamp = System.nanoTime();
                 RandomRollout rollout = new RandomRollout(Game.getGame().getCurrentState(), cfg.getMaxRandRollIterations(),
-                        startTimeStamp + (long)cfg.getRandRollTimeBudget() * timeout);
+                        startTimeStamp + (long)timebudget);
                 long endTimeStamp = System.nanoTime();
                 rolloutTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
                 LOGGER.log(Level.INFO, "RR completed, elapsed time: " + rolloutTime + "ms, completed iterations: " + (rollout.getTotalIteration() - 1));
