@@ -113,7 +113,7 @@ public class AI {
 
             //very first move needs sometimes more time because of jit and stuff
             if (Game.getGame().getMoveCount() == 0) {
-                watchdog = new PancakeWatchdog(timeout - 1000);
+                watchdog = new PancakeWatchdog(timeout - 800);
             }
 
 
