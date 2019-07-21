@@ -105,7 +105,8 @@ public class AI {
                         + "  stdvInv: " + currentGameState.getMap().getFinalInversionStdv()
                         + "  avgCho: " + currentGameState.getMap().getFinalChoice()
                         + "  stdvCho: " + currentGameState.getMap().getFinalChoiceStdv()
-                        + "  avgBon: " + currentGameState.getMap().getFinalBonus());
+                        + "  avgBon: " + currentGameState.getMap().getFinalBonus()
+                        + "  avgUnused: " + currentGameState.getMap().getUnusedOverride());
             }
 
 

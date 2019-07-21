@@ -726,7 +726,7 @@ public class Map {
             this.unusedOverrideCounts[iteration - 1] = unusedOverrideCount;
             double sum = 0;
             for (int i = 0; i < iteration; i++) {
-                sum += this.finalBonusCounts[i];
+                sum += this.unusedOverrideCounts[i];
             }
             this.avgUnusedOverride = sum / iteration;
         }

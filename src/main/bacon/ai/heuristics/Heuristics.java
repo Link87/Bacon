@@ -30,13 +30,13 @@ public class Heuristics {
         double inversionCaptured = state.getMap().getInversionTileCount() - state.getMap().getFinalInversion();
         double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
         if (inversionCaptured > 0 && inversionStdv < 0.2 && choiceCaptured <= 0) {
-            LOGGER.log(Level.FINE, "INVERSION PREDICTED");
+            //LOGGER.log(Level.FINE, "INVERSION PREDICTED");
             int swapPartner = (playerId - (int) inversionCaptured) % state.getTotalPlayerCount();
             while (swapPartner < 1) {
                 swapPartner += state.getTotalPlayerCount();
             }
             if (swapPartner <= state.getTotalPlayerCount()) {
-                LOGGER.log(Level.FINE, "SWAP SUCCESSFUL");
+                //LOGGER.log(Level.FINE, "SWAP SUCCESSFUL WITH PLAYER " + swapPartner);
                 return swapPartner;
             }
         }
@@ -70,11 +70,14 @@ public class Heuristics {
     }
 
     public static double bonusOverrideWeight(GameState state, int playerId) {
-        if (!state.getMap().isRolloutsAvailable()) return 100;
+        if (!state.getMap().isRolloutsAvailable()) {
+            return 100;
+        }
 
+        if (state.getMap().getUnusedOverride() > 100) return 0;
         double weight = Math.pow(0.9, state.getMap().getUnusedOverride());
         if (weight >= 0 && weight <= 1) return 100 * weight;
-        else return 100;
+        return 100;
     }
 
 
