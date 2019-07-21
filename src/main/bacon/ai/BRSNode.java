@@ -582,8 +582,8 @@ class BRSNode {
      */
     private double evaluateCurrentState(Move.Type type) {
         if (type == Move.Type.REGULAR) {
-            int playerId = Heuristics.inversionSwap(state, state.getMe());
-            //int playerId = state.getMe();
+            //int playerId = Heuristics.inversionSwap(state, state.getMe());
+            int playerId = state.getMe();
             //stabilityScalar = Heuristics.stabilityWeight(state, playerId);
             mobilityScalar = Heuristics.mobilityWeight(state, state.getMe());
             stoneCountScalar = Heuristics.stoneCountWeight(state, playerId);
