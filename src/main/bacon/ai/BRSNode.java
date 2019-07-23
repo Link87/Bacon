@@ -30,7 +30,7 @@ class BRSNode {
     public static final double STONE_COUNT_SCALAR_DEFAULT = 1;
     public static final double LINE_CLUSTERING_SCALAR_DEFAULT = -1;
     public static final double BOMB_BONUS_SCALAR = 2;
-    public static final double OVERRIDE_BONUS_SCALAR_DEFAULT = 100;
+    public static final double OVERRIDE_BONUS_SCALAR_DEFAULT = 5;
 
     private static double stabilityScalar;
     private static double mobilityScalar;
@@ -584,14 +584,14 @@ class BRSNode {
         if (type == Move.Type.REGULAR) {
             int playerId = Heuristics.inversionSwap(state, state.getMe());
             //int playerId = state.getMe();
-            stabilityScalar = Heuristics.stabilityWeight(state, playerId);
+            //stabilityScalar = Heuristics.stabilityWeight(state, playerId);
             mobilityScalar = Heuristics.mobilityWeight(state, state.getMe());
             stoneCountScalar = Heuristics.stoneCountWeight(state, playerId);
             overrideBonusScalar = Heuristics.bonusOverrideWeight(state, playerId);
 
             return stabilityScalar * StabilityHeuristic.stability(state, playerId)
                     + mobilityScalar * Heuristics.mobility(state, state.getMe())
-                    //+ overrideStabilityScalar * Heuristics.overrideStability(state, playerId)
+                    + overrideStabilityScalar * Heuristics.overrideStability(state, playerId)
                     + stoneCountScalar * Heuristics.relativeStoneCount(state, playerId)
                     + lineClusteringScalar * Heuristics.lineClustering(state, playerId)
                     + BOMB_BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
