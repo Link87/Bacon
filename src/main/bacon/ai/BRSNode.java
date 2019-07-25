@@ -133,7 +133,7 @@ class BRSNode {
         BRSNode.overrideStabilityScalar = OVERRIDE_STABILITY_SCALAR_DEFAULT;
         BRSNode.stoneCountScalar = STONE_COUNT_SCALAR_DEFAULT;
         BRSNode.lineClusteringScalar = LINE_CLUSTERING_SCALAR_DEFAULT;
-        BRSNode.overrideStabilityScalar = OVERRIDE_BONUS_SCALAR_DEFAULT;
+        BRSNode.overrideBonusScalar = OVERRIDE_BONUS_SCALAR_DEFAULT;
 
         this.layer = 0;
         this.isMaxNode = true;
@@ -587,13 +587,13 @@ class BRSNode {
             //stabilityScalar = Heuristics.stabilityWeight(state, playerId);
             mobilityScalar = Heuristics.mobilityWeight(state, state.getMe());
             stoneCountScalar = Heuristics.stoneCountWeight(state, playerId);
-            overrideBonusScalar = Heuristics.bonusOverrideWeight(state, playerId);
+            //overrideBonusScalar = Heuristics.bonusOverrideWeight(state, playerId);
 
             return stabilityScalar * StabilityHeuristic.stability(state, playerId)
                     + mobilityScalar * Heuristics.mobility(state, state.getMe())
                     //+ overrideStabilityScalar * Heuristics.overrideStability(state, playerId)
                     + stoneCountScalar * Heuristics.relativeStoneCount(state, playerId)
-                    //+ lineClusteringScalar * Heuristics.lineClustering(state, playerId)
+                    + lineClusteringScalar * Heuristics.lineClustering(state, playerId)
                     + BOMB_BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
                     + overrideBonusScalar * Heuristics.bonusOverride(state, state.getMe());
         } else if (type == Move.Type.OVERRIDE) {
