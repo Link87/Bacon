@@ -1,6 +1,7 @@
 package bacon.ai;
 
 import bacon.Config;
+import bacon.Game;
 import bacon.GamePhase;
 import bacon.GameState;
 import bacon.ai.heuristics.Heuristics;
@@ -11,57 +12,150 @@ import bacon.move.BombMove;
 import bacon.move.Move;
 
 import java.util.IntSummaryStatistics;
-import java.util.Set;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * A class for the actual ai.
+ */
 public class AI {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
     private static final AI INSTANCE = new AI();
 
-    private AI() {
-    }
+    /**
+     * Amount of times the PancakeWatchdog was triggered.
+     */
+    private static int pancakeCount = 0;
 
+    /**
+     * Amount of moves the ai has computed.
+     */
+    private static int moveCount = 0;
+
+    /**
+     * Singleton constructor that does nothing.
+     */
+    private AI() {}
+
+    /**
+     * Returns the singleton {@code AI} instance.
+     *
+     * @return the {@code AI} instance
+     */
     public static AI getAI() {
         return INSTANCE;
     }
 
     /**
-     * Request a move from the ai.
+     * Returns the amount of times the {@link PancakeWatchdog} was triggered.
+     *
+     * @return the number of triggers of the {@code PancakeWatchdog}
+     */
+    public static int getPancakeCount() {
+        return pancakeCount;
+    }
+
+    /**
+     * Returns the amount of moves the ai has computed.
+     *
+     * @return the amount of moves the ai has computed
+     */
+    public static int getMoveCount() {
+        return moveCount;
+    }
+
+    /**
+     * Request a {@link Move} from the {@code AI}.
+     * <p>
+     * Returns the best move that can be found in the given time or depth limit.
      *
      * @param timeout          the time the ai has for its computation
      * @param depth            the maximum search depth the ai is allowed to do
      * @param cfg              config containing settings for search algorithms
-     * @param currentGameState current Game State
+     * @param currentGameState current {@link GameState}
      * @return the next move
      */
     public Move requestMove(int timeout, int depth, Config cfg, GameState currentGameState) {
 
-        LOGGER.log(Level.INFO,"Time limit "+timeout+"ms.");
-        
+        LOGGER.log(Level.INFO, "Time limit " + timeout + "ms.");
+
         Statistics.getStatistics().init();
+        int currentMoveNumber = currentGameState.getMoveCount();
+        AI.moveCount++;
 
         Move bestMove = null;
         if (currentGameState.getGamePhase() == GamePhase.PHASE_ONE) {
-            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
-            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout, depth);
+            int rolloutTime = 0;
+            double timebudget = cfg.getRandRollTimeBudget() * timeout * 1000000;
+            if (moveCount % cfg.getRandRollFrequency() == 2 && currentMoveNumber != 1) {
+                LOGGER.log(Level.INFO, "RR started in move #" + currentMoveNumber + " , moveCount = " + moveCount);
+                long startTimeStamp = System.nanoTime();
+                RandomRollout rollout = new RandomRollout(Game.getGame().getCurrentState(), cfg.getMaxRandRollIterations(),
+                        startTimeStamp + (long)timebudget);
+                long endTimeStamp = System.nanoTime();
+                rolloutTime = (int) (endTimeStamp - startTimeStamp) / 1000000;
+                LOGGER.log(Level.INFO, "RR completed, elapsed time: " + rolloutTime + "ms, completed iterations: " + (rollout.getTotalIteration() - 1));
+                LOGGER.log(Level.FINE, "avgFree: " + currentGameState.getMap().getFinalFreeTiles()
+                        + "  avgOcc: " + currentGameState.getMap().getFinalOccupied()
+                        + "  avgInv: " + currentGameState.getMap().getFinalInversion()
+                        + "  stdvInv: " + currentGameState.getMap().getFinalInversionStdv()
+                        + "  avgCho: " + currentGameState.getMap().getFinalChoice()
+                        + "  stdvCho: " + currentGameState.getMap().getFinalChoiceStdv()
+                        + "  avgBon: " + currentGameState.getMap().getFinalBonus()
+                        + "  avgUnused: " + currentGameState.getMap().getUnusedOverride());
+            }
+
+
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout - rolloutTime);
+            IterationHeuristic iterationHeuristic = new IterationHeuristic(timeout - rolloutTime, depth);
+
+            //very first move needs sometimes more time because of jit and stuff
+            if (Game.getGame().getMoveCount() == 0) {
+                watchdog = new PancakeWatchdog(timeout - 800);
+            }
+
+
+            double alpha = -Double.MAX_VALUE;
+            double beta = Double.MAX_VALUE;
+            BRSNode root;
             while (iterationHeuristic.doIteration()) {
-                BRSNode root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
-                        cfg.isMoveSortingEnabled(), watchdog);
+                root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                        cfg.isMoveSortingEnabled(), cfg.isAspirationWindowsEnabled(), alpha, beta, watchdog);
                 root.evaluateNode();
+
                 if (root.getBestMove() != null) {
                     bestMove = root.getBestMove();
+                } else if (cfg.isAspirationWindowsEnabled() && !watchdog.isTriggered()) {
+                    // aspiration window failure: restart search with default alpha/beta values
+                    root = new BRSNode(iterationHeuristic.getDepth(), cfg.getBeamWidth(), cfg.isPruningEnabled(),
+                            cfg.isMoveSortingEnabled(), false, -Double.MAX_VALUE, Double.MAX_VALUE, watchdog);
+                    root.evaluateNode();
+                    if (root.getBestMove() != null) bestMove = root.getBestMove();
                 }
+
+                if (cfg.isAspirationWindowsEnabled()) {
+                    // update aspiration window for next BRS-iteration
+                    BRSNode.analyseAspirationWindow();
+                    alpha = root.getAspWindowAlpha();
+                    beta = root.getAspWindowBeta();
+                }
+
                 if (watchdog.isTriggered()) {
                     LOGGER.log(Level.WARNING, "Pancake triggered!");
+                    AI.pancakeCount++;
                     break;
                 }
+
+                // stop ai from for example trying depth 10 if only 5 rounds remain
+                if (BRSNode.getMaximumReachedDepth() < iterationHeuristic.getDepth()) break;
             }
         } else {
-            Set<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());
+            PancakeWatchdog watchdog = new PancakeWatchdog(timeout);
+            List<BombMove> moves = LegalMoves.getLegalBombMoves(currentGameState, currentGameState.getMe());
             double evalValue;
             double curBestVal = -Double.MAX_VALUE;
             for (BombMove move : moves) {
@@ -73,7 +167,7 @@ public class AI {
                 }
 
                 Statistics.getStatistics().leaveMeasuredState();
-
+                if(watchdog.isPancake()) break;
             }
         }
 
@@ -85,7 +179,7 @@ public class AI {
         IntSummaryStatistics stats = Statistics.getStatistics().getStateMeasurementResults();
 
         LOGGER.log(Level.INFO, "Computing best move took {0} ms, {1} μs avg per state.",
-                new Object[]{totalTimeNanos / 1000000, totalTimeNanos / (1000 * Statistics.getStatistics().getTotalStateCount())});
+                new Object[]{totalTimeNanos / 1000000, (totalTimeNanos / 1000) / Statistics.getStatistics().getTotalStateCount()});
         LOGGER.log(Level.INFO, "Computing times per leaf: avg {0} μs, min {1} μs, max {2} μs, leaf time total {3} μs.",
                 new Object[]{(int) (stats.getAverage() / 1000), stats.getMin() / 1000, stats.getMax() / 1000, stats.getSum() / 1000});
 

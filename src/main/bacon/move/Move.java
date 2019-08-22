@@ -5,24 +5,28 @@ import bacon.GameState;
 import java.nio.ByteBuffer;
 
 /**
- * An interface which defines the basic functions of each typ of move.
+ * An abstract class representing a move.
+ * <p>
+ * Subclasses exists for each possible type of move and override the methods accordingly.
+ * <p>
+ * A {@code Move} can be done and undone, as described in the <i>command</i> pattern.
  */
 public abstract class Move {
-    GameState state;
-    int playerId;
-    int xPos;
-    int yPos;
+    final GameState state;
+    final int playerId;
+    final int xPos;
+    final int yPos;
     Type type;
 
     private double value;
 
     /**
-     * Creates a new move from the given values.
+     * Creates a new {@code Move} from the given values.
      *
-     * @param state    the game state on which the move operates
-     * @param playerId the id of the player of the move
-     * @param x        the x coordinate
-     * @param y        the y coordinate
+     * @param state    the {@link GameState} on which the move operates
+     * @param playerId the {@code id} of the {@link bacon.Player} of the move
+     * @param x        the horizontal coordinate
+     * @param y        the vertical coordinate
      */
     Move(GameState state, int playerId, int x, int y) {
         this.state = state;
@@ -32,51 +36,62 @@ public abstract class Move {
     }
 
     /**
-     * Checks if this move is legal.
+     * Checks if the {@code Move} is legal.
      *
-     * @return true if the move is legal, false otherwise
+     * @return {@code true} if the {@code Move} is legal, {@code false} otherwise
      */
     public abstract boolean isLegal();
 
-
     /**
-     * Executes this move.
+     * Executes the {@code Move}.
      */
     public abstract void doMove();
 
     /**
-     * Returns the x coordinate of this move.
+     * Undoes the {@code Move}.
+     * <p>
+     * Requires the {@code Move} to previously be done.
+     */
+    public abstract void undoMove();
+
+    /**
+     * Returns the horizontal coordinate of the {@code Move}.
      *
-     * @return the x coordinate of this move
+     * @return the horizontal coordinate of the {@code Move}
      */
     public int getX() {
         return xPos;
     }
 
     /**
-     * Returns the y coordinate of this move.
+     * Returns the vertical coordinate of the {@code Move}.
      *
-     * @return the y coordinate of this move
+     * @return the vertical coordinate of the {@code Move}
      */
     public int getY() {
         return yPos;
     }
 
     /**
-     * Returns the player id of this move.
+     * Returns the {@code id} of the {@link bacon.Player} of the {@code Move}.
      *
-     * @return the id of the player of this move
+     * @return the {@code id} of the {@code Player} of the {@code Move}
      */
     public int getPlayerId() {
         return playerId;
     }
 
+    /**
+     * Returns the {@link Type} of the {@code Move}.
+     *
+     * @return the {@code Type} of the {@code Move}
+     */
     public Type getType() {
         return type;
     }
 
     /**
-     * Returns the evaluation value of this move.
+     * Returns the evaluation value of the {@code Move}.
      *
      * @return the evaluation value
      */
@@ -85,7 +100,7 @@ public abstract class Move {
     }
 
     /**
-     * Sets the evaluation value of this move.
+     * Sets the evaluation value of the {@code Move}.
      *
      * @param value the evaluation value
      */
@@ -94,9 +109,9 @@ public abstract class Move {
     }
 
     /**
-     * Returns the move in binary representation.
+     * Returns the {@code Move} in binary representation.
      *
-     * @return byte array containing this moves binary representation
+     * @return byte array containing the {@code Move}s binary representation
      */
     public byte[] encodeBinary() {
         var data = new byte[5];
@@ -107,8 +122,6 @@ public abstract class Move {
 
         return data;
     }
-
-    public abstract void undoMove();
 
     @Override
     public boolean equals(Object obj) {
@@ -133,11 +146,22 @@ public abstract class Move {
     }
 
     /**
-     * An enum for the different types of moves.
+     * An enum for the different types of the {@code Move}s.
      */
     public enum Type {
+        /**
+         * A variant representing a regular move on an unoccupied tile.
+         */
         REGULAR,
+
+        /**
+         * A variant representing an override move on an occupied tile.
+         */
         OVERRIDE,
+
+        /**
+         * A variant representing a bomb move on a tile.
+         */
         BOMB,
     }
 

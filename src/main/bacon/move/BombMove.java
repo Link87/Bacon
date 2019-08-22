@@ -10,52 +10,31 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A class which represents placing a bomb on a tile.
+ * A class which represents a move placing a bomb on a {@link Tile}.
  */
 public class BombMove extends Move {
 
     /**
-     * Creates instance of BombMove via the constructor in its superclass {@link BuildMove}
+     * Creates a new instance of {@code BombMove} from the given values.
      *
-     * @param state  the game state on which the move operates
-     * @param player the player of the move
-     * @param x      the x coordinate
-     * @param y      the y coordinate
+     * @param state    the {@link GameState} on which the move operates
+     * @param playerId the {@code id} of the {@link bacon.Player} of the move
+     * @param x        the horizontal coordinate
+     * @param y        the vertical coordinate
      */
-    public BombMove(GameState state, int player, int x, int y) {
-        super(state, player, x, y);
+    public BombMove(GameState state, int playerId, int x, int y) {
+        super(state, playerId, x, y);
         this.type = Type.BOMB;
     }
 
-
     /**
-     * Checks if this move is legal.
-     * Returns false if destination tile is a hole or the player has not enough bombs, otherwise true.
+     * Returns the {@link Tile}s that are affected by a bomb thrown onto the given tile.
      *
-     * @return true if the move is legal, false otherwise
+     * @param target the {@code Tile} whose surroundings is to be examined
+     * @param radius the strength of the bomb
+     * @return the {@link Set} of {@code Tile}s within bomb radius of the {@code Tile}
      */
-    public boolean isLegal() {
-        if (this.state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.HOLE) return false;
-        return this.state.getPlayerFromId(this.playerId).getBombCount() != 0;
-    }
-
-
-    /**
-     * Executes this move.
-     * <p>
-     * Does nothing if isLegal() method determines the move to be illegal.
-     * Otherwise uses dynamic programming to calculate all tiles that need to be bombed with bombTile() method in
-     * Tile class.
-     */
-    public void doMove() {
-        // m is an 2D ArrayList of tiles, where m.get(1) contains all tiles (at least) 1 step away from t, m.get(2) contains
-        // all tiles (at least) 2 steps away from t etc.
-        // We start at radius 0 and work our way up to radius r. We consider every transition of every tile in the previous
-        // radius-layer i-1 and check whether this entry has already appeared. If not, we stack this entry onto m[i]
-
-        int radius = state.getBombRadius();
-        Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
-
+    public static Set<Tile> getAffectedTiles(Tile target, int radius) {
         // set of already examined tiles
         Set<Tile> bombSet = new HashSet<>();
         // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
@@ -63,13 +42,15 @@ public class BombMove extends Move {
         // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
         List<Tile> nextTiles = new ArrayList<>();
 
-        bombSet.add(tile);
-        currentTiles.add(tile);
+        bombSet.add(target);
+        currentTiles.add(target);
 
-        //searches for all neighbours that need to be bombed out
+        // Searches for all neighbours that need to be bombed out.
+        // Starts at radius 0 and works its way up to the bomb radius. Considers every transition of every tile in the previous
+        // radius-layer i-1 and checks whether this entry has already appeared. If not, stacks this entry onto m[i]
         for (int i = 0; i < radius; i++) {
             for (Tile t : currentTiles) {
-                for (int direction = 0; direction < Direction.values().length; direction++) {
+                for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
                     if (t.getTransition(direction) != null) {
                         if (!bombSet.contains(t.getTransition(direction))) {
                             bombSet.add(t.getTransition(direction));
@@ -82,6 +63,33 @@ public class BombMove extends Move {
             nextTiles = new ArrayList<>((i + 1) * 8);
         }
 
+        return bombSet;
+    }
+
+    /**
+     * Checks if this {@code BombMove} is legal.
+     * <p>
+     * Returns {@code false} if destination {@link Tile} is a hole
+     * or the {@link bacon.Player} has not enough bombs, otherwise {@code true}.
+     *
+     * @return {@code true} if the move is legal, {@code false} otherwise
+     */
+    public boolean isLegal() {
+        if (this.state.getMap().getTileAt(this.xPos, this.yPos).getProperty() == Tile.Property.HOLE) return false;
+        return this.state.getPlayerFromId(this.playerId).getBombCount() != 0;
+    }
+
+    /**
+     * Executes this {@code BombMove}.
+     * <p>
+     * This method calculates all {@link Tile}s that need to be bombed with {@link Tile#bombTile()}.
+     */
+    public void doMove() {
+        int radius = state.getBombRadius();
+        Tile target = state.getMap().getTileAt(this.xPos, this.yPos);
+
+        Set<Tile> bombSet = BombMove.getAffectedTiles(target, radius);
+
         //"Bomb away" tiles, i.e. turning them into holes and removing transitions
         bombSet.forEach(Tile::bombTile);
 
@@ -89,8 +97,14 @@ public class BombMove extends Move {
         this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
     }
 
+    /**
+     * {@code BombMove}s cannot be undone. This method throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public void undoMove() {
-
+        throw new UnsupportedOperationException();
     }
+
 }

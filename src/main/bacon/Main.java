@@ -3,12 +3,25 @@ package bacon;
 import java.util.Arrays;
 import java.util.logging.*;
 
+/**
+ * The main class, that contains the entry point, see {@link #main(String[])}.
+ */
 public class Main {
 
     private static final Logger LOGGER = Logger.getGlobal();
 
+    private Main() {}
+
+    /**
+     * The entry point of the ai.
+     * <p>
+     * Reads the command line arguments and starts a new {@link Game}.
+     *
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
 
+        // read cli arguments
         Config config = null;
         try {
             config = Config.fromArgs(args);
@@ -25,7 +38,7 @@ public class Main {
         }
 
         // Replace all present root logger handler with our own ConsoleHandler
-        LOGGER.setLevel(Level.FINE);
+        LOGGER.setLevel(Level.FINER);
         Arrays.stream(Logger.getLogger("").getHandlers()).forEach(value -> Logger.getLogger("").removeHandler(value));
         DualConsoleHandler handler = new DualConsoleHandler(new PrivacyFormatter(), config.isErrEnabled());
         handler.setLevel(Level.ALL);
@@ -46,9 +59,11 @@ public class Main {
                 "                                                                       \n" +
                 "🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓🥓\n");
 
-        LOGGER.log(Level.INFO, "Going to connect to {0}:{1}", new Object[]{config.getHost(), config.getPort()});
+        LOGGER.log(Level.INFO, "Going to connect to {0}:" + config.getPort(), config.getHost());
         LOGGER.log(Level.INFO, "Alpha-Beta-Pruning enabled: {0}", config.isPruningEnabled());
         LOGGER.log(Level.INFO, "Move-Sorting enabled: {0}", config.isMoveSortingEnabled());
+        LOGGER.log(Level.INFO, "The murderer is always the gardener: {0} ({1})",
+                new Object[]{config.getBeamWidth() > 0, config.getBeamWidth() * 100});
         LOGGER.log(Level.INFO, "Number of kittens that were harmed during development: {0}", 0);
 
         Game.getGame().startGame(config);
@@ -56,21 +71,21 @@ public class Main {
     }
 
     /**
-     * Prints the cli help information for this program.
+     * Prints the cli help information for this program to {@code System.out}.
      */
     private static void printHelp() {
         String nl = System.getProperty("line.separator");
         String helpInfo =
                 "usage: bacon [--help] [-s <server> | --server <server> -p <port> | --port <port> [--no-prune]" + nl +
-                "             [--no-sort] [-b <width> | --beam <width> | --no-beam] [--err]]" + nl +
-                "-s, --server <host>\t server to connect with (mandatory)" + nl +
-                "-p, --port <port>  \t port to connect to (mandatory)" + nl +
-                "    --no-prune     \t disable alpha-beta-pruning" + nl +
-                "    --no-sort      \t disable move sorting entirely" + nl +
-                "-b, --beam <width> \t set beam width for forward pruning" + nl +
-                "    --no-beam      \t disable beam search, same as '-b 0'" + nl +
-                "    --err          \t write errors and warnings to stderr" + nl +
-                "    --help         \t display this help text" + nl;
+                        "             [--no-sort] [-b <width> | --beam <width> | --no-beam] [--err]]" + nl +
+                        "-s, --server <host>\t server to connect with (mandatory)" + nl +
+                        "-p, --port <port>  \t port to connect to (mandatory)" + nl +
+                        "    --no-prune     \t disable alpha-beta-pruning" + nl +
+                        "    --no-sort      \t disable move sorting entirely" + nl +
+                        "-b, --beam <width> \t set beam width for forward pruning" + nl +
+                        "    --no-beam      \t disable beam search, same as '-b 0'" + nl +
+                        "    --err          \t write errors and warnings to stderr" + nl +
+                        "    --help         \t display this help text" + nl;
 
         System.out.println(helpInfo);
     }
@@ -78,7 +93,7 @@ public class Main {
     /**
      * A {@link Formatter} that only emits the log level and message to minimize the information other teams can get.
      */
-    public static class PrivacyFormatter extends Formatter {
+    static class PrivacyFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
             return record.getLevel() + ": " + formatMessage(record) + "\n";
@@ -86,13 +101,25 @@ public class Main {
     }
 
     /**
-     * A {@link Handler} that prints INFO and below to System.out and everything above to System.err.
+     * A {@link Handler} that prints {@link Level#INFO} and below to {@code System.out} and everything above to {@code System.err}.
+     * <p>
+     * In some cases it is desired to have normal and error output in the same log file.
+     * For those cases, the log splitting can be deactivated.
      */
     public static class DualConsoleHandler extends StreamHandler {
 
         private final ConsoleHandler stderrHandler = new ConsoleHandler();
         private final boolean printToErr;
 
+        /**
+         * Creates a new {@code DualConsoleHandler} with the given formatter.
+         * <p>
+         * If {@code printToErr} is set to {@code true}, {@link Level#SEVERE} and {@link Level#WARNING} log messages
+         * are printed to {@code System.err} instead of {@code System.out}.
+         *
+         * @param fmt        the {@link Formatter} to use
+         * @param printToErr if {@code true}, {@code SEVERE} and {@code WARNING} messages are printed to {@code System.err}
+         */
         DualConsoleHandler(Formatter fmt, boolean printToErr) {
             super(System.out, fmt);
             this.printToErr = printToErr;

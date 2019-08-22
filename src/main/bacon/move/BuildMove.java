@@ -1,34 +1,41 @@
 package bacon.move;
 
-import bacon.*;
+import bacon.Direction;
+import bacon.GameState;
+import bacon.Player;
+import bacon.Tile;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+/**
+ * A {@link Move} that places a stone on a {@link Tile}.
+ */
 public class BuildMove extends Move {
 
-    ChangeData[] changeData;
+    /**
+     * Changes made by {@link #doMove()}. Used by {@link #undoMove()}.
+     */
+    List<ChangeData> changes;
 
     /**
-     * Creates a new move from the given values.
+     * Creates a new {@code BuildMove} from the given values.
      *
-     * @param state  the game state on which the move operates
-     * @param player the player of the move
-     * @param x      the x coordinate
-     * @param y      the y coordinate
+     * @param state    the {@link GameState} on which the move operates
+     * @param playerId the {@code id} of the {@link Player} of the move
+     * @param x        the horizontal coordinate
+     * @param y        the vertical coordinate
      */
-    BuildMove(GameState state, int player, int x, int y) {
-        super(state, player, x, y);
+    BuildMove(GameState state, int playerId, int x, int y) {
+        super(state, playerId, x, y);
     }
 
     /**
-     * Checks if this move is legal.
-     * We then use breadth-first search to find a tile already occupied by the player on a straight line from the tile
-     * we're playing on.
+     * Checks if this {@code BuildMove} is legal.
+     * <p>
+     * The method is implemented using breadth-first search to find a {@link Tile} already occupied by the {@link Player}
+     * on a straight line from the {@code Tile} we're playing on.
      *
-     * @return true if the move is legal, false otherwise
+     * @return {@code true} if the move is legal, {@code false} otherwise
      */
     @Override
     public boolean isLegal() {
@@ -38,9 +45,9 @@ public class BuildMove extends Move {
         if (tile.getProperty() == Tile.Property.HOLE) return false;
 
         // farthest reachable tile in each direction
-        Tile[] surrounding = new Tile[Direction.values().length];
+        Tile[] surrounding = new Tile[Direction.DIRECTION_COUNT];
         // direction in which to walk for each starting direction
-        int[] searchDirections = new int[Direction.values().length];
+        int[] searchDirections = new int[Direction.DIRECTION_COUNT];
         for (int i = 0; i < surrounding.length; i++) {
             surrounding[i] = tile;
             searchDirections[i] = i;
@@ -72,7 +79,7 @@ public class BuildMove extends Move {
                 } else emptyOrHoleCount++;     // If this next tile is a hole, we can stop searching in this direction
             }
 
-            if (emptyOrHoleCount >= Direction.values().length)
+            if (emptyOrHoleCount >= Direction.DIRECTION_COUNT)
                 break;    // If we've hit a barrier in all 8 directions, we can stop searching altogether and declare the move illegal
             steps++;    // Increment radius from the center
         }
@@ -81,29 +88,10 @@ public class BuildMove extends Move {
     }
 
     /**
-     * undoes a Move
-     * should only be called after the move has been "done"
-     */
-    public void undoMove() {
-
-        assert changeData != null : "Move has to be done before undo!";
-
-        for (ChangeData datum : changeData) {
-            datum.tile.setOwnerId(datum.ogPlayerId);
-            datum.tile.setProperty(datum.wasProp);
-
-            if (datum.wasProp == Tile.Property.EXPANSION) {
-                this.state.getMap().addExpansionStone(datum.tile); // adds expansion stone back to expansion stone tracker in Map
-            }
-        }
-
-        changeData = null;
-    }
-
-    /**
-     * Executes this move.
-     * Does nothing if isLegal() method determines the move to be illegal.
-     * Otherwise uses depth-first search to find the number of stones that need to be overturned in each direction.
+     * Executes the {@code BuildMove}.
+     * <p>
+     * The method uses depth-first search to find the number of stones that need to be overturned in each direction.
+     * Does nothing instead, if {@link #isLegal()} method determines the move to be illegal.
      */
     @Override
     public void doMove() {
@@ -111,7 +99,7 @@ public class BuildMove extends Move {
 
         Set<Tile> turnOver = new HashSet<>();
 
-        for (int direction = 0; direction < Direction.values().length; direction++) {
+        for (int direction = 0; direction < Direction.DIRECTION_COUNT; direction++) {
             List<Tile> path = new ArrayList<>();   // path in the given direction
             Tile last = originTile;                   // last tile of the path
             int searchDirection = direction;    // the direction we're searching in
@@ -147,15 +135,13 @@ public class BuildMove extends Move {
             }
         }
 
-        //save previous owner information
-        changeData = new ChangeData[turnOver.size() + 1];
-        int index = 0;
+        // save previous owner information
+        changes = new LinkedList<>();
         for (Tile tile : turnOver) {
-            changeData[index] = new ChangeData(tile, tile.getOwnerId(), tile.getProperty());
-            index++;
+            changes.add(new ChangeData(tile));
         }
 
-        changeData[index] = new ChangeData(originTile, originTile.getOwnerId(), originTile.getProperty());
+        changes.add(new ChangeData(originTile));
 
         // now actually turn all stones over
         for (Tile t : turnOver) {
@@ -168,5 +154,27 @@ public class BuildMove extends Move {
 
         // new stone is placed on the map
         originTile.setOwnerId(this.playerId);
+    }
+
+    /**
+     * Undoes the {@code BuildMove}.
+     * <p>
+     * Requires the {@code BuildMove} to previously be done.
+     */
+    public void undoMove() {
+
+        assert changes != null : "Move has to be done before undo!";
+
+        for (ChangeData datum : changes) {
+            datum.tile.setOwnerId(datum.ogPlayerId);
+            datum.tile.setProperty(datum.wasProp);
+
+            if (datum.wasProp == Tile.Property.EXPANSION) {
+                // adds expansion stone back to expansion stone tracker in Map
+                this.state.getMap().addExpansionStone(datum.tile);
+            }
+        }
+
+        changes = null;
     }
 }

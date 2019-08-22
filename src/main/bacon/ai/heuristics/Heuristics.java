@@ -3,210 +3,229 @@ package bacon.ai.heuristics;
 import bacon.*;
 import bacon.move.BombMove;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.pow;
 
+/**
+ * A collection of heuristic methods.
+ * <p>
+ * All methods are static, stateless and stand-alone. Therefore no instances of {@code Heuristics} can be created.
+ */
 public class Heuristics {
+
+    private static final Logger LOGGER = Logger.getGlobal();
 
     private Heuristics() {}
 
-    /**
-     * Determines whether there are still inversion/choice tiles on the map and hints
-     * uncertainty about stone ownership
-     *
-     * @param state GameState to be examined
-     * @return whether this game state is in the uncertainty phase
-     */
-    public static boolean isUncertaintyPhase(GameState state) {
-        // TODO Optimize this methods by including inversion/choice tile coordinates as stateful attribute of Game
-        for (int x = 0; x < state.getMap().width; x++) {
-            for (int y = 0; y < state.getMap().height; y++) {
-                if (state.getMap().getTileAt(x, y).getProperty() == Tile.Property.CHOICE ||
-                        state.getMap().getTileAt(x, y).getProperty() == Tile.Property.INVERSION) {
-                    return true;
-                }
+    public static int inversionSwap(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) {
+            return playerId;
+        }
+
+        double inversionStdv = state.getMap().getFinalInversionStdv();
+        double inversionCaptured = state.getMap().getInversionTileCount() - state.getMap().getFinalInversion();
+        double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
+        if (inversionCaptured > 0 && inversionStdv < 0.2 && choiceCaptured <= 0) {
+            //LOGGER.log(Level.FINE, "INVERSION PREDICTED");
+            int swapPartner = (playerId - (int) inversionCaptured) % state.getTotalPlayerCount();
+            while (swapPartner < 1) {
+                swapPartner += state.getTotalPlayerCount();
+            }
+            if (swapPartner <= state.getTotalPlayerCount()) {
+                //LOGGER.log(Level.FINE, "SWAP SUCCESSFUL WITH PLAYER " + swapPartner);
+                return swapPartner;
             }
         }
-        return false;
+        return playerId;
+    }
+
+
+    public static double stabilityWeight(GameState state, int playerId) {
+        return state.getMap().getAvgTileLineLength() / 10;
+    }
+
+    public static double mobilityWeight(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) return 30;
+        //double movesLeft = state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount();
+        double bonusCaptured = state.getMap().getBonusTileCount() - state.getMap().getFinalBonus();
+        double choiceCaptured = state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice();
+
+        //double basevalue = 10 * movesLeft / (state.getMap().getFinalOccupied() + 1);
+        if (bonusCaptured >= 0 && choiceCaptured >= 0 && bonusCaptured < 1000 && choiceCaptured < 1000)
+            return 30 + bonusCaptured + choiceCaptured;
+        else return 30;
+    }
+
+    public static double stoneCountWeight(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) return 1;
+
+        double movesLeft = (state.getMap().getFinalOccupied() - state.getMap().getOccupiedTileCount());
+        double attenuation = 5 * movesLeft / (state.getMap().getFinalOccupied() + 1);
+        if (attenuation >= 0 && attenuation < 1) return 2 * Math.pow(0.5, attenuation);
+        else return 1;
+    }
+
+    public static double bonusOverrideWeight(GameState state, int playerId) {
+        if (!state.getMap().isRolloutsAvailable()) {
+            return 100;
+        }
+
+        if (state.getMap().getUnusedOverride() > 100) return 0;
+        double weight = Math.pow(0.9, state.getMap().getUnusedOverride());
+        if (weight >= 0 && weight <= 1) return 100 * weight;
+        return 100;
+    }
+
+
+    /**
+     * Calculates the mobility heuristics of the given game state and player.
+     *
+     * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
+     * @return a integer number as mobility heuristics
+     */
+    public static double mobility(GameState state, int playerId) {
+
+        if (state.getGamePhase() != GamePhase.PHASE_ONE) {
+            throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
+        }
+        double legalMoveCount = LegalMoves.getLegalRegularMoves(state, playerId).size();
+        return Math.pow(legalMoveCount, 0.5);
     }
 
     /**
-     * Calculates the mobility heuristics of this certain given game state and player
+     * Calculates the override stability heuristics of the given game state and player.
      *
-     * @param state    GameState to be examined
-     * @param playerId Number of player in turn
-     * @return a real number as mobility heuristics
+     * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
+     * @return a real number as override stability heuristics
      */
-    public static int mobility(GameState state, int playerId) {
-        int mobility;
+    public static int overrideStability(GameState state, int playerId) {
+        int overrideStability = 0;
 
         if (state.getGamePhase() != GamePhase.PHASE_ONE) {
             throw new IllegalArgumentException("Mobility heuristics should only be used in build phase");
         }
 
-        mobility = LegalMoves.getLegalRegularMoves(state, playerId).size();
-        //TODO: Weight regular move mobility against override move mobility
-        mobility += LegalMoves.getLegalOverrideMoves(state, playerId).size();
+        for (TileLine t : state.getMap().getTileLines()) {
+            if (t.getPlayerShare() == t.getLineSize()) overrideStability += t.getPlayerShare();
+        }
 
-        return mobility;
+        return overrideStability;
     }
 
     /**
-     * Calculates the clustering heuristics of this certain given game state and player.
+     * Calculates a heuristic value from the stone count of other players that own more stones than we do.
      *
-     * @param state    GameState to be examined
-     * @param playerId number of player in turn
-     * @return a real number as clustering heuristics
+     * @param state the {@link GameState} to be examined
+     * @return a value indicating the Ais rank, where higher is better
      */
-    public static double clustering(GameState state, int playerId) {
-        // TODO: Scale clustering heuristic depending on number of free tiles
-        int playerStoneCount = state.getPlayerFromId(playerId).getStoneCount();
-        int bombRadius = state.getBombRadius();
-        int totalPlayer = state.getTotalPlayerCount();
-
-        double[] rivalry = new double[totalPlayer]; // rivalry factor between the player and each of his rivals (all other players).
-        // The closer in stone count the stronger the rivalry.
-        int[] rivalBombCount = new int[totalPlayer]; // the number of bombs of each rival
-        int[] rivalStoneCount = new int[totalPlayer]; // the total number of stones of each rival
-
-        for (int i = 0; i < totalPlayer; i++) { // calculates global variables of the current state
-            rivalBombCount[i] = state.getPlayerFromId(i + 1).getBombCount();
-            rivalStoneCount[i] = state.getPlayerFromId(i + 1).getStoneCount();
-        }
-
-        for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
-            if (i + 1 == playerId) {
-                rivalry[i] = -1; // rivalry factor with oneself is -1
-            } else {
-                rivalry[i] = (rivalBombCount[i] * (pow(2 * bombRadius + 1, 2))) / ((totalPlayer - 1) * (abs(rivalStoneCount[i] - playerStoneCount) + 1));
+    public static double relativeStoneCount(GameState state, int playerId) {
+        double value = state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount();
+        double choiceCaptured = 0;
+        if (state.getMap().isRolloutsAvailable())
+            choiceCaptured = (state.getMap().getChoiceTileCount() - state.getMap().getFinalChoice());
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+            if (i == playerId) continue;
+            if (state.getPlayerFromId(playerId).getStoneCount() <= state.getPlayerFromId(i).getStoneCount()) {
+                value = value - state.getPlayerFromId(i).getStoneCount();
             }
         }
 
-        int[] bombedStoneCount = new int[totalPlayer]; // the number of stones of each rival within the bomb diameter of a player's stone
-        int diameter = 2 * bombRadius;
-        double clusteringSum = 0; // heuristic to be returned
+        if (choiceCaptured > 0.5 && (int) value == state.getPlayerFromId(playerId).getStoneCount() * state.getTotalPlayerCount()) {
+            return 0.5 * value / state.getTotalPlayerCount();
+        }
 
-        for (Tile stone : state.getPlayerFromId(playerId).getStones()) { // iterates over all player's stones; adding clustering factor of each stone to clusteringSum
+        return value / state.getTotalPlayerCount();
+    }
 
-            // in the following part of the code we search for all tiles within one bomb diameter (not radius!) of a player's stone
-            // we recycle code from BombMove for this purpose
-
-            // set of already examined tiles
-            Set<Tile> bombSet = new HashSet<>();
-            // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-            List<Tile> currentTiles = new ArrayList<>();
-            // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-            List<Tile> nextTiles = new ArrayList<>();
-
-            bombSet.add(stone);
-            currentTiles.add(stone);
-
-            //searches for all neighbours that need to be bombed out
-            for (int i = 0; i < diameter; i++) {
-                for (Tile t : currentTiles) {
-                    for (int direction = 0; direction < Direction.values().length; direction++) {
-                        if (t.getTransition(direction) != null) {
-                            if (!bombSet.contains(t.getTransition(direction))) {
-                                bombSet.add(t.getTransition(direction));
-                                nextTiles.add(t.getTransition(direction));
-                            }
-                        }
-                    }
-                }
-                currentTiles = nextTiles;
-                nextTiles = new ArrayList<>((i + 1) * 8);
-            }
-            // end of recycled code
-
-
-            for (Tile t : bombSet) {   // we examine each tile within the bomb diameter for ownership
-                // and assign collateral damage to each rival in case our stone is bombed
-                if (t.getOwnerId() != Player.NULL_PLAYER_ID) {
-                    bombedStoneCount[t.getOwnerId() - 1]++;
-                }
-            }
-            bombedStoneCount[playerId - 1]--;              //this line removes the target itself from collateral damage
-
-            for (int i = 0; i < totalPlayer; i++) {                   // This for-loop sums collateral damage over all rivals
-                clusteringSum += bombedStoneCount[i] * rivalry[i];    // to get the clustering factor of a player's stone,
-                bombedStoneCount[i] = 0;
-            }                                                       // the outer while-loop sums clustering factors over all
-        }                                                           // of player's stones to get the total clustering factor of the game state
-
-        double clusteringScaled = clusteringSum / (pow(2 * (2 * bombRadius + 1) - 1, 2)); // re-normalizes clustering factor such that it is independent of bomb radius
-
-        double totalTileCount = state.getTotalTileCount();                 // weights clustering heuristic according to game stage:
-        double occupiedTileCount = state.getOccupiedTileCount();           // the later in the game, the higher the occupation ratio,
-        double occupationRatio = occupiedTileCount / totalTileCount;    // the more important clustering heuristics becomes
-        double clusteringWeighted = clusteringScaled * occupationRatio;
-        return clusteringWeighted;
+    public static double lineClustering(GameState state, int playerId) {
+        int playerShareSum = 0;
+        for (Tile stone : state.getPlayerFromId(playerId).getStones()) {
+            playerShareSum += stone.getRow().getPlayerShare();
+            playerShareSum += stone.getColumn().getPlayerShare();
+            playerShareSum += stone.getDiagonal().getPlayerShare();
+            playerShareSum += stone.getIndiagonal().getPlayerShare();
+        }
+        return playerShareSum / (state.getPlayerFromId(playerId).getStoneCount() + 1);
     }
 
     /**
-     * Calculates the bomb bonus heuristics of this certain given game state and player.
+     * Calculates the bomb bonus heuristics of the given game state and player.
      *
-     * @param state    GameState to be examined
-     * @param playerId number of player in turn
-     * @return a real number as bonus heuristics
+     * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
+     * @return a real number as mobility heuristics
      */
     public static double bonusBomb(GameState state, int playerId) {
         int bombCount = state.getPlayerFromId(playerId).getBombCount();
-        int bombRadius = state.getBombRadius();
-
-        return 20 * (pow(2 * bombRadius + 1, 2)) * (pow(bombCount, 0.7));
+        return state.getMap().getAvgBombArea() * bombCount;
     }
 
     /**
-     * Calculates the override bonus heuristics of this certain given game state and player.
+     * Calculates the override bonus heuristics of the given game state and player.
      *
-     * @param state    GameState to be examined
-     * @param playerId number of player in turn
-     * @return a real number as bonus heuristics
+     * @param state    the {@link GameState} to be examined
+     * @param playerId {@code id} of the {@link Player} in turn
+     * @return a real number as mobility heuristics
      */
     public static double bonusOverride(GameState state, int playerId) {
         int overrideStoneCount = state.getPlayerFromId(playerId).getOverrideStoneCount();
-        double mapHeight = state.getMap().height;
-        double mapWidth = state.getMap().width;
-
-        return 20 * sqrt(mapHeight * mapWidth) * (pow(overrideStoneCount, 0.7));
+        return state.getMap().getAvgTileLineLength() * overrideStoneCount;
     }
 
     /**
-     * Calculates the clustering heuristics of this certain given game state, player and target tile. This heuristic is
-     * basically a copy of clustering heuristic, but evaluates MOVES directly instead of GAME STATES due to high branching
-     * factor in the Bombing Phase
+     * Calculates the clustering heuristics of the given game state.
+     * <p>
+     * The {@code GameState} is required to be in the second game phase.
      *
-     * @param move BombMove to rate
-     * @return a real number as clustering heuristics (the only heuristics that matters in Bombing Phase)
+     * @param state the {@link GameState} to be examined
+     * @param move  the {@link BombMove} to rate
+     * @return a real number as clustering heuristics
      */
     public static double bombingPhaseHeuristic(GameState state, BombMove move) {
         int playerStoneCount = state.getPlayerFromId(move.getPlayerId()).getStoneCount();
+        int playerBombCount = state.getPlayerFromId(move.getPlayerId()).getBombCount();
         int bombRadius = state.getBombRadius();
         int totalPlayer = state.getTotalPlayerCount();
+        int[] rankPoints = {-25, -11, -5, -2, -1, 0, 0, 0};
 
         double[] rivalry = new double[totalPlayer]; // rivalry factor between the player and each of his rivals (all other players).
         // The closer in stone count the stronger the rivalry.
-        int[] rivalBombCount = new int[totalPlayer]; // the number of bombs of each rival
         int[] rivalStoneCount = new int[totalPlayer]; // the total number of stones of each rival
+        double[] rivalRankPoints = new double[totalPlayer]; // the rank-points (25p, 11p, ...) of each rival if the game ended now
 
         for (int i = 0; i < totalPlayer; i++) { // calculates global variables of the current state
-            rivalBombCount[i] = state.getPlayerFromId(i + 1).getBombCount();
             rivalStoneCount[i] = state.getPlayerFromId(i + 1).getStoneCount();
+            rivalRankPoints[i] = state.getPlayerFromId(i + 1).getStoneCount();
         }
 
-        assert rivalBombCount[move.getPlayerId() - 1] > 0 :
+        // rivalRankPoints is initialized as stone count and gradually gets replaced by rank-points*(-1) in this loop
+        for (int i = 0; i < totalPlayer; i++) {
+            double maxStoneCount = 0;
+            int maxRankPlayerId = 0;
+            for (int j = 0; j < totalPlayer; j++) {
+                if (rivalRankPoints[j] > maxStoneCount) {
+                    maxStoneCount = rivalRankPoints[j];
+                    maxRankPlayerId = j;
+                }
+            }
+            rivalRankPoints[maxRankPlayerId] = rankPoints[i];
+        }
+
+        assert playerBombCount > 0 :
                 "bombingPhaseHeuristic is a move heuristic: cannot make a move without bombs";
 
         for (int i = 0; i < totalPlayer; i++) { // calculates the rivalry factor between the player and each of his rivals
-            if (i + 1 == move.getPlayerId()) {
+            if (i == move.getPlayerId() - 1) {
                 rivalry[i] = -1; // rivalry factor with oneself is -1
             } else {
-                rivalry[i] = (rivalBombCount[move.getPlayerId() - 1] * (pow(2 * bombRadius + 1, 2))) /
-                        (abs(rivalStoneCount[i] - playerStoneCount) + rivalBombCount[move.getPlayerId() - 1] * pow(2 * bombRadius + 1, 2));
+                rivalry[i] = ((-1) * rivalRankPoints[i] / 25) * (playerBombCount * (pow(2 * bombRadius + 1, 2))) /
+                        (abs(rivalStoneCount[i] - playerStoneCount) + playerBombCount * pow(2 * bombRadius + 1, 2));
             }
         }
 
@@ -214,36 +233,11 @@ public class Heuristics {
         double clusteringSum = 0; // heuristic to be returned
 
 
-        // in the following part of the code we search for all tiles within one bomb radius of the bombing target
-        // we recycle code from BombMove for this purpose
-
-        // set of already examined tiles
-        Set<Tile> bombSet = new HashSet<>();
-        // initializing ArrayList to examine the tiles which are i away from the tile which is bombed
-        List<Tile> currentTiles = new ArrayList<>();
-        // initializing ArrayList to save the tiles which are i+1 away from the tile which is bombed
-        List<Tile> nextTiles = new ArrayList<>();
-
-        bombSet.add(state.getMap().getTileAt(move.getX(), move.getY()));
-        currentTiles.add(state.getMap().getTileAt(move.getX(), move.getY()));
-
-        //searches for all neighbours that need to be bombed out
-        for (int i = 0; i < bombRadius; i++) {
-            for (Tile t : currentTiles) {
-                for (int direction = 0; direction < Direction.values().length; direction++) {
-                    if (t.getTransition(direction) != null) {
-                        if (!bombSet.contains(t.getTransition(direction))) {
-                            bombSet.add(t.getTransition(direction));
-                            nextTiles.add(t.getTransition(direction));
-                        }
-                    }
-                }
-            }
-            currentTiles = nextTiles;
-            nextTiles = new ArrayList<>((i + 1) * 8);
-        }
-        // end of recycled code
-
+        // all tiles within one bomb radius of the bombing target
+        Set<Tile> bombSet = state.getMap().getTileAt(move.getX(), move.getY()).getBombEffect();
+        // in case precomputation of bombEffect failed (e.g. bomb radius too big), bombEffect is computed again
+        if (bombSet.isEmpty())
+            bombSet = BombMove.getAffectedTiles(state.getMap().getTileAt(move.getX(), move.getY()), bombRadius);
 
         for (Tile t : bombSet) {   // we examine each tile within the bomb radius for ownership
             // and assign damage to each rival in case our stone is bombed

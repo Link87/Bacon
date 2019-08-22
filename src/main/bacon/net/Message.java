@@ -9,9 +9,9 @@ public class Message {
     private final byte[] content;
 
     /**
-     * Creates a message from the given type with the given content.
+     * Creates a {@code Message} from the given type with the given content.
      *
-     * @param type    type the Message is of
+     * @param type    type the {@code Message} is of
      * @param content data that is contained in the message in byte representation
      */
     public Message(Type type, byte[] content) {
@@ -20,7 +20,7 @@ public class Message {
     }
 
     /**
-     * Returns the Type the Message has.
+     * Returns the {@code Type} the {@code Message} has.
      *
      * @return the type of the message
      */
@@ -29,7 +29,7 @@ public class Message {
     }
 
     /**
-     * Returns the data contained in the message.
+     * Returns the data contained in the {@code Message}.
      *
      * @return contained data
      */
@@ -37,6 +37,14 @@ public class Message {
         return content;
     }
 
+    /**
+     * The types a message can have.
+     * <p>
+     * The variants of this enum each represent a specific message type.
+     * The fact that these types can only either be send or received is ignored here.
+     * Each variant can be uniquely identified by its integer value,
+     * which is also used in the binary message representation.
+     */
     public enum Type {
         GROUP_NUMBER(1),
         MAP_CONTENT(2),
@@ -55,21 +63,11 @@ public class Message {
         }
 
         /**
-         * Returns the binary value that corresponds to the Type.
-         * See the network specification for details.
-         *
-         * @return the binary value of the Type
-         */
-        public int getValue() {
-            return value;
-        }
-
-        /**
-         * Returns the Type that corresponds to the given binary value.
+         * Returns the {@code Type} that corresponds to the given binary value.
          * See the network specification for details.
          *
          * @param value the value to translate
-         * @return the Type that fits the value
+         * @return the {@code Type} that fits the value
          */
         public static Type fromValue(int value) {
             switch (value) {
@@ -94,6 +92,16 @@ public class Message {
                 default:
                     return null;
             }
+        }
+
+        /**
+         * Returns the binary value that corresponds to the {@code Type}.
+         * See the network specification for details.
+         *
+         * @return the binary value of the {@code Type}
+         */
+        public int getValue() {
+            return value;
         }
     }
 }

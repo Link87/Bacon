@@ -1,41 +1,54 @@
 package bacon.move;
 
-import bacon.*;
+import bacon.GameState;
+import bacon.Player;
+import bacon.Tile;
 
 import java.nio.ByteBuffer;
 
 /**
- * A class which represents placing a stone on a tile.
+ * A class which represents a move placing a stone on a {@link Tile}.
  */
 public class RegularMove extends BuildMove {
 
     private BonusRequest request;
 
     /**
-     * Creates an instance of RegularMove via the constructor in its superclass {@link BuildMove}.
+     * Creates an instance of {@code RegularMove} via the constructor in its superclass {@link BuildMove}.
      *
-     * @param state   the game state on which the move operates
-     * @param player  the player of the move
-     * @param x       the x coordinate
-     * @param y       the y coordinate
-     * @param request a special bonus the player asks for, applicable for choice and bonus fields
+     * @param state    the {@link GameState} on which the move operates
+     * @param playerId the {@code id} of the {@link Player} of the move
+     * @param x        the horizontal coordinate
+     * @param y        the vertical coordinate
+     * @param request  a special bonus the player asks for, applicable for choice and bonus {@link Tile}s
      */
-    RegularMove(GameState state, int player, int x, int y, BonusRequest request) {
-        super(state, player, x, y);
+    public RegularMove(GameState state, int playerId, int x, int y, BonusRequest request) {
+        super(state, playerId, x, y);
         this.type = Type.REGULAR;
         this.request = request;
         if (request == null)
             this.request = new BonusRequest(BonusRequest.Type.NONE);
     }
 
+    /**
+     * Creates an instance of {@code RegularMove} without an {@link BonusRequest}.
+     *
+     * @param state    the {@link GameState} on which the move operates
+     * @param playerId the {@code id} of the {@link Player} of the move
+     * @param x        the horizontal coordinate
+     * @param y        the vertical coordinate
+     */
+    public RegularMove(GameState state, int playerId, int x, int y) {
+        this(state, playerId, x, y, null);
+    }
 
     /**
-     * Checks if this move is legal.
-     * We first check whether the bonus request is valid
-     * We then use breadth-first search to find a tile already occupied by the player on a straight line from the tile
-     * we're playing on (in super Class BuildMove)
+     * Checks if the {@code RegularMove} is legal.
+     * <p>
+     * This method first checks whether the bonus request is valid.
+     * Further checks are done in {@link BuildMove#isLegal()}.
      *
-     * @return true if the move is legal, false otherwise
+     * @return {@code true} if the {@code RegularMove} is legal, {@code false} otherwise
      */
     public boolean isLegal() {
         Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
@@ -57,55 +70,9 @@ public class RegularMove extends BuildMove {
     }
 
     /**
-     * Undoes this move.
-     */
-    public void undoMove() {
-        //last entry in changeData is always the Tile the move was made on
-        switch (changeData[changeData.length - 1].wasProp) {
-            case BONUS:
-                if (this.request.type == BonusRequest.Type.BOMB_BONUS) this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
-                else if (this.request.type == BonusRequest.Type.OVERRIDE_BONUS) this.state.getPlayerFromId(this.playerId).receiveOverrideStone(-1);
-                break;
-
-            // TODO: Current approach checks every tile on the map. Increase efficiency by using TileOwnerID swap between players instead
-            case INVERSION:
-                int playerCount = state.getTotalPlayerCount();
-                for (int x = 0; x < state.getMap().width; x++) {
-                    for (int y = 0; y < state.getMap().height; y++) {
-                        Tile anyTile = state.getMap().getTileAt(x, y);
-                        if (anyTile.getOwnerId() != Player.NULL_PLAYER_ID) {
-                            int oldNumber = anyTile.getOwnerId();
-                            int newNumber = oldNumber - 1;
-                            if (newNumber < 1) {
-                                newNumber = playerCount;
-                            }
-                            anyTile.setOwnerId(newNumber);
-                        }
-                    }
-                }
-                break;
-
-            case CHOICE:
-                for (int x = 0; x < state.getMap().width; x++) {
-                    for (int y = 0; y < state.getMap().height; y++) {
-                        Tile anyTile = state.getMap().getTileAt(x, y);
-                        if (anyTile.getOwnerId() == Player.NULL_PLAYER_ID) continue;
-                        if (anyTile.getOwnerId() == this.playerId)
-                            anyTile.setOwnerId(this.request.getOtherPlayerId());
-                        else if (anyTile.getOwnerId()== this.request.getOtherPlayerId())
-                            anyTile.setOwnerId(this.playerId);
-                    }
-                }
-        }
-
-        super.undoMove();
-        state.getMap().addOccupiedTiles(-1);
-    }
-
-    /**
-     * Executes this move.
-     * Does nothing if isLegal() method determines the move to be illegal.
-     * Otherwise uses depth-first search to find the number of stones that need to be overturned in each direction.
+     * Executes the {@code RegularMove}.
+     * <p>
+     * This method handles the special {@link Tile.Property}. Other computations are then done in {@link BuildMove#isLegal()}.
      */
     public void doMove() {
         Tile tile = state.getMap().getTileAt(this.xPos, this.yPos);
@@ -116,10 +83,14 @@ public class RegularMove extends BuildMove {
         // After overturning captured stones, we now have to consider the bonus/special effect of our tile
         switch (property) {
             case BONUS:
-                if (this.request.type == BonusRequest.Type.BOMB_BONUS) this.state.getPlayerFromId(this.playerId).receiveBomb(1);
-                else if (this.request.type == BonusRequest.Type.OVERRIDE_BONUS) this.state.getPlayerFromId(this.playerId).receiveOverrideStone(1);
+                this.state.getMap().addBonusTiles(-1);
+                if (this.request.type == BonusRequest.Type.BOMB_BONUS)
+                    this.state.getPlayerFromId(this.playerId).receiveBomb(1);
+                else if (this.request.type == BonusRequest.Type.OVERRIDE_BONUS)
+                    this.state.getPlayerFromId(this.playerId).receiveOverrideStone(1);
                 break;
             case INVERSION:
+                this.state.getMap().addInversionTiles(-1);
                 int playerCount = state.getTotalPlayerCount();
                 for (int x = 0; x < state.getMap().width; x++) {
                     for (int y = 0; y < state.getMap().height; y++) {
@@ -137,6 +108,7 @@ public class RegularMove extends BuildMove {
                 break;
 
             case CHOICE:
+                this.state.getMap().addChoiceTiles(-1);
                 for (int x = 0; x < state.getMap().width; x++) {
                     for (int y = 0; y < state.getMap().height; y++) {
                         Tile anyTile = state.getMap().getTileAt(x, y);
@@ -151,10 +123,74 @@ public class RegularMove extends BuildMove {
 
         tile.setProperty(Tile.Property.DEFAULT); // After playing our move, the tile becomes default (no bonus anymore)
         state.getMap().addOccupiedTiles(1);
+        state.getMap().removeFreeTile(tile);
     }
 
-    public BonusRequest getRequest() {
-        return request;
+    /**
+     * Undoes the {@code RegularMove}.
+     * <p>
+     * Requires the {@code RegularMove} to previously be done.
+     */
+    public void undoMove() {
+        //last entry in changes is always the Tile the move was made on
+        switch (changes.get(changes.size() - 1).wasProp) {
+            case BONUS:
+                this.state.getMap().addBonusTiles(1);
+                if (this.request.type == BonusRequest.Type.BOMB_BONUS)
+                    this.state.getPlayerFromId(this.playerId).receiveBomb(-1);
+                else if (this.request.type == BonusRequest.Type.OVERRIDE_BONUS)
+                    this.state.getPlayerFromId(this.playerId).receiveOverrideStone(-1);
+                break;
+            case INVERSION:
+                this.state.getMap().addInversionTiles(1);
+                int playerCount = state.getTotalPlayerCount();
+                for (int x = 0; x < state.getMap().width; x++) {
+                    for (int y = 0; y < state.getMap().height; y++) {
+                        Tile anyTile = state.getMap().getTileAt(x, y);
+                        if (anyTile.getOwnerId() != Player.NULL_PLAYER_ID) {
+                            int oldNumber = anyTile.getOwnerId();
+                            int newNumber = oldNumber - 1;
+                            if (newNumber < 1) {
+                                newNumber = playerCount;
+                            }
+                            anyTile.setOwnerId(newNumber);
+                        }
+                    }
+                }
+                break;
+            case CHOICE:
+                this.state.getMap().addChoiceTiles(1);
+                for (int x = 0; x < state.getMap().width; x++) {
+                    for (int y = 0; y < state.getMap().height; y++) {
+                        Tile anyTile = state.getMap().getTileAt(x, y);
+                        if (anyTile.getOwnerId() == Player.NULL_PLAYER_ID) continue;
+                        if (anyTile.getOwnerId() == this.playerId)
+                            anyTile.setOwnerId(this.request.getOtherPlayerId());
+                        else if (anyTile.getOwnerId() == this.request.getOtherPlayerId())
+                            anyTile.setOwnerId(this.playerId);
+                    }
+                }
+        }
+
+        super.undoMove();
+        state.getMap().addOccupiedTiles(-1);
+        state.getMap().addFreeTile(state.getMap().getTileAt(this.xPos, this.yPos));
+    }
+
+    /**
+     * Returns the {@code RegularMove} in binary representation.
+     *
+     * @return byte array containing the {@code Move}s binary representation
+     */
+    @Override
+    public byte[] encodeBinary() {
+        var data = new byte[5];
+        ByteBuffer.wrap(data)
+                .putShort((short) xPos)
+                .putShort((short) yPos)
+                .put(request.toValue());
+
+        return data;
     }
 
     @Override
@@ -169,14 +205,4 @@ public class RegularMove extends BuildMove {
         return super.hashCode() + 8387 * this.request.hashCode();
     }
 
-    @Override
-    public byte[] encodeBinary() {
-        var data = new byte[5];
-        ByteBuffer.wrap(data)
-                .putShort((short) xPos)
-                .putShort((short) yPos)
-                .put(request.toValue());
-
-        return data;
-    }
 }

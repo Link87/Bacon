@@ -6,70 +6,155 @@ import bacon.ai.heuristics.Heuristics;
 import bacon.ai.heuristics.LegalMoves;
 import bacon.ai.heuristics.PancakeWatchdog;
 import bacon.ai.heuristics.StabilityHeuristic;
-import bacon.move.*;
+import bacon.move.BuildMove;
+import bacon.move.Move;
+import bacon.move.OverrideMove;
+import bacon.move.RegularMove;
 
 import java.util.*;
-import java.lang.Math;
 
-public class BRSNode {
+/**
+ * A node in the search tree.
+ * <p>
+ * This is an implementation of the <i>Best Reply Search</i>, where min and max layers alternate regardless of the
+ * player count. In the min layer only one move, the best that any enemy player can do, is evaluated.
+ */
+class BRSNode {
 
-    private static final double STABILITY_SCALAR = 1;
-    private static final double CLUSTERING_SCALAR = 1;
-    private static final double MOBILITY_SCALAR = 1;
-    private static final double BONUS_SCALAR = 100;
-
-    private final int layer;
-    private static int searchDepth;
-    private static int branchingFactor;
-    private BuildMove bestMove;
-    private boolean isMaxNode;
-    private GameState state;
-    private PancakeWatchdog watchdog;
-    /**
-     * Type of move that lead to this node
+    /*
+    Constant default scalar values for the computation of evaluation values.
      */
-    private final Move.Type type;
-    private double value;
+    public static final double STABILITY_SCALAR_DEFAULT = 1;
+    public static final double MOBILITY_SCALAR_DEFAULT = 10;
+    public static final double OVERRIDE_STABILITY_SCALAR_DEFAULT = 10;
+    public static final double STONE_COUNT_SCALAR_DEFAULT = 1;
+    public static final double LINE_CLUSTERING_SCALAR_DEFAULT = -1;
+    public static final double BOMB_BONUS_SCALAR = 2;
+    public static final double OVERRIDE_BONUS_SCALAR_DEFAULT = 100;
 
+    private static double stabilityScalar;
+    private static double mobilityScalar;
+    private static double overrideStabilityScalar;
+    private static double stoneCountScalar;
+    private static double lineClusteringScalar;
+    private static double overrideBonusScalar;
+    /**
+     * The maximum search depth.
+     */
+    private static int searchDepth;
+    /**
+     * The maximum branching factor. This is the <i>beam width</i> for beam search. {@code 0} represents infinity.
+     */
+    private static int branchingFactor;
     private static boolean enablePruning;
     private static boolean enableSorting;
-    private double alpha;
-    private double beta;
+    private static boolean aspWindowEnabled;
+    private static double aspWindowAlpha;
+    private static double aspWindowBeta;
 
     /**
-     * External call constructor for game tree root
-     *
-     * @param depth           maximum depth to be searched
-     * @param branchingFactor maximum branching factor at each node
-     * @param enablePruning   set to <code>true</code> if alpha-beta pruning should be applied
-     * @param enableSorting   set to <code>true</code> when move sorting should be used
-     * @param watchdog        Watchdog timer that triggers when time is running out
+     * The maximum depth that was reached in the search.
      */
-    public BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, PancakeWatchdog watchdog) {
+    private static int reachedDepth;
+
+    // Statistics needed for determining aspiration window size for the next BRS-iteration
+    private static List<Double> stateValues;
+    private static double stateAvg;
+    private static double stateStdv;
+
+    /**
+     * The layer in the search tree this node is in.
+     */
+    private final int layer;
+    /**
+     * The {@link Move.Type} of move that lead to this node.
+     */
+    private final Move.Type type;
+    /**
+     * The {@link GameState} the node is in.
+     */
+    private final GameState state;
+    /**
+     * The watchdog timer that triggers, when time is about to run out.
+     */
+    private final PancakeWatchdog watchdog;
+    /**
+     * The best move that was found so far in all child nodes.
+     */
+    private BuildMove bestMove;
+    /**
+     * {@code true} if this node is a max node, {@code false} if this node is a min node.
+     */
+    private boolean isMaxNode;
+    /**
+     * The evaluation value of this node.
+     */
+    private double value;
+    /**
+     * The alpha value used by alpha-beta-pruning.
+     */
+    private double alpha;
+    /**
+     * The beta value used by alpha-beta-pruning.
+     */
+    private double beta;
+    /**
+     * {@code true} if search within aspiration window was successful, {@code false} otherwise.
+     */
+    private boolean windowSuccess;
+
+    /**
+     * Creates a new {@code BRSNode} that serves as the search tree root.
+     *
+     * @param depth            maximum depth to be searched
+     * @param branchingFactor  maximum branching factor at each node
+     * @param enablePruning    set to {@code true} if alpha-beta pruning should be applied
+     * @param enableSorting    set to {@code true} when move sorting should be used
+     * @param aspWindowEnabled set to {@code true} when aspiration window is on
+     * @param alpha            alpha value passed down from ai
+     * @param beta             beta value passed down from ai
+     * @param watchdog         a watchdog timer that triggers when time is running out
+     */
+    BRSNode(int depth, int branchingFactor, boolean enablePruning, boolean enableSorting, boolean aspWindowEnabled, double alpha, double beta, PancakeWatchdog watchdog) {
         BRSNode.searchDepth = depth;
         BRSNode.branchingFactor = branchingFactor;
         BRSNode.enablePruning = enablePruning;
         BRSNode.enableSorting = enableSorting;
+        BRSNode.aspWindowEnabled = aspWindowEnabled;
+        BRSNode.aspWindowAlpha = alpha;
+        BRSNode.aspWindowBeta = beta;
+        BRSNode.stateAvg = 0;
+        BRSNode.stateStdv = 0;
+        BRSNode.stateValues = new ArrayList<>();
+        BRSNode.reachedDepth = 0;
+
+        BRSNode.stabilityScalar = STABILITY_SCALAR_DEFAULT;
+        BRSNode.mobilityScalar = MOBILITY_SCALAR_DEFAULT;
+        BRSNode.overrideStabilityScalar = OVERRIDE_STABILITY_SCALAR_DEFAULT;
+        BRSNode.stoneCountScalar = STONE_COUNT_SCALAR_DEFAULT;
+        BRSNode.lineClusteringScalar = LINE_CLUSTERING_SCALAR_DEFAULT;
+        BRSNode.overrideBonusScalar = OVERRIDE_BONUS_SCALAR_DEFAULT;
 
         this.layer = 0;
         this.isMaxNode = true;
         this.type = null;
         this.alpha = -Double.MAX_VALUE;
         this.beta = Double.MAX_VALUE;
+        this.windowSuccess = false;
 
         this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
     }
 
     /**
-     * Internal constructor for game tree child nodes
+     * Creates a new {@code BRSNode} that serves as a child node.
      *
-     * @param layer     layer this node is part of (e.g. root is layer 0)
-     * @param isMaxNode set to true if max player is in turn at this node
-     * @param type      type of move (regular or override) that led to this node
-     * @param alpha     alpha value
-     * @param beta      beta value
-     * @param watchdog  Watchdog timer that triggers when time is running out
+     * @param layer     layer this node is part of. The root is on layer zero.
+     * @param isMaxNode set to {@code true} if max player is in turn at this node
+     * @param type      the {@link Move.Type} of the move that led to this node
+     * @param alpha     the current alpha value
+     * @param beta      the current beta value
+     * @param watchdog  a watchdog timer that triggers when time is running out
      */
     private BRSNode(int layer, boolean isMaxNode, Move.Type type, double alpha, double beta, PancakeWatchdog watchdog) {
         this.layer = layer;
@@ -77,37 +162,102 @@ public class BRSNode {
         this.type = type;
         this.alpha = alpha;
         this.beta = beta;
+        this.windowSuccess = false;
 
         this.watchdog = watchdog;
         this.state = Game.getGame().getCurrentState();
     }
 
     /**
-     * Only used for the root node to return best move to the AI
+     * Returns the maximum depth that was reached in the search.
      *
-     * @return best move from node
+     * @return the maximum reached search depth
      */
-    public BuildMove getBestMove() {
+    static int getMaximumReachedDepth() {
+        return BRSNode.reachedDepth;
+    }
+
+    /**
+     * Analyses the average values and standard deviation of nodes in the first layer.
+     */
+    static void analyseAspirationWindow() {
+        if (stateValues.size() != 0) {
+            double sum = 0;
+            for (Double value : stateValues) {
+                sum += value;
+            }
+
+            stateAvg = sum / stateValues.size();
+
+            double stdvSum = 0;
+            for (Double value : stateValues) {
+                stdvSum += (value - stateAvg) * (value - stateAvg);
+            }
+            stateStdv = Math.pow((stdvSum / stateValues.size()), 0.5);
+        }
+    }
+
+    /**
+     * Returns the best move found in all child nodes.
+     *
+     * @return best move that was found
+     */
+    BuildMove getBestMove() {
         return bestMove;
     }
 
     /**
-     * Evaluates this node using Best Reply Search. The results are saved in the fields of the instance.
+     * Returns the aspiration window alpha value for the next BRS-iteration.
+     * <p>
+     * Returns the default value {@code -}{@link Double#MAX_VALUE}, if no nodes were found in first layer.
+     *
+     * @return the aspiration window alpha value or {@code -Double.MAX_VALUE}
+     */
+    double getAspWindowAlpha() {
+        if (stateStdv == 0) {
+            return -Double.MAX_VALUE;
+        }
+        return this.value - 5 * stateStdv;
+    }
+
+    /**
+     * Returns the aspiration window beta value for the next BRS-iteration.
+     * <p>
+     * Returns the default value {@code -}{@link Double#MAX_VALUE}, if no nodes were found in first layer.
+     *
+     * @return the aspiration window beta value or {@code -Double.MAX_VALUE}
+     */
+    double getAspWindowBeta() {
+        if (stateStdv == 0) {
+            return Double.MAX_VALUE;
+        }
+        return this.value + 5 * stateStdv;
+    }
+
+    /**
+     * Evaluates this node using <i>Best Reply Search</i>.
+     * <p>
+     * The results are saved in the fields of the instance.
      * Determines child nodes and recursively executes this function, if depth limit is not reached and further valid
      * moves can be done.
+     * <p>
+     * This method does <i>time panics</i> if time is running out.
      */
-    public void evaluateNode() {
+    void evaluateNode() {
 
         Set<? extends BuildMove> legalMoves = getLegalMoves();
 
-        // initiates node value with -infinity for Max-Nodes and +infinity for Min-Nodes
-        this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
+        // initiates node value as aspiration window boundaries or +/-infinity if aspiration window is OFF
+        if (aspWindowEnabled) this.value = this.isMaxNode ? aspWindowAlpha : aspWindowBeta;
+        else this.value = this.isMaxNode ? -Double.MAX_VALUE : Double.MAX_VALUE;
 
-        // no move is available, return value of current game state directly
+        // no move is available, return value of current game state directly; counts as aspiration window success
         if (legalMoves.isEmpty()) {
             Statistics.getStatistics().enterState(layer);
             this.value = evaluateCurrentState(this.type);
+            this.windowSuccess = true;
         } else if (this.layer < BRSNode.searchDepth - 1) {
+            BRSNode.reachedDepth = Integer.max(BRSNode.reachedDepth, this.layer + 1);
             // do beam search: go through each move in beam, construct and evaluate child nodes (recursion)
 
             List<? extends BuildMove> moves;
@@ -134,21 +284,29 @@ public class BRSNode {
 
                 // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
                 if (this.isMaxNode) {
-                    if (childNode.value > this.value) {
+                    if (childNode.value > this.value && childNode.windowSuccess) {
                         this.value = childNode.value;
                         this.bestMove = move;
+                        this.windowSuccess = true;
 
-                        this.alpha = this.value;
+                        if (this.value > this.alpha) {
+                            this.alpha = this.value;
+                        }
+
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             break;
                         }
                     }
                 } else {
-                    if (childNode.value < this.value) {
+                    if (childNode.value < this.value && childNode.windowSuccess) {
                         this.value = childNode.value;
                         this.bestMove = move;
+                        this.windowSuccess = true;
 
-                        this.beta = this.value;
+                        if (this.value < this.beta) {
+                            this.beta = this.value;
+                        }
+
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             break;
                         }
@@ -157,6 +315,8 @@ public class BRSNode {
             }
 
         } else {
+            BRSNode.reachedDepth = Integer.max(BRSNode.reachedDepth, this.layer + 1);
+
             for (BuildMove move : legalMoves) {
 
                 Statistics.getStatistics().enterMeasuredState(this.layer);
@@ -164,12 +324,18 @@ public class BRSNode {
                 move.setValue(evaluateCurrentState(move.getType()));
                 move.undoMove();
 
+                if (this.layer == 0) stateValues.add(move.getValue());
+
                 // update node value, bestMove, alpha and beta; break (prune) in case beta <= alpha
                 if (this.isMaxNode) {
                     if (move.getValue() > this.value) {
                         this.value = move.getValue();
                         this.bestMove = move;
-                        this.alpha = Math.max(this.alpha, this.value);
+                        this.windowSuccess = true;
+
+                        if (this.value > alpha) {
+                            this.alpha = this.value;
+                        }
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             Statistics.getStatistics().leaveMeasuredState();
                             break;
@@ -179,7 +345,11 @@ public class BRSNode {
                     if (move.getValue() < this.value) {
                         this.value = move.getValue();
                         this.bestMove = move;
-                        this.beta = Math.min(this.beta, this.value);
+                        this.windowSuccess = true;
+
+                        if (this.value < beta) {
+                            this.beta = this.value;
+                        }
                         if (BRSNode.enablePruning && this.beta <= this.alpha) {
                             Statistics.getStatistics().leaveMeasuredState();
                             break;
@@ -194,11 +364,20 @@ public class BRSNode {
 
             }
         }
+
+        // Store the layer 1 node values for aspiration window size
+        if (this.layer == 1 && this.windowSuccess) {
+            stateValues.add(this.value);
+        }
     }
 
     /**
-     * Gets the legal Moves that are possible for the max or min player, depending on the <code>isMaxNode</code> flag.
+     * Gets the legal moves that are possible from this node.
+     * <p>
+     * This method returns a move for the max or min player, depending on the {@code isMaxNode} flag.
      * If no move is possible for one of them, the flag is switched and moves are returned from the other player.
+     * <p>
+     * Returns an empty set if no moves can be done by any player.
      *
      * @return a set containing valid moves, empty when no valid moves are possible for neither of the players
      */
@@ -225,6 +404,16 @@ public class BRSNode {
         return legalMoves;
     }
 
+    /**
+     * Evaluates and orders the given set of legal moves.
+     * <p>
+     * Moves are ordered in descending order for max nodes and in ascending order for min nodes.
+     * <p>
+     * This method does <i>time panics</i> if time is running out.
+     *
+     * @param legalMoves a set of legal moves to evaluate and order
+     * @return an ordered {@link List} of legal moves
+     */
     private List<BuildMove> getOrderedMoves(Set<? extends BuildMove> legalMoves) {
         List<BuildMove> orderedMoves = new ArrayList<>(legalMoves);
         // rate every move
@@ -232,6 +421,7 @@ public class BRSNode {
             move.doMove();
             move.setValue(evaluateCurrentState(move.getType()));
             move.undoMove();
+            if (watchdog.isPancake()) break;
         }
 
         // order moves by value
@@ -243,10 +433,14 @@ public class BRSNode {
     }
 
     /**
-     * Computes the n best moves, where n is the branching factor (beam width), and orders them in a list.
-     * All other moves are discarded.
+     * Evaluates the given moves and executes a beam search on them.
+     * <p>
+     * This method only returns the {@code k} best moves and discards all other, where {@code k} is the branching factor.
+     * <p>
+     * This method does <i>time panics</i> if time is running out.
      *
-     * @return the n best moves, ordered
+     * @param legalMoves a set of legal moves to evaluate and order
+     * @return an ordered {@link List} of legal moves
      */
     private List<BuildMove> getBeamMoves(Set<? extends BuildMove> legalMoves) {
 
@@ -333,7 +527,7 @@ public class BRSNode {
     /**
      * Returns all legal {@link BuildMove}s the max player can do.
      *
-     * @return a <code>Set</code> of {@link BuildMove}s the max player can do
+     * @return a {@link Set} of {@link BuildMove}s the max player can do
      */
     private Set<? extends BuildMove> getMaxMoves() {
         // Assign either regular moves or override moves to legalMoves since we are considering either one or the other
@@ -349,7 +543,7 @@ public class BRSNode {
     /**
      * Returns all legal {@link BuildMove}s any min player can do.
      *
-     * @return a <code>Set</code> of {@link BuildMove}s the min players can do
+     * @return a {@link Set} of {@link BuildMove}s the min players can do
      */
     private Set<? extends BuildMove> getMinMoves() {
         Set<RegularMove> legalRegularMoves;
@@ -357,12 +551,14 @@ public class BRSNode {
 
         legalRegularMoves = new HashSet<>();
         legalOverrideMoves = new HashSet<>();
-        for (int i = 1; i <= state.getTotalPlayerCount(); i++) { // Add all regular moves of other players to storage (definition of BRS)
+        for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
+            // Add all regular moves of other players to storage (definition of BRS)
             if (i == state.getMe()) continue;
             legalRegularMoves.addAll(LegalMoves.getLegalRegularMoves(state, i));
 
         }
-        if (legalRegularMoves.isEmpty()) { // If no regular moves exist, add all override moves of other players to storage instead
+        if (legalRegularMoves.isEmpty()) {
+            // If no regular moves exist, add all override moves of other players to storage instead
             for (int i = 1; i <= state.getTotalPlayerCount(); i++) {
                 if (i == state.getMe()) continue;
                 legalOverrideMoves.addAll(LegalMoves.getLegalOverrideMoves(state, i));
@@ -376,21 +572,33 @@ public class BRSNode {
     }
 
     /**
-     * Evaluates the current game state. The heuristic to use is determined by the type of the move that lead
-     * to this state.
+     * Evaluates the current {@link GameState}.
+     * <p>
+     * The heuristic to use is determined by the {@link Move.Type} of the move that lead to this state.
      *
-     * @param type the type of the last executed move
-     * @return the evaluation value of the current game state
-     * @throws IllegalStateException when called with a move type, that is not <code>REGULAR</code> or <code>OVERRIDE</code>
+     * @param type the {@code Type} of the last executed move
+     * @return the evaluation value of the current {@code GameState}
+     * @throws IllegalStateException when called with a move type, that is not {@link Move.Type#REGULAR} or {@link Move.Type#OVERRIDE}
      */
     private double evaluateCurrentState(Move.Type type) {
         if (type == Move.Type.REGULAR) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe())
-                    + MOBILITY_SCALAR * Heuristics.mobility(state, state.getMe())
-                    + BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
-                    + BONUS_SCALAR * Heuristics.bonusOverride(state, state.getMe());
+            int playerId = Heuristics.inversionSwap(state, state.getMe());
+            //int playerId = state.getMe();
+            //stabilityScalar = Heuristics.stabilityWeight(state, playerId);
+            //mobilityScalar = Heuristics.mobilityWeight(state, state.getMe());
+            stoneCountScalar = Heuristics.stoneCountWeight(state, playerId);
+            overrideBonusScalar = Heuristics.bonusOverrideWeight(state, playerId);
+
+            return stabilityScalar * StabilityHeuristic.stability(state, playerId)
+                    + mobilityScalar * Heuristics.mobility(state, state.getMe())
+                    //+ overrideStabilityScalar * Heuristics.overrideStability(state, playerId)
+                    + stoneCountScalar * Heuristics.relativeStoneCount(state, playerId)
+                    + lineClusteringScalar * Heuristics.lineClustering(state, playerId)
+                    + BOMB_BONUS_SCALAR * Heuristics.bonusBomb(state, state.getMe())
+                    + overrideBonusScalar * Heuristics.bonusOverride(state, state.getMe());
         } else if (type == Move.Type.OVERRIDE) {
-            return STABILITY_SCALAR * StabilityHeuristic.stability(state, state.getMe());
+            int playerId = Heuristics.inversionSwap(state, state.getMe());
+            return Heuristics.relativeStoneCount(state, playerId);
         }
 
         throw new IllegalStateException("Cannot evaluate bomb heuristic in brs tree. I shouldn't be here...");

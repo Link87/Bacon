@@ -4,7 +4,7 @@
 
 ## Usage
 
-You will need [Java](https://jdk.java.net/12/) (11 at least) and [Ant](https://ant.apache.org/) to be installed.
+You will need [Java](https://developers.redhat.com/products/openjdk/download) (11 at least) and [Ant](https://ant.apache.org/) to be installed.
 
 To build the project, run
 
@@ -30,6 +30,7 @@ where `-Dargs` can be used to pass arbitrary arguments to the client. The follow
 - `--help` display the help text
 
 `-Dserver` and `-Dport` are just short hand for the same-called client arguments.
+You may also use `-s` and `-p` in `-Dargs` instead.
 
 ## Tests
 

@@ -7,52 +7,57 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Contains the stability heuristic.
+ * Contains methods for the stability heuristic.
  */
 public class StabilityHeuristic {
 
-    // Variables only needed for stability heuristic
-    private static Set<Tile> horzStbl = new HashSet<>();
-    private static Set<Tile> vertStbl = new HashSet<>();
-    private static Set<Tile> diagStbl = new HashSet<>();
-    private static Set<Tile> indiagStbl = new HashSet<>();
+    private static final Set<Tile> horzStbl = new HashSet<>();
 
-    private static Set<Tile> horzFinal = new HashSet<>();
-    private static Set<Tile> vertFinal = new HashSet<>();
-    private static Set<Tile> diagFinal = new HashSet<>();
-    private static Set<Tile> indiagFinal = new HashSet<>();
+    /*
+    Sets that solely exist, to avoid huge method signatures. These are reset after each usage.
+     */
+    private static final Set<Tile> vertStbl = new HashSet<>();
+    private static final Set<Tile> diagStbl = new HashSet<>();
+    private static final Set<Tile> indiagStbl = new HashSet<>();
+    private static final Set<Tile> horzFinal = new HashSet<>();
+    private static final Set<Tile> vertFinal = new HashSet<>();
+    private static final Set<Tile> diagFinal = new HashSet<>();
+    private static final Set<Tile> indiagFinal = new HashSet<>();
+    private static final Set<Tile> tmpHorz = new HashSet<>();
+    private static final Set<Tile> tmpVert = new HashSet<>();
+    private static final Set<Tile> tmpDiag = new HashSet<>();
+    private static final Set<Tile> tmpIndiag = new HashSet<>();
 
-    private static Set<Tile> tmpHorz = new HashSet<>();
-    private static Set<Tile> tmpVert = new HashSet<>();
-    private static Set<Tile> tmpDiag = new HashSet<>();
-    private static Set<Tile> tmpIndiag = new HashSet<>();
+    private StabilityHeuristic() {}
 
     /**
-     * Calculates the stability heuristics of this certain given game state and player.
+     * Calculates the stability heuristics of the given {@link bacon.GameState} and {@link bacon.Player}.
      *
-     * @param state    GameState to be examined
-     * @param playerId number of the player in turn
-     * @return a real number as stability heuristics
+     * @param state    the {@link bacon.GameState} to be examined
+     * @param playerId {@code id} of the {@link bacon.Player} in turn
+     * @return a real number as mobility heuristics
      */
     public static double stability(bacon.GameState state, int playerId) {
 
-        for (Tile stone : state.getPlayerFromId(playerId).getStones()) {     //Iterates over all player's stones and categorizes them according to stability directions
+        // Iterates over all player's stones and categorizes them according to stability directions
+        for (Tile stone : state.getPlayerFromId(playerId).getStones()) {
 
-            if (stone.getTransition(Direction.LEFT.id) == null || stone.getTransition(Direction.RIGHT.id) == null) {
+            if (stone.getTransition(Direction.LEFT.id) == null || stone.getTransition(Direction.RIGHT.id) == null || stone.getRow().getFillLevel() == stone.getRow().getLineSize()) {
                 horzStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP.id) == null || stone.getTransition(Direction.DOWN.id) == null) {
+            if (stone.getTransition(Direction.UP.id) == null || stone.getTransition(Direction.DOWN.id) == null || stone.getColumn().getFillLevel() == stone.getColumn().getLineSize()) {
                 vertStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP_RIGHT.id) == null || stone.getTransition(Direction.DOWN_LEFT.id) == null) {
+            if (stone.getTransition(Direction.UP_RIGHT.id) == null || stone.getTransition(Direction.DOWN_LEFT.id) == null || stone.getDiagonal().getFillLevel() == stone.getDiagonal().getLineSize()) {
                 diagStbl.add(stone);
             }
 
-            if (stone.getTransition(Direction.UP_LEFT.id) == null || stone.getTransition(Direction.DOWN_RIGHT.id) == null) {
+            if (stone.getTransition(Direction.UP_LEFT.id) == null || stone.getTransition(Direction.DOWN_RIGHT.id) == null || stone.getIndiagonal().getFillLevel() == stone.getIndiagonal().getLineSize()) {
                 indiagStbl.add(stone);
             }
+
         }
 
         // Gradually extends stability from stable stones to neighbouring stones
@@ -134,11 +139,12 @@ public class StabilityHeuristic {
     }
 
     /**
-     * Part of the stability heuristic.
-     * Finds arrival direction and adds the tile to the according stability direction.
+     * Finds arrival direction and adds the {@link Tile} to the according stability direction.
+     * <p>
+     * Subroutine for the stability heuristic.
      *
-     * @param tile      to be examined
-     * @param direction of the original stable stone
+     * @param tile      the {@code Tile} to be examined
+     * @param direction the {@link Direction} in integer representation of the original stable stone
      */
     private static void stabilityFinder(Tile tile, int direction) {
         switch (Direction.fromId(tile.getArrivalDirection(direction))) {
@@ -169,5 +175,4 @@ public class StabilityHeuristic {
         }
     }
 
-    private StabilityHeuristic() {}
 }
